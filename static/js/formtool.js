@@ -20,9 +20,9 @@ const captchaKey = urlParams.get("captcha-key");
 console.log("HELLO");
 
 // Script Version
-console.log("Form Submit v0.4.18");
+console.log("Form Submit v1.0");
 
-const serverUrl = "https://gecko-form-be.winno.gmbh/api/forms/submit";
+const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit/";
 
 // const serverUrl = "https://form-tool-be.vercel.app/api/forms/submit";
 // const serverUrl = "http://localhost:5000/api/forms/submit/";
@@ -172,6 +172,7 @@ function submitForm(userIp) {
     campaign: campaign,
     location: location,
     userIp: userIp,
+    accessKey: accessKey,
   };
 
   console.log("Form Submit Data: " + JSON.stringify(requestData.formData));
