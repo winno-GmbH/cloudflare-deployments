@@ -20,9 +20,9 @@ const captchaKey = urlParams.get("captcha-key");
 console.log("HELLO");
 
 // Script Version
-console.log("Form Submit v1.0.3");
+console.log("Form Submit v1.0.4");
 
-const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit/";
+const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
 // const serverUrl = "https://form-tool-be.vercel.app/api/forms/submit";
 // const serverUrl = "http://localhost:5000/api/forms/submit/";
