@@ -194,11 +194,27 @@ function submitForm(userIp) {
   const submit = (token = "") => {
     requestData.token = token;
 
+    const myHeaders = new Headers();
+    myHeaders.append("Accept", "*/*");
+    myHeaders.append("Accept-Language", "en-US,en;q=0.9,de-DE;q=0.8,de;q=0.7");
+    myHeaders.append("Connection", "keep-alive");
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Origin", "https://www.winno.ch");
+    myHeaders.append("Referer", "https://www.winno.ch/");
+    myHeaders.append("Sec-Fetch-Dest", "empty");
+    myHeaders.append("Sec-Fetch-Mode", "cors");
+    myHeaders.append("Sec-Fetch-Site", "cross-site");
+    myHeaders.append(
+      "User-Agent",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    );
+    myHeaders.append("sec-ch-ua", '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"');
+    myHeaders.append("sec-ch-ua-mobile", "?0");
+    myHeaders.append("sec-ch-ua-platform", '"macOS"');
+
     var requestOptions = {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: myHeaders,
       body: JSON.stringify(requestData),
     };
 
