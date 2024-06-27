@@ -20,7 +20,7 @@ const captchaKey = urlParams.get("captcha-key");
 console.log("HELLO");
 
 // Script Version
-console.log("Form Submit v1.0");
+console.log("Form Submit v1.0.1");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit/";
 
@@ -198,7 +198,6 @@ function submitForm(userIp) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        AccessKey: accessKey, // Include the AccessKey in the Request header
       },
       body: JSON.stringify(requestData),
     };
