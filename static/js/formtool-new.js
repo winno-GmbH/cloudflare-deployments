@@ -171,7 +171,6 @@ const formSteps = () => {
 
   const nextStepButton = form.querySelector(".wr_btn--form-control-next.wr_btn");
   const previousStepButton = form.querySelector(".wr_btn--form-control-prev.wr_btn");
-  const submitButton = form.querySelector(".wr_btn--form-control-submit.wr_btn");
 
   const setStepsActivity = () => {
     previousStepButton.classList.add("hidden");
@@ -238,8 +237,10 @@ const formSteps = () => {
   init();
   nextStepButton.addEventListener("click", nextStep);
   previousStepButton.addEventListener("click", previousStep);
-  submitButton.addEventListener("click", onSubmit);
 };
+
+const submitButton = form.querySelector(".wr_btn--form-control-submit.wr_btn");
+submitButton.addEventListener("click", onSubmit);
 
 const validateTextInput = (field) => {
   const { value, required, customValidatorRegex, type } = field;
@@ -322,7 +323,11 @@ const validateFields = (fields) => {
 if (form.querySelector(".cmp--form-steps.cmp")) {
   formSteps();
 } else {
-  console.log("single forms");
+  formStepPairs.push({
+    formStep: form,
+    formStepNumber: 0,
+    name: "Form Data",
+  });
 }
 
 // tf - focused and filled
