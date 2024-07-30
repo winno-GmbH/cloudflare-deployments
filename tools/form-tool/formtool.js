@@ -35,7 +35,7 @@ const getFields = (parent) => {
       const name = field.getAttribute("name");
       fields.push({
         type,
-        required: true,
+        required,
         name,
         item: field,
         value: field.closest(".cmp").querySelector(".lbl").innerText,
@@ -47,7 +47,7 @@ const getFields = (parent) => {
     } else {
       fields.push({
         type,
-        required: true,
+        required,
         value,
         customValidatorRegex,
         item: field,
@@ -348,7 +348,7 @@ document.querySelectorAll(".cmp--tf.cmp").forEach((tf) => {
       tf.classList.add("filled");
     }
     if (!tf.querySelector(".cmp--tf-md.cmp") || tf.querySelector(".cmp--tf-md.cmp.hidden")) {
-      if (validateTextInput({ type: input.type, required: true, value: input.value, item: input })) {
+      if (validateTextInput({ type: input.type, required: input.required, value: input.value, item: input })) {
         tf.classList.remove("error");
         tf.classList.add("success");
       } else {
@@ -433,7 +433,7 @@ document.querySelectorAll(".cmp--ta.cmp").forEach((ta) => {
     } else {
       ta.classList.add("filled");
     }
-    if (validateTextInput({ type: input.type, required: true, value: input.value, item: input })) {
+    if (validateTextInput({ type: input.type, required: input.required, value: input.value, item: input })) {
       ta.classList.remove("error");
       ta.classList.add("success");
     } else {
