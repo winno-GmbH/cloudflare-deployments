@@ -66,23 +66,23 @@ this is to control the form. When you press next, the form will get validated an
 
 In the one step you only have one form component. It has to have also a name as category.
 
-The `.wr_btn--form-control-submit.wr_btn` should be placed outside the `.cmp--forms.cmp`. The submit button also can have a parent wrapped around it but it has to appear as a child of the `.cmp--forms.cmp`
+The `.wr_btn--form-control-submit.wr_btn` should be placed outside the `.cmp--form.cmp`. The submit button also can have a parent wrapped around it but it has to appear as a child of the `.cmp--form.cmp`
 
 ### Overall requirements
 
 #### classes that have to be styled
 
-- hidden
-- every child of the `.lyt--form-item.lyt` with a .error class
-- every child of the `.lyt--form-item.lyt` with a .success class
-- `.cmp--tf.cmp`, `.cmp--ta.cmp` .focused
-- `.cmp--tf.cmp`, `.cmp--ta.cmp` .filled
+- `.hidden`
+- every child of the `.lyt--form-item.lyt` with a `.error` class
+- every child of the `.lyt--form-item.lyt` with a `.success` class
+- `.cmp--tf.cmp`, `.cmp--ta.cmp` `.focused`
+- `.cmp--tf.cmp`, `.cmp--ta.cmp` `.filled`
 - `.cmp--cb.cmp`, `.cmp--ct.cmp`, `.cmp--rb.cmp`, `.cmp--sw.cmp`
-- `.cmp--dp-day.cmp` .dif-month
-- `.cmp--dp-day.cmp` .weekend
-- `.cmp--dp-day.cmp` .selected
-- `.cmp--mp-day.cmp` .selected
-- `.cmp--yp-day.cmp` .selected
+- `.cmp--dp-day.cmp` `.dif-month`
+- `.cmp--dp-day.cmp` `.weekend`
+- `.cmp--dp-day.cmp` `.selected`
+- `.cmp--mp-day.cmp` `.selected`
+- `.cmp--yp-day.cmp` `.selected`
 
 #### attributes for different input fields
 
