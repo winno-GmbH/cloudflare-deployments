@@ -75,14 +75,14 @@ The `.wr_btn--form-control-submit.wr_btn` should be placed outside the `.cmp--fo
 - `.hidden`
 - every child of the `.lyt--form-item.lyt` with a `.error` class
 - every child of the `.lyt--form-item.lyt` with a `.success` class
-- `.cmp--tf.cmp`, `.cmp--ta.cmp` `.focused`
-- `.cmp--tf.cmp`, `.cmp--ta.cmp` `.filled`
-- `.cmp--cb.cmp`, `.cmp--ct.cmp`, `.cmp--rb.cmp`, `.cmp--sw.cmp`
-- `.cmp--dp-day.cmp` `.dif-month`
-- `.cmp--dp-day.cmp` `.weekend`
-- `.cmp--dp-day.cmp` `.selected`
-- `.cmp--mp-day.cmp` `.selected`
-- `.cmp--yp-day.cmp` `.selected`
+- `.cmp--tf.cmp`, `.cmp--ta.cmp` -> `.focused`
+- `.cmp--tf.cmp`, `.cmp--ta.cmp` -> `.filled`
+- `.cmp--cb.cmp`, `.cmp--ct.cmp`, `.cmp--rb.cmp`, `.cmp--sw.cmp` -> `.checked`
+- `.cmp--dp-day.cmp` -> `.dif-month`
+- `.cmp--dp-day.cmp` -> `.weekend`
+- `.cmp--dp-day.cmp` -> `.selected`
+- `.cmp--mp-day.cmp` -> `.selected`
+- `.cmp--yp-day.cmp` -> `.selected`
 
 #### attributes for different input fields
 
