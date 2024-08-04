@@ -100,7 +100,7 @@ function getCookie(name) {
   return null; // Return null if the cookie with the specified name is not found
 }
 
-const onSubmit = () => {
+const onSubmit = (e) => {
   const fields = getFields(form);
   const isValid = validateFields(fields);
   if (!isValid) {
@@ -140,6 +140,11 @@ const onSubmit = () => {
     body: JSON.stringify(request),
   };
 
+  e.target.classList.add("pending");
+  e.target.disabled = true;
+  const buttonText = e.target.getAttribute("pending-text") ?? "Loading...";
+  e.target.innerText = buttonText;
+
   fetch(serverUrl, requestOptions)
     .then((response) => {
       if (!response.ok) {
@@ -159,6 +164,13 @@ const onSubmit = () => {
           event: "form_conversion",
         });
       }
+
+      form.querySelector(".cmp--form-steps.cmp")?.classList.add("hidden");
+      formStepPairs.forEach((formStep) => {
+        formStep.formStep.classList.add("hidden");
+      });
+      form.querySelector(".cmp--btn-group.cmp")?.classList.add("hidden");
+      form.querySelector(".cmp--form-success.cmp")?.classList.remove("hidden");
     })
     .catch((error) => {
       // Handle errors during the fetch request
