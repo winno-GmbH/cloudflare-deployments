@@ -109,6 +109,14 @@ A variable that is usable in the email template.
 
 ⚠️ `lead_name` is recommended ⚠️
 
+other available variables:
+`admin_name`
+`admin_mail`
+`company_name`
+`company_mail`
+`website_url`
+`form_name`
+
 ###### `data-validator`
 
 A special validator. Here you can put a custom regex to validate
