@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.2.4");
+console.log("Form Submit v0.2.5");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -167,7 +167,6 @@ const onSubmit = (e) => {
 
       form.querySelector(".cmp--form-steps.cmp")?.classList.add("hidden");
       formStepPairs.forEach((formStep) => {
-        console.log(formStep.formStep.classList);
         Array.from(formStep.formStep.classList).includes("cmp--form")
           ? formStep.formStep.classList.add("hidden")
           : formStep.formStep.querySelector(".cmp--form.cmp").classList.add("hidden");
