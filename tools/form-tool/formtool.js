@@ -771,7 +771,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
   const generateCountryCodePicker = (input, parent) => {
     fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json").then((response) => {
       response.json().then((data) => {
-        parent.lastChild.innerHTML = "";
+        parent.lastChild.lastChild.innerHTML = "";
 
         const options = data.map((country) => {
           const option = document.createElement("div");
