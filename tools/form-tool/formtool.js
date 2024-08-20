@@ -13,13 +13,19 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.2.6");
+console.log("Form Submit v0.2.7");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
-const countryCodes = await (
-  await fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json")
-).json();
+async function fetchCountryCodes() {
+  const countryCodes = await (
+    await fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json")
+  ).json();
+
+  return countryCodes;
+}
+
+const countryCodes = await fetchCountryCodes();
 
 const formStepPairs = [];
 
