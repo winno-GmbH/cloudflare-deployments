@@ -771,6 +771,8 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
   const generateCountryCodePicker = (input, parent) => {
     fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json").then((response) => {
       response.json().then((data) => {
+        parent.innerHTML = "";
+
         const options = data.map((country) => {
           const option = document.createElement("div");
           option.className = "cmp--tf-md-option cmp";
@@ -793,6 +795,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
             });
             option.classList.add("checked");
           });
+          parent.appendChild(option);
         });
 
         input.addEventListener("input", (e) => {
@@ -813,6 +816,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
           overlay.classList.remove("hidden");
           tf.classList.remove("hidden");
         });
+
         overlay.addEventListener("click", (e) => {
           e.stopPropagation();
           overlay.classList.add("hidden");
