@@ -795,7 +795,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
             });
             option.classList.add("checked");
           });
-          parent.lastChild.appendChild(option);
+          parent.lastChild.lastChild.appendChild(option);
         });
 
         input.addEventListener("input", (e) => {
