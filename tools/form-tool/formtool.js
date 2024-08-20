@@ -776,7 +776,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
         const options = data.map((country) => {
           const option = document.createElement("div");
           option.className = "cmp--tf-md-option cmp";
-          option.textContent = `${country.emoji} ${country.code} +${country.dial_code}`;
+          option.textContent = `${country.emoji} ${country.code} ${country.dial_code}`;
           return option;
         });
 
@@ -795,7 +795,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
             });
             option.classList.add("checked");
           });
-          parent.appendChild(option);
+          parent.lastChild.appendChild(option);
         });
 
         input.addEventListener("input", (e) => {
