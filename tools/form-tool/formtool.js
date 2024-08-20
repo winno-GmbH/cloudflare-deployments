@@ -471,8 +471,11 @@ document.querySelectorAll(".cmp--ta.cmp").forEach((ta) => {
 
 // select / datepicker
 document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
-  const parent = tf.closest(".cmp--tf.cmp");
-  const input = parent.querySelector("input");
+  const parent = tf.closest(".cmp.cmp--tf-pre") ?? tf.closest(".cmp.cmp--tf-suf") ?? tf.closest(".cmp--tf.cmp");
+  const input =
+    parent.querySelector("input") ??
+    parent.querySelector(".lbl--tf-pre.lbl") ??
+    parent.querySelector(".lbl--tf-suf.lbl");
   const overlay = parent.querySelector(".el--tf-md-overlay.el");
 
   const options = Array.from(parent.querySelectorAll(".cmp--tf-md-option.cmp"));
@@ -784,6 +787,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
           option.addEventListener("click", (e) => {
             e.stopPropagation();
             input.value = option.textContent.trim();
+            input.innerHTML = option.textContent.trim();
             parent.classList.add("filled");
             overlay.classList.add("hidden");
             tf.classList.add("hidden");
@@ -796,20 +800,6 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
             option.classList.add("checked");
           });
           parent.lastChild.lastChild.appendChild(option);
-        });
-
-        input.addEventListener("input", (e) => {
-          const value = e.target.value.toLowerCase(); // Get the input value and convert to lowercase for case-insensitive search
-
-          const found = options.find((option) => option.textContent.trim().toLowerCase() === value);
-
-          options.forEach((option) => {
-            if (option.textContent.trim().toLowerCase().includes(value) || found) {
-              option.classList.remove("hidden");
-            } else {
-              option.classList.add("hidden");
-            }
-          });
         });
 
         parent.addEventListener("click", () => {
