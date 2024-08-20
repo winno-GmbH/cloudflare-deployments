@@ -17,7 +17,9 @@ console.log("Form Submit v0.2.6");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
-const countryCodes = await (await fetch("https://country-code-au6g.vercel.app/Country.json")).json();
+const countryCodes = await (
+  await fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json")
+).json();
 
 const formStepPairs = [];
 
