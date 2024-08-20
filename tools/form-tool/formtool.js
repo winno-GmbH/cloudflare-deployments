@@ -824,28 +824,28 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
   };
 
   if (options.length === 0) {
+    generateDatePicker(input, parent);
+  } else {
     if (tf.getAttribute("data-type") === "country-code") {
       generateCountryCodePicker(input, parent);
     } else {
-      generateDatePicker(input, parent);
-    }
-  } else {
-    options.forEach((option) => {
-      option.addEventListener("click", (e) => {
-        e.stopPropagation();
-        input.value = option.textContent.trim();
-        parent.classList.add("filled");
-        overlay.classList.add("hidden");
-        tf.classList.add("hidden");
-        parent.classList.add("success");
-        parent.classList.remove("error");
-        options.forEach((option) => {
-          option.classList.remove("hidden");
-          option.classList.remove("checked");
+      options.forEach((option) => {
+        option.addEventListener("click", (e) => {
+          e.stopPropagation();
+          input.value = option.textContent.trim();
+          parent.classList.add("filled");
+          overlay.classList.add("hidden");
+          tf.classList.add("hidden");
+          parent.classList.add("success");
+          parent.classList.remove("error");
+          options.forEach((option) => {
+            option.classList.remove("hidden");
+            option.classList.remove("checked");
+          });
+          option.classList.add("checked");
         });
-        option.classList.add("checked");
       });
-    });
+    }
 
     input.addEventListener("input", (e) => {
       const value = e.target.value.toLowerCase(); // Get the input value and convert to lowercase for case-insensitive search
