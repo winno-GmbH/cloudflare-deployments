@@ -831,7 +831,7 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
     generateDatePicker(input, parent);
   } else {
     if (tf.getAttribute("data-type") === "country-code") {
-      generateCountryCodePicker(input, parent);
+      generateCountryCodePicker(input, tf);
     } else {
       options.forEach((option) => {
         option.addEventListener("click", (e) => {
