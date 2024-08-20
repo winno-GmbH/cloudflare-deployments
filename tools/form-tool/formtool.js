@@ -471,12 +471,13 @@ document.querySelectorAll(".cmp--ta.cmp").forEach((ta) => {
 
 // select / datepicker
 document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
-  const parent = tf.closest(".cmp.cmp--tf-pre") ?? tf.closest(".cmp.cmp--tf-suf") ?? tf.closest(".cmp--tf.cmp");
+  let parent = tf.closest(".cmp.cmp--tf-pre") ?? tf.closest(".cmp.cmp--tf-suf") ?? tf.closest(".cmp--tf.cmp");
+  const overlay = parent.querySelector(".el--tf-md-overlay.el");
+  parent = tf.closest(".cmp.cmp--tf-pre") ?? tf.closest(".cmp.cmp--tf-suf") ?? parent;
   const input =
     parent.querySelector("input") ??
     parent.querySelector(".lbl--tf-pre.lbl") ??
     parent.querySelector(".lbl--tf-suf.lbl");
-  const overlay = parent.querySelector(".el--tf-md-overlay.el");
 
   const options = Array.from(parent.querySelectorAll(".cmp--tf-md-option.cmp"));
 
