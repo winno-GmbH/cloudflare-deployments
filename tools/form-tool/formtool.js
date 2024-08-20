@@ -13,9 +13,11 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.2.5");
+console.log("Form Submit v0.2.6");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
+
+const countryCodes = await (await fetch("https://country-code-au6g.vercel.app/Country.json")).json();
 
 const formStepPairs = [];
 
@@ -768,8 +770,63 @@ document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
     switchView();
   };
 
+  const generateCountryCodePicker = (input, parent) => {
+    const options = countryCodes.map((country) => {
+      const option = document.createElement("div");
+      option.className = "cmp--tf-md-option cmp";
+      option.textContent = `${country.emoji} ${country.code} +${country.dial_code}`;
+      return option;
+    });
+
+    options.forEach((option) => {
+      option.addEventListener("click", (e) => {
+        e.stopPropagation();
+        input.value = option.textContent.trim();
+        parent.classList.add("filled");
+        overlay.classList.add("hidden");
+        tf.classList.add("hidden");
+        parent.classList.add("success");
+        parent.classList.remove("error");
+        options.forEach((option) => {
+          option.classList.remove("hidden");
+          option.classList.remove("checked");
+        });
+        option.classList.add("checked");
+      });
+    });
+
+    input.addEventListener("input", (e) => {
+      const value = e.target.value.toLowerCase(); // Get the input value and convert to lowercase for case-insensitive search
+
+      const found = options.find((option) => option.textContent.trim().toLowerCase() === value);
+
+      options.forEach((option) => {
+        if (option.textContent.trim().toLowerCase().includes(value) || found) {
+          option.classList.remove("hidden");
+        } else {
+          option.classList.add("hidden");
+        }
+      });
+    });
+
+    parent.addEventListener("click", () => {
+      overlay.classList.remove("hidden");
+      tf.classList.remove("hidden");
+    });
+    overlay.addEventListener("click", (e) => {
+      e.stopPropagation();
+      overlay.classList.add("hidden");
+      tf.classList.add("hidden");
+      input.dispatchEvent(new Event("blur"));
+    });
+  };
+
   if (options.length === 0) {
-    generateDatePicker(input, parent);
+    if (tf.getAttribute("data-type") === "country-code") {
+      generateCountryCodePicker(input, parent);
+    } else {
+      generateDatePicker(input, parent);
+    }
   } else {
     options.forEach((option) => {
       option.addEventListener("click", (e) => {
