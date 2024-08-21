@@ -126,7 +126,6 @@ const onSubmit = (e) => {
     },
     test: accessKey,
     token: captchaKey,
-    userIp: "46.127.73.246",
     location: location,
     campaign: campaign,
     keyword: keyword,
