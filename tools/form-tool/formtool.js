@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.25");
+console.log("Form Submit v0.3.26");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -412,7 +412,10 @@ if (form) {
       if (type === "email" && !new RegExp("^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,6}$").test(value)) {
         return false;
       }
-      if (type === "tel" && !new RegExp("^[0-9]{10,12}$").test(value)) {
+      if (
+        type === "tel" &&
+        !new RegExp("^+?(d{1,4})?[s.-]?(?d{1,4})?[s.-]?d{1,4}[s.-]?d{1,4}[s.-]?d{1,9}$").test(value)
+      ) {
         return false;
       }
       if (type === "password" && !new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$").test(value)) {
