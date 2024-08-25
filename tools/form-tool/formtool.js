@@ -395,7 +395,7 @@ if (form.querySelector(".cmp--form-steps.cmp")) {
 document.querySelectorAll(".cmp--tf.cmp").forEach((tf) => {
   const input = tf.querySelector("input");
   if (input.placeholder) {
-    input.classList.add("filled");
+    tf.classList.add("filled");
   }
   tf.addEventListener("click", () => {
     tf.classList.add("focused");
