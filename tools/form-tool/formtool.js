@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.10");
+console.log("Form Submit v0.3.11");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -190,11 +190,13 @@ const formSteps = () => {
     submitButton.classList.add("hidden");
     nextStepButton.classList.remove("hidden");
 
+    let lastActiveIndex = 1;
+
     formStepPairs.forEach((formStep, index) => {
       formStep.formStepNumber.classList.remove("completed");
       formStep.formStepNumber.classList.remove("active");
       formStep.formStepNumber.classList.remove("locked");
-      if (formStep.formStep.id !== "") {
+      if (formStep.formStep.id !== "" && !formStep.formStep.getAttribute("condition-active")) {
         formStep.formStepNumber.classList.add("hidden");
       }
       if (index === currentStep) {
@@ -241,10 +243,12 @@ const formSteps = () => {
               if (e.target.checked) {
                 if (conditionalSteps.includes(formStep.id)) {
                   formStep.formStepNumber.classList.remove("hidden");
+                  formStep.formStep.setAttribute("condition-active", true);
                 }
               } else {
                 if (conditionalSteps.includes(formStep.id)) {
                   formStep.formStepNumber.classList.add("hidden");
+                  formStep.formStep.setAttribute("condition-active", false);
                 }
               }
             });
