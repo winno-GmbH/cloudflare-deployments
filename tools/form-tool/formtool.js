@@ -13,13 +13,112 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.22");
+console.log("Form Submit v0.3.23");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
 const formStepPairs = [];
 
 const form = document.querySelector(`[name="${formName}"]`);
+
+const initScript = () => {
+  // Function to retrieve the value of a query parameter from the URL
+  const getQueryParam = (param) => {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    return urlParams.get(param);
+  };
+
+  // Function to save a value in a cookie
+  const setCookie = (name, value, days) => {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+  };
+
+  // Get the value of the 'kwd' parameter from the URL
+  const kwdValue = getQueryParam("kwd");
+
+  // Save the 'kwd' value in a cookie (valid for 7 days)
+  if (kwdValue) {
+    setCookie("kwd", kwdValue, 7);
+  }
+
+  // Get the value of the 'loc' parameter from the URL
+  const locValue = getQueryParam("loc");
+
+  // Save the 'loc' value in a cookie (valid for 7 days)
+  if (locValue) {
+    setCookie("loc", locValue, 7);
+  }
+
+  // Get the value of the 'cid' parameter from the URL
+  const cidValue = getQueryParam("cid");
+
+  // Save the 'cid' value in a cookie (valid for 7 days)
+  if (cidValue) {
+    setCookie("cid", cidValue, 7);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Function to calculate and set padding-left
+    function updatePadding(tfElement) {
+      const preElement = tfElement.querySelector(".cmp--tf-pre");
+      const fieldsetElement = tfElement.querySelector("fieldset.fs--tf");
+      const lytElement = tfElement.querySelector(".lyt--tf.lyt");
+
+      if (preElement && fieldsetElement) {
+        // Get the width of the .cmp--tf-pre element
+        const preElementWidth = preElement.offsetWidth;
+
+        // Get the right padding of .cmp--tf (which is tfElement)
+        const tfRightPadding = parseFloat(getComputedStyle(tfElement).paddingRight);
+
+        // Get the gap of .lyt--tf.lyt, if it exists
+        let lytGap = 0;
+        if (lytElement) {
+          lytGap = parseFloat(getComputedStyle(lytElement).gap) || 0; // Default to 0 if gap is not defined
+        }
+
+        // Calculate the padding-left (preElementWidth + tfRightPadding + 2 * lytGap)
+        const computedPaddingLeft = preElementWidth + tfRightPadding + 2 * lytGap;
+
+        // Set the padding-left of the fieldset element
+        fieldsetElement.style.paddingLeft = `${computedPaddingLeft}px`;
+      }
+    }
+
+    // Select all .cmp--tf elements
+    const tfElements = document.querySelectorAll(".cmp--tf");
+
+    // Loop through each .cmp--tf element and update padding initially
+    tfElements.forEach(function (tfElement) {
+      updatePadding(tfElement);
+
+      const preLabel = tfElement.querySelector(".lbl--tf-pre");
+
+      if (preLabel) {
+        // Create a MutationObserver to watch for changes in the .lbl--tf-pre element
+        const observer = new MutationObserver(function (mutations) {
+          mutations.forEach(function (mutation) {
+            if (mutation.type === "childList" || mutation.type === "characterData" || mutation.type === "subtree") {
+              updatePadding(tfElement);
+            }
+          });
+        });
+
+        // Observe changes to the content of the .lbl--tf-pre element
+        observer.observe(preLabel, { childList: true, characterData: true, subtree: true });
+      }
+    });
+  });
+};
+
+initScript();
+
+if (!form) {
+  return;
+}
 
 const getFields = (parent) => {
   const fields = [];
@@ -405,6 +504,9 @@ document.querySelectorAll(".cmp--tf.cmp").forEach((tf) => {
     tf.classList.add("focused");
   });
   input.addEventListener("blur", () => {
+    if (input.placeholder) {
+      tf.classList.add("filled");
+    }
     if (input.value === "") {
       tf.classList.remove("focused");
       tf.classList.remove("filled");
