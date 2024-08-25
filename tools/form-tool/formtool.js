@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.11");
+console.log("Form Submit v0.3.12");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -190,7 +190,7 @@ const formSteps = () => {
     submitButton.classList.add("hidden");
     nextStepButton.classList.remove("hidden");
 
-    let lastActiveIndex = 1;
+    let lastActiveIndex = 0;
 
     formStepPairs.forEach((formStep, index) => {
       formStep.formStepNumber.classList.remove("completed");
@@ -198,17 +198,21 @@ const formSteps = () => {
       formStep.formStepNumber.classList.remove("locked");
       if (formStep.formStep.id !== "" && !formStep.formStep.getAttribute("condition-active")) {
         formStep.formStepNumber.classList.add("hidden");
-      }
-      if (index === currentStep) {
-        formStep.formStepNumber.classList.add("active");
-        formStep.formStep.classList.remove("hidden");
       } else {
-        formStep.formStepNumber.classList.remove("locked");
-        formStep.formStep.classList.add("hidden");
-        if (index < currentStep) {
-          formStep.formStepNumber.classList.add("completed");
+        formStep.formStepNumber.classList.remove("hidden");
+        formStep.formStepNumber.innerText = lastActiveIndex + 1;
+        lastActiveIndex++;
+        if (index === currentStep) {
+          formStep.formStepNumber.classList.add("active");
+          formStep.formStep.classList.remove("hidden");
         } else {
-          formStep.formStepNumber.classList.add("locked");
+          formStep.formStepNumber.classList.remove("locked");
+          formStep.formStep.classList.add("hidden");
+          if (index < currentStep) {
+            formStep.formStepNumber.classList.add("completed");
+          } else {
+            formStep.formStepNumber.classList.add("locked");
+          }
         }
       }
     });
