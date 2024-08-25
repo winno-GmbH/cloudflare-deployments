@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.4");
+console.log("Form Submit v0.3.5");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -234,7 +234,10 @@ const formSteps = () => {
       });
       formStep.querySelectorAll("input[type=checkbox], input[type=radio]").forEach((input) => {
         if (input.getAttribute("conditional-step")) {
-          input.addEventListener("click", () => {
+          input.addEventListener("change", (e) => {
+            if (!e.target.checked) {
+              return;
+            }
             const conditionalSteps = input.getAttribute("conditional-step").replace(" ", "").split(",");
             formStepPairs
               .find((formStep) => conditionalSteps.includes(formStep.id))
