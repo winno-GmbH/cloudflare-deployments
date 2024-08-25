@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.20");
+console.log("Form Submit v0.3.21");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -268,8 +268,7 @@ const formSteps = () => {
   const nextStep = () => {
     const fields = getFields(formStepPairs[currentStep].formStep);
     const isValid = validateFields(fields);
-    const test = true;
-    if (!isValid && !test) {
+    if (!isValid) {
       return;
     }
 
