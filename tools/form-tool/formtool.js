@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.2");
+console.log("Form Submit v0.3.3");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -25,7 +25,7 @@ const getFields = (parent) => {
   const fields = [];
   parent.querySelectorAll("input, textarea").forEach((field) => {
     const type = field.getAttribute("type");
-    const required = field.getAttribute("required") === "required";
+    const required = field.required;
 
     const value = field.value;
     const customValidatorRegex = field.getAttribute("data-validator");
@@ -253,7 +253,12 @@ const formSteps = () => {
   };
 
   const previousStep = () => {
-    currentStep--;
+    for (let i = currentStep - 1; i >= 0; i--) {
+      if (!formStepPairs[i].formStepNumber.classList.contains("hidden")) {
+        currentStep = i;
+        break;
+      }
+    }
     setStepsActivity();
   };
 
