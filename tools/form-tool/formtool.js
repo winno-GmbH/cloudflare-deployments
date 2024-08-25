@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.18");
+console.log("Form Submit v0.3.19");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -431,6 +431,9 @@ document.querySelectorAll(".cmp--cb.cmp").forEach((cb) => {
     } else {
       cb.classList.remove("checked");
     }
+    form.querySelectorAll(`input[name="${input.name}"]`).forEach((checkbox) => {
+      checkbox.dispatchEvent(new Event("change"));
+    });
   });
 });
 
@@ -461,6 +464,9 @@ document.querySelectorAll(".cmp--sw.cmp").forEach((sw) => {
     } else {
       sw.classList.remove("checked");
     }
+    form.querySelectorAll(`input[name="${input.name}"]`).forEach((switchBtns) => {
+      switchBtns.dispatchEvent(new Event("change"));
+    });
   });
 });
 
@@ -476,6 +482,9 @@ document.querySelectorAll(".cmp--ct.cmp").forEach((ct) => {
     } else {
       ct.classList.remove("checked");
     }
+    form.querySelectorAll(`input[name="${input.name}"]`).forEach((checkbox) => {
+      checkbox.dispatchEvent(new Event("change"));
+    });
   });
 });
 
