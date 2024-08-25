@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.21");
+console.log("Form Submit v0.3.22");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -23,7 +23,10 @@ const form = document.querySelector(`[name="${formName}"]`);
 
 const getFields = (parent) => {
   const fields = [];
-  parent.querySelectorAll("input, textarea").forEach((field) => {
+  const elements = Array.from(parent.querySelectorAll("input, textarea")).filter(
+    (el) => !el.closest('[condition-active="false"]')
+  );
+  elements.forEach((field) => {
     const type = field.getAttribute("type");
     const required = field.required;
 
