@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.15");
+console.log("Form Submit v0.3.16");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -196,7 +196,7 @@ const formSteps = () => {
       formStep.formStepNumber.classList.remove("completed");
       formStep.formStepNumber.classList.remove("active");
       formStep.formStepNumber.classList.remove("locked");
-      if (formStep.formStep.id !== "" && !formStep.formStep.getAttribute("condition-active")) {
+      if (formStep.formStep.id !== "" && !formStep.formStep.getAttribute("condition-active") === "true") {
         formStep.formStepNumber.classList.add("hidden");
       } else {
         formStep.formStepNumber.classList.remove("hidden");
