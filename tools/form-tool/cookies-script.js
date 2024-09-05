@@ -40,3 +40,5 @@ const getCookies = () => {
   // delete all query params
   window.history.replaceState({}, document.title, "/");
 };
+
+getCookies();
