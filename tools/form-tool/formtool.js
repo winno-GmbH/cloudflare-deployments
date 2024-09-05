@@ -13,7 +13,7 @@ const accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7"
 const formName = urlParams.get("form") ?? "Testformular";
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("Form Submit v0.3.30");
+console.log("Form Submit v0.3.31");
 
 const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -22,44 +22,6 @@ const formStepPairs = [];
 const form = document.querySelector(`[name="${formName}"]`);
 
 const initScript = () => {
-  // Function to retrieve the value of a query parameter from the URL
-  const getQueryParam = (param) => {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    return urlParams.get(param);
-  };
-
-  // Function to save a value in a cookie
-  const setCookie = (name, value, days) => {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-  };
-
-  // Get the value of the 'kwd' parameter from the URL
-  const kwdValue = getQueryParam("kwd");
-
-  // Save the 'kwd' value in a cookie (valid for 7 days)
-  if (kwdValue) {
-    setCookie("kwd", kwdValue, 7);
-  }
-
-  // Get the value of the 'loc' parameter from the URL
-  const locValue = getQueryParam("loc");
-
-  // Save the 'loc' value in a cookie (valid for 7 days)
-  if (locValue) {
-    setCookie("loc", locValue, 7);
-  }
-
-  // Get the value of the 'cid' parameter from the URL
-  const cidValue = getQueryParam("cid");
-
-  // Save the 'cid' value in a cookie (valid for 7 days)
-  if (cidValue) {
-    setCookie("cid", cidValue, 7);
-  }
-
   document.addEventListener("DOMContentLoaded", function () {
     // Function to calculate and set padding-left
     function updatePadding(tfElement) {
@@ -217,9 +179,23 @@ if (form) {
       }
     });
 
-    const keyword = getCookie("kwd");
-    const campaign = getCookie("cid");
-    const location = getCookie("loc");
+    const keyword = getCookie("keyword");
+    const campaign = getCookie("campaignid");
+    const location = getCookie("loc_physical_ms");
+    const adGroupID = getCookie("adgroupid");
+    const feedItemID = getCookie("feeditemid");
+    const extensionID = getCookie("extensionid");
+    const targetID = getCookie("targetid");
+    const locInterestMS = getCookie("loc_interest_ms");
+    const matchType = getCookie("matchtype");
+    const network = getCookie("network");
+    const device = getCookie("device");
+    const deviceModel = getCookie("devicemodel");
+    const gclid = getCookie("gclid");
+    const creative = getCookie("creative");
+    const placement = getCookie("placement");
+    const target = getCookie("target");
+    const adPosition = getCookie("adposition");
 
     const request = {
       formData: {
@@ -227,9 +203,26 @@ if (form) {
       },
       test: accessKey,
       token: captchaKey,
-      location: location,
-      campaign: campaign,
-      keyword: keyword,
+      googleAds: {
+        keyword,
+        campaign,
+        location,
+        adGroupID,
+        feedItemID,
+        extensionID,
+        targetID,
+        locInterestMS,
+        locPhysicalMS,
+        matchType,
+        network,
+        device,
+        deviceModel,
+        gclid,
+        creative,
+        placement,
+        target,
+        adPosition,
+      },
     };
 
     var requestOptions = {
@@ -243,6 +236,7 @@ if (form) {
     e.target.classList.add("pending");
     e.target.disabled = true;
     const buttonText = e.target.getAttribute("pending-text") ?? "Loading...";
+    e.target.disabled = true;
     e.target.innerText = buttonText;
 
     fetch(serverUrl, requestOptions)
