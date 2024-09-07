@@ -38,7 +38,7 @@ const getCookies = () => {
   setCookieByName("adposition");
 
   // delete all query params
-  window.history.replaceState({}, document.title, "/");
+  window.history.replaceState({}, document.title, window.location.pathname);
 };
 
 getCookies();
