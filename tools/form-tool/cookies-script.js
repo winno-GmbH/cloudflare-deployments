@@ -37,8 +37,12 @@ const getCookies = () => {
   setCookieByName("target");
   setCookieByName("adposition");
 
-  // delete all query params
-  window.history.replaceState({}, document.title, window.location.pathname);
+  let addOn = "";
+  if (window.location.href.includes("edit")) {
+    addOn = "?edit";
+  }
+
+  window.history.replaceState({}, document.title, window.location.pathname + addOn);
 };
 
 getCookies();
