@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.4");
+  console.log("Form Submit v0.4.5");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -109,7 +109,20 @@
             input.value = field.value;
             parent.classList.add("filled");
           } else if (field.type === "checkbox") {
+            const parent = labelEl.closest(".cmp--form-item.cmp");
+            const inputLabel = getElementByXpathWithIndex(`//label[text()="${field.value}"]`, parent, 0);
+            const inputParent = inputLabel.closest(".cmp--cb.cmp");
+            const input = inputParent.querySelector("input");
+            input.checked = true;
           } else if (field.type === "radio") {
+            const parent = labelEl.closest(".cmp--form-item.cmp");
+            const selectedItems = field.value.split(", ");
+            selectedItems.forEach((item) => {
+              const inputLabel = getElementByXpathWithIndex(`//label[text()="${item}"]`, parent, 0);
+              const inputParent = inputLabel.closest(".cmp--rb.cmp");
+              const input = inputParent.querySelector("input");
+              input.checked = true;
+            });
           } else {
             const parent = labelEl.closest(".cmp--tf.cmp");
             const input = parent.querySelector("input");
@@ -124,19 +137,12 @@
     };
 
     const getElementByXpathWithIndex = (xpath, parent, index) => {
-      // Evaluate XPath expression and get all matching nodes
       const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-
-      // Convert the XPath result to an array
       let elements = [];
       for (let i = 0; i < xpathResult.snapshotLength; i++) {
         elements.push(xpathResult.snapshotItem(i));
       }
-
-      // Filter elements that are descendants (not just immediate children) of the parent
       const descendantElements = elements.filter((element) => parent.contains(element));
-
-      // Return the element at the specified index (if exists)
       return descendantElements[index] || null;
     };
 
