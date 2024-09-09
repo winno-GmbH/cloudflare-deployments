@@ -100,7 +100,7 @@
         if (!formStepParent) return;
 
         category.form.forEach((field) => {
-          const labelEl = getElementyByXpath(`//label[text()="${field.label}"]`, formStepParent);
+          const labelEl = getElementByXpathWithIndex(`//label[text()="${field.label}"]`, formStepParent, 0);
           if (!labelEl) return;
 
           if (field.type === null) {
@@ -123,11 +123,21 @@
       });
     };
 
-    const getElementyByXpath = (path, parent) => {
-      if (!parent) {
-        parent = document;
+    const getElementByXpathWithIndex = (xpath, parent, index) => {
+      // Evaluate XPath expression and get all matching nodes
+      const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+
+      // Convert the XPath result to an array
+      let elements = [];
+      for (let i = 0; i < xpathResult.snapshotLength; i++) {
+        elements.push(xpathResult.snapshotItem(i));
       }
-      return document.evaluate(path, parent, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+
+      // Filter elements that are descendants (not just immediate children) of the parent
+      const descendantElements = elements.filter((element) => parent.contains(element));
+
+      // Return the element at the specified index (if exists)
+      return descendantElements[index] || null;
     };
 
     function getCookie(name) {
