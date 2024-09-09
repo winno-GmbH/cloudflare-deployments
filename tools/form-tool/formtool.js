@@ -103,18 +103,18 @@
           const labelEl = getElementyByXpath(`//label[text()="${field.label}"]`);
           if (!labelEl) return;
 
-          if (field.type === "text") {
-            const parent = labelEl.closest(".cmp--tf.cmp");
-            const input = parent.querySelector("input");
-            input.value = field.value;
-            input.classList.add("filled");
-          } else if (field.type === null) {
+          if (field.type === null) {
             const parent = labelEl.closest(".cmp--ta.cmp");
             const input = parent.querySelector("textarea");
             input.value = field.value;
-            input.classList.add("filled");
+            parent.classList.add("filled");
           } else if (field.type === "checkbox") {
           } else if (field.type === "radio") {
+          } else {
+            const parent = labelEl.closest(".cmp--tf.cmp");
+            const input = parent.querySelector("input");
+            input.value = field.value;
+            parent.classList.add("filled");
           }
           // label
           // value
