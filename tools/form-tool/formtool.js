@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.6");
+  console.log("Form Submit v0.4.7");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -116,6 +116,7 @@
               const inputParent = inputLabel.closest(".cmp--cb.cmp");
               const input = inputParent.querySelector("input");
               input.checked = true;
+              inputParent.classList.add("checked");
             });
           } else if (field.type === "radio") {
             const parent = labelEl.closest(".cmp--form-item.cmp");
@@ -123,6 +124,7 @@
             const inputParent = inputLabel.closest(".cmp--rb.cmp");
             const input = inputParent.querySelector("input");
             input.checked = true;
+            inputParent.classList.add("checked");
           } else {
             const parent = labelEl.closest(".cmp--tf.cmp");
             const input = parent.querySelector("input");
