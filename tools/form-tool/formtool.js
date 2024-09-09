@@ -497,6 +497,23 @@
 
     // tf - focused and filled
     document.querySelectorAll(".cmp--tf.cmp").forEach((tf) => {
+      updatePadding(tf);
+
+      const preLabel = tf.querySelector(".lbl--tf-pre");
+
+      if (preLabel) {
+        // Create a MutationObserver to watch for changes in the .lbl--tf-pre element
+        const observer = new MutationObserver(function (mutations) {
+          mutations.forEach(function (mutation) {
+            if (mutation.type === "childList" || mutation.type === "characterData" || mutation.type === "subtree") {
+              updatePadding(tf);
+            }
+          });
+        });
+
+        // Observe changes to the content of the .lbl--tf-pre element
+        observer.observe(preLabel, { childList: true, characterData: true, subtree: true });
+      }
       const input = tf.querySelector("input");
       if (input.placeholder) {
         tf.classList.add("filled");
@@ -1039,3 +1056,29 @@
     });
   }
 })();
+
+function updatePadding(tfElement) {
+  const preElement = tfElement.querySelector(".cmp--tf-pre");
+  const fieldsetElement = tfElement.querySelector("fieldset.fs--tf");
+  const lytElement = tfElement.querySelector(".lyt--tf.lyt");
+
+  if (preElement && fieldsetElement) {
+    // Get the width of the .cmp--tf-pre element
+    const preElementWidth = preElement.offsetWidth;
+
+    // Get the right padding of .cmp--tf (which is tfElement)
+    const tfRightPadding = parseFloat(getComputedStyle(tfElement).paddingRight);
+
+    // Get the gap of .lyt--tf.lyt, if it exists
+    let lytGap = 0;
+    if (lytElement) {
+      lytGap = parseFloat(getComputedStyle(lytElement).gap) || 0; // Default to 0 if gap is not defined
+    }
+
+    // Calculate the padding-left (preElementWidth + tfRightPadding + 2 * lytGap)
+    const computedPaddingLeft = preElementWidth + tfRightPadding + 2 * lytGap;
+
+    // Set the padding-left of the fieldset element
+    fieldsetElement.style.paddingLeft = `${computedPaddingLeft}px`;
+  }
+}
