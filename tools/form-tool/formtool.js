@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4");
+  console.log("Form Submit v0.4.1");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -92,6 +92,44 @@
       return allFields;
     };
 
+    const convertFormDataToFields = (formData) => {
+      // search by label and then if it is there set the value. If it is a checkbox or radio button, set the checked attribute of the input with the label
+      formData.categories.forEach((category) => {
+        const parent = form.querySelector(`[name="${category.name}"]`);
+
+        if (!parent) return;
+
+        category.form.forEach((field) => {
+          const labelEl = getElementyByXpath(`//label[text()="${field.label}"]`);
+          if (!labelEl) return;
+
+          if (field.type === "text") {
+            const parent = labelEl.closest(".cmp--tf.cmp");
+            const input = parent.querySelector("input");
+            input.value = field.value;
+            input.classList.add("filled");
+          } else if (field.type === null) {
+            const parent = labelEl.closest(".cmp--ta.cmp");
+            const input = parent.querySelector("textarea");
+            input.value = field.value;
+            input.classList.add("filled");
+          } else if (field.type === "checkbox") {
+          } else if (field.type === "radio") {
+          }
+          // label
+          // value
+          // type: radio, checkbox, text, null (textarea)
+        });
+      });
+    };
+
+    const getElementyByXpath = (path, parent) => {
+      if (!parent) {
+        parent = document;
+      }
+      return document.evaluate(path, parent, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    };
+
     function getCookie(name) {
       var cookieArray = document.cookie.split("; ");
 
@@ -104,6 +142,27 @@
 
       return null; // Return null if the cookie with the specified name is not found
     }
+
+    const onInit = () => {
+      if (localStorage.getItem("form-save-id")) {
+        fetch(`https://gecko-form-tool-be-new.vercel.app/api/forms/save-step/${localStorage.getItem("form-save-id")}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            if (data.data) {
+              convertFormDataToFields(data.data);
+            }
+          });
+      }
+    };
+
+    onInit();
 
     const onSubmit = (e) => {
       const fields = getFields(form);
@@ -147,6 +206,7 @@
         },
         test: accessKey,
         token: captchaKey,
+        id: localStorage.getItem("form-save-id") ?? undefined,
         googleAds: {
           keyword: keyword ?? undefined,
           campaign: campaign ?? undefined,
