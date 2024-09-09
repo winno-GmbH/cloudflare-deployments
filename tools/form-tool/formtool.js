@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.7");
+  console.log("Form Submit v0.4.8");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -160,27 +160,6 @@
 
       return null; // Return null if the cookie with the specified name is not found
     }
-
-    const onInit = () => {
-      if (localStorage.getItem("form-save-id")) {
-        fetch(`https://gecko-form-tool-be-new.vercel.app/api/forms/save-step/${localStorage.getItem("form-save-id")}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => {
-            return response.json();
-          })
-          .then((data) => {
-            if (data.data) {
-              convertFormDataToFields(JSON.parse(data.data));
-            }
-          });
-      }
-    };
-
-    onInit();
 
     const onSubmit = (e) => {
       const fields = getFields(form);
@@ -385,6 +364,26 @@
           });
         });
         setStepsActivity();
+        if (localStorage.getItem("form-save-id")) {
+          fetch(
+            `https://gecko-form-tool-be-new.vercel.app/api/forms/save-step/${localStorage.getItem("form-save-id")}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          )
+            .then((response) => {
+              return response.json();
+            })
+            .then((data) => {
+              if (data.data) {
+                convertFormDataToFields(JSON.parse(data.data));
+                setStepsActivity();
+              }
+            });
+        }
       };
 
       const nextStep = async () => {
