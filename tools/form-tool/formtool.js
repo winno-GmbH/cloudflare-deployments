@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.9");
+  console.log("Form Submit v0.4.10");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -102,6 +102,7 @@
         category.form.forEach((field) => {
           const labelEl = getElementByXpathWithIndex(`//label[text()="${field.label}"]`, formStepParent, 0);
           if (!labelEl) return;
+          if (field.value === "") return;
 
           if (field.type === null) {
             const parent = labelEl.closest(".cmp--ta.cmp");
