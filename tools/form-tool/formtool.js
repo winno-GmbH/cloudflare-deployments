@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.5");
+  console.log("Form Submit v0.4.6");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -110,19 +110,19 @@
             parent.classList.add("filled");
           } else if (field.type === "checkbox") {
             const parent = labelEl.closest(".cmp--form-item.cmp");
-            const inputLabel = getElementByXpathWithIndex(`//label[text()="${field.value}"]`, parent, 0);
-            const inputParent = inputLabel.closest(".cmp--cb.cmp");
-            const input = inputParent.querySelector("input");
-            input.checked = true;
-          } else if (field.type === "radio") {
-            const parent = labelEl.closest(".cmp--form-item.cmp");
             const selectedItems = field.value.split(", ");
             selectedItems.forEach((item) => {
               const inputLabel = getElementByXpathWithIndex(`//label[text()="${item}"]`, parent, 0);
-              const inputParent = inputLabel.closest(".cmp--rb.cmp");
+              const inputParent = inputLabel.closest(".cmp--cb.cmp");
               const input = inputParent.querySelector("input");
               input.checked = true;
             });
+          } else if (field.type === "radio") {
+            const parent = labelEl.closest(".cmp--form-item.cmp");
+            const inputLabel = getElementByXpathWithIndex(`//label[text()="${field.value}"]`, parent, 0);
+            const inputParent = inputLabel.closest(".cmp--rb.cmp");
+            const input = inputParent.querySelector("input");
+            input.checked = true;
           } else {
             const parent = labelEl.closest(".cmp--tf.cmp");
             const input = parent.querySelector("input");
