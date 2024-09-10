@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.10");
+  console.log("Form Submit v0.4.11");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -93,13 +93,13 @@
     };
 
     const convertFormDataToFields = (formData) => {
-      // search by label and then if it is there set the value. If it is a checkbox or radio button, set the checked attribute of the input with the label
+      const length = formData.categories.length;
       formData.categories.forEach((category) => {
         const formStepParent = form.querySelector(`[name="${category.name}"]`);
 
         if (!formStepParent) return;
 
-        category.form.forEach((field) => {
+        category.form.forEach((field, index) => {
           const labelEl = getElementByXpathWithIndex(`//label[text()="${field.label}"]`, formStepParent, 0);
           if (!labelEl) return;
           if (field.value === "") return;
@@ -134,9 +134,10 @@
             input.value = field.value;
             parent.classList.add("filled");
           }
-          // label
-          // value
-          // type: radio, checkbox, text, null (textarea)
+
+          if (index < length - 1) {
+            currentStep++;
+          }
         });
       });
     };
