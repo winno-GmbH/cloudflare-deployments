@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.11");
+  console.log("Form Submit v0.4.12");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -93,11 +93,13 @@
     };
 
     const convertFormDataToFields = (formData) => {
-      const length = formData.categories.length;
+      let lastStepName = "";
       formData.categories.forEach((category) => {
         const formStepParent = form.querySelector(`[name="${category.name}"]`);
 
         if (!formStepParent) return;
+
+        lastStepName = category.name;
 
         category.form.forEach((field, index) => {
           const labelEl = getElementByXpathWithIndex(`//label[text()="${field.label}"]`, formStepParent, 0);
@@ -134,12 +136,9 @@
             input.value = field.value;
             parent.classList.add("filled");
           }
-
-          if (index < length - 1) {
-            currentStep++;
-          }
         });
       });
+      return lastStepName;
     };
 
     const getElementByXpathWithIndex = (xpath, parent, index) => {
@@ -383,11 +382,21 @@
             })
             .then((data) => {
               if (data.data) {
-                convertFormDataToFields(JSON.parse(data.data));
+                const lastStepName = convertFormDataToFields(JSON.parse(data.data));
                 setStepsActivity();
+                setCurrentStep(lastStepName);
               }
             });
         }
+      };
+
+      const setCurrentStep = (stepName) => {
+        formStepPairs.forEach((formStep, index) => {
+          if (formStep.name === stepName) {
+            currentStep = index;
+          }
+        });
+        setStepsActivity();
       };
 
       const nextStep = async () => {
