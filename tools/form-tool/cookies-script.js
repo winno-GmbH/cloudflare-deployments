@@ -1,8 +1,9 @@
 const getCookies = () => {
-  const setCookieByName = (name) => {
+  const setCookieByName = (name, cookieName) => {
+    let cookieNameToSet = cookieName || name;
     const value = getQueryParam(name);
     if (value) {
-      setCookie(name, value, 7);
+      setCookie(cookieNameToSet, value, 7);
     }
   };
 
@@ -40,26 +41,26 @@ const getCookies = () => {
   setCookieByName("adposition");
 
   // meta ads tracking
-  setCookieByName("fb_ad_id");
-  setCookieByName("fb_adset_id");
-  setCookieByName("fb_campaign_id");
-  setCookieByName("fb_placement");
-  setCookieByName("fb_site_source_name");
-  setCookieByName("fb_creative_id");
-  setCookieByName("fb_product_id");
-  setCookieByName("fb_product_group_id");
-  setCookieByName("fb_product_category");
-  setCookieByName("fb_source");
-  setCookieByName("fb_publisher_platform");
-  setCookieByName("fb_platform_position");
-  setCookieByName("fb_region");
-  setCookieByName("fb_device_type");
-  setCookieByName("fb_targeting");
-  setCookieByName("fb_ad_format");
-  setCookieByName("fb_click_id");
-  setCookieByName("fb_ad_name");
-  setCookieByName("fb_campaign_name");
-  setCookieByName("fb_adset_name");
+  setCookieByName("ad_id", "fb_ad_id");
+  setCookieByName("adset_id", "fb_adset_id");
+  setCookieByName("campaign_id", "fb_campaign_id");
+  setCookieByName("placement", "fb_placement");
+  setCookieByName("site_source_name", "fb_site_source_name");
+  setCookieByName("creative_id", "fb_creative_id");
+  setCookieByName("product_id", "fb_product_id");
+  setCookieByName("product_group_id", "fb_product_group_id");
+  setCookieByName("product_category", "fb_product_category");
+  setCookieByName("source", "fb_source");
+  setCookieByName("publisher_platform", "fb_publisher_platform");
+  setCookieByName("platform_position", "fb_platform_position");
+  setCookieByName("region", "fb_region");
+  setCookieByName("device_type", "fb_device_type");
+  setCookieByName("targeting", "fb_targeting");
+  setCookieByName("ad_format", "fb_ad_format");
+  setCookieByName("click_id", "fb_click_id");
+  setCookieByName("ad_name", "fb_ad_name");
+  setCookieByName("campaign_name", "fb_campaign_name");
+  setCookieByName("adset_name", "fb_adset_name");
 
   // let addOn = "";
   // if (window.location.href.includes("edit")) {
