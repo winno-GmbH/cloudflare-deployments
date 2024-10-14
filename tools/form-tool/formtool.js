@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.4.14");
+  console.log("Form Submit v0.4.15");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -181,6 +181,7 @@
         }
       });
 
+      // google ads data
       const keyword = getCookie("keyword");
       const campaign = getCookie("campaignid");
       const location = getCookie("loc_physical_ms");
@@ -198,6 +199,30 @@
       const placement = getCookie("placement");
       const target = getCookie("target");
       const adPosition = getCookie("adposition");
+
+      fbq && fbq("track", "Lead");
+
+      // meta ads data
+      const fb_ad_id = getCookie("fb_ad_id");
+      const fb_adset_id = getCookie("fb_adset_id");
+      const fb_campaign_id = getCookie("fb_campaign_id");
+      const fb_placement = getCookie("fb_placement");
+      const fb_site_source_name = getCookie("fb_site_source_name");
+      const fb_creative_id = getCookie("fb_creative_id");
+      const fb_product_id = getCookie("fb_product_id");
+      const fb_product_group_id = getCookie("fb_product_group_id");
+      const fb_product_category = getCookie("fb_product_category");
+      const fb_source = getCookie("fb_source");
+      const fb_publisher_platform = getCookie("fb_publisher_platform");
+      const fb_platform_position = getCookie("fb_platform_position");
+      const fb_region = getCookie("fb_region");
+      const fb_device_type = getCookie("fb_device_type");
+      const fb_targeting = getCookie("fb_targeting");
+      const fb_ad_format = getCookie("fb_ad_format");
+      const fb_click_id = getCookie("fb_click_id");
+      const fb_ad_name = getCookie("fb_ad_name");
+      const fb_campaign_name = getCookie("fb_campaign_name");
+      const fb_adset_name = getCookie("fb_adset_name");
 
       const request = {
         formData: {
@@ -224,6 +249,28 @@
           placement: placement ?? undefined,
           target: target ?? undefined,
           adPosition: adPosition ?? undefined,
+        },
+        metaAds: {
+          ad_id: fb_ad_id ?? undefined,
+          adset_id: fb_adset_id ?? undefined,
+          campaign_id: fb_campaign_id ?? undefined,
+          placement: fb_placement ?? undefined,
+          site_source_name: fb_site_source_name ?? undefined,
+          creative_id: fb_creative_id ?? undefined,
+          product_id: fb_product_id ?? undefined,
+          product_group_id: fb_product_group_id ?? undefined,
+          product_category: fb_product_category ?? undefined,
+          source: fb_source ?? undefined,
+          publisher_platform: fb_publisher_platform ?? undefined,
+          platform_position: fb_platform_position ?? undefined,
+          region: fb_region ?? undefined,
+          device_type: fb_device_type ?? undefined,
+          targeting: fb_targeting ?? undefined,
+          ad_format: fb_ad_format ?? undefined,
+          click_id: fb_click_id ?? undefined,
+          ad_name: fb_ad_name ?? undefined,
+          campaign_name: fb_campaign_name ?? undefined,
+          adset_name: fb_adset_name ?? undefined,
         },
       };
 
