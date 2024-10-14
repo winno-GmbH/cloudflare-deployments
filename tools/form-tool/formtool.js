@@ -200,7 +200,11 @@
       const target = getCookie("target");
       const adPosition = getCookie("adposition");
 
-      fbq && fbq("track", "Lead");
+      try {
+        fbq("track", "Lead");
+      } catch (error) {
+        // ignore
+      }
 
       // meta ads data
       const fb_ad_id = getCookie("fb_ad_id");
