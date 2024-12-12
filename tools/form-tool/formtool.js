@@ -348,7 +348,7 @@
             formStep.formStepNumber.classList.add("hidden");
           } else {
             formStep.formStepNumber.classList.remove("hidden");
-            formStep.formStepNumber.querySelector(".form-step-nr").innerText = lastActiveIndex + 1;
+            formStep.formStepNumber.querySelector(".p--form-step-nr").innerText = lastActiveIndex + 1;
             lastActiveIndex++;
           }
           if (index === currentStep) {
