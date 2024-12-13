@@ -1089,7 +1089,8 @@
         switchView();
       };
 
-      const generateCountryCodePicker = (input, parent) => {
+      const generateCountryCodePicker = (input, parent, existingOptions) => {
+        // parent - cmp--tf-md
         console.log("generateCountryCodePicker");
         fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json").then((response) => {
           response.json().then((data) => {
@@ -1136,7 +1137,8 @@
         });
       };
 
-      if (options.length === 0) {
+      if (options.length === 0 || tf.getAttribute("generate") === "true") {
+        // tf - cmp--tf-md
         if (tf.getAttribute("data-type") === "country-code") {
           generateCountryCodePicker(input, tf);
         } else {
