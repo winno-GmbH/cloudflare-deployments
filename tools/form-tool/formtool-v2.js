@@ -14,13 +14,27 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.0");
+  console.log("Form Submit v0.1.1");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
   const formStepPairs = [];
 
   const form = document.querySelector(`[name="${formName}"]`);
+
+  function unwrapElements() {
+    const elements = document.querySelectorAll('[unwrap="true"]');
+
+    elements.forEach((element) => {
+      const parent = element.parentNode;
+      while (element.firstChild) {
+        parent.insertBefore(element.firstChild, element);
+      }
+      parent.removeChild(element);
+    });
+  }
+
+  unwrapElements();
 
   if (form) {
     const getFields = (parent) => {
