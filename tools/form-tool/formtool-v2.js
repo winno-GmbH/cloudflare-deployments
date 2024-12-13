@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.13");
+  console.log("Form Submit v0.1.14");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1150,6 +1150,7 @@
                 overlay.classList.add("hidden");
                 tf.classList.add("hidden");
                 parent.classList.add("success");
+                console.log(parent.classList);
                 parent.classList.remove("error");
                 options.forEach((option) => {
                   option.item.classList.remove("hidden");
