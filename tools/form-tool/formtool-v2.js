@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.6");
+  console.log("Form Submit v0.1.7");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -796,7 +796,7 @@
         parent.querySelector(".lbl--tf-pre.lbl") ??
         parent.querySelector(".lbl--tf-suf.lbl");
 
-      let options = Array.from(parent.querySelectorAll(".cmp--tf-md-option.cmp"));
+      const options = Array.from(parent.querySelectorAll(".cmp--tf-md-option.cmp"));
 
       const generateDatePicker = (input, parent) => {
         const months = [
@@ -1174,7 +1174,21 @@
       if (options.length === 0 || tf.getAttribute("generate") === "true") {
         // tf - cmp--tf-md
         if (tf.getAttribute("data-type") === "country-code") {
-          options = generateCountryCodePicker(input, tf, options);
+          generateCountryCodePicker(input, tf, options).then((newOptions) => {
+            input.addEventListener("input", (e) => {
+              const value = e.target.value.toLowerCase(); // Get the input value and convert to lowercase for case-insensitive search
+
+              const found = newOptions.find((option) => option.textContent.trim().toLowerCase() === value);
+
+              newOptions.forEach((option) => {
+                if (option.textContent.trim().toLowerCase().includes(value) || found) {
+                  option.classList.remove("hidden");
+                } else {
+                  option.classList.add("hidden");
+                }
+              });
+            });
+          });
         } else {
           generateDatePicker(input, parent);
         }
