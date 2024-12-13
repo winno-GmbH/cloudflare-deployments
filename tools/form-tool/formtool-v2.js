@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.2");
+  console.log("Form Submit v0.1.3");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1091,7 +1091,9 @@
 
       const generateCountryCodePicker = (input, parent, existingOptions) => {
         // parent - cmp--tf-md
-        console.log("generateCountryCodePicker");
+
+        // el--tf-md-sep el
+        console.log(existingOptions);
         fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json").then((response) => {
           response.json().then((data) => {
             parent.lastChild.lastChild.innerHTML = "";
@@ -1137,11 +1139,11 @@
         });
       };
 
-      // if (options.length === 0 || tf.getAttribute("generate") === "true") {
-      if (options.length === 0) {
+      if (options.length === 0 || tf.getAttribute("generate") === "true") {
         // tf - cmp--tf-md
         if (tf.getAttribute("data-type") === "country-code") {
-          generateCountryCodePicker(input, tf);
+          const existingOptions = Array.from(parent.querySelectorAll(".cmp--tf-md-option.cmp"));
+          generateCountryCodePicker(input, tf, existingOptions);
         } else {
           generateDatePicker(input, parent);
         }
