@@ -1090,6 +1090,7 @@
       };
 
       const generateCountryCodePicker = (input, parent) => {
+        console.log("generateCountryCodePicker");
         fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json").then((response) => {
           response.json().then((data) => {
             parent.lastChild.lastChild.innerHTML = "";
