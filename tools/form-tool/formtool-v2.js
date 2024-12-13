@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.1");
+  console.log("Form Submit v0.1.2");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1137,7 +1137,8 @@
         });
       };
 
-      if (options.length === 0 || tf.getAttribute("generate") === "true") {
+      // if (options.length === 0 || tf.getAttribute("generate") === "true") {
+      if (options.length === 0) {
         // tf - cmp--tf-md
         if (tf.getAttribute("data-type") === "country-code") {
           generateCountryCodePicker(input, tf);
