@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.8");
+  console.log("Form Submit v0.1.9");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -645,36 +645,41 @@
         // Observe changes to the content of the .lbl--tf-pre element
         observer.observe(preLabel, { childList: true, characterData: true, subtree: true });
       }
-      const input = tf.querySelector(".cmp--tf-main input");
-      if (input.placeholder) {
-        tf.classList.add("filled");
-      }
-      tf.addEventListener("click", () => {
-        tf.classList.add("focused");
-        input.focus();
-      });
-      input.addEventListener("focus", () => {
-        tf.classList.add("focused");
-      });
-      input.addEventListener("blur", () => {
+
+      const parents = tf.querySelectorAll(".cmp--tf-pre.cmp, .cmp--tf-main.cmp, .cmp--tf-trail.cmp");
+
+      parents.forEach((parent) => {
+        const input = parent.querySelector("input");
         if (input.placeholder) {
-          tf.classList.add("filled");
+          parent.classList.add("filled");
         }
-        if (input.value === "") {
-          tf.classList.remove("focused");
-          tf.classList.remove("filled");
-        } else {
-          tf.classList.add("filled");
-        }
-        if (!tf.querySelector(".cmp--tf-md.cmp") || tf.querySelector(".cmp--tf-md.cmp.hidden")) {
-          if (validateTextInput({ type: input.type, required: input.required, value: input.value, item: input })) {
-            tf.classList.remove("error");
-            tf.classList.add("success");
-          } else {
-            tf.classList.add("error");
-            tf.classList.remove("success");
+        parent.addEventListener("click", () => {
+          parent.classList.add("focused");
+          input.focus();
+        });
+        input.addEventListener("focus", () => {
+          parent.classList.add("focused");
+        });
+        input.addEventListener("blur", () => {
+          if (input.placeholder) {
+            parent.classList.add("filled");
           }
-        }
+          if (input.value === "") {
+            parent.classList.remove("focused");
+            parent.classList.remove("filled");
+          } else {
+            parent.classList.add("filled");
+          }
+          if (!parent.querySelector(".cmp--tf-md.cmp") || tf.querySelector(".cmp--tf-md.cmp.hidden")) {
+            if (validateTextInput({ type: input.type, required: input.required, value: input.value, item: input })) {
+              parent.classList.remove("error");
+              parent.classList.add("success");
+            } else {
+              parent.classList.add("error");
+              parent.classList.remove("success");
+            }
+          }
+        });
       });
     });
 
