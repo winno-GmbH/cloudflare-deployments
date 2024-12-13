@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.7");
+  console.log("Form Submit v0.1.8");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -645,7 +645,7 @@
         // Observe changes to the content of the .lbl--tf-pre element
         observer.observe(preLabel, { childList: true, characterData: true, subtree: true });
       }
-      const input = tf.querySelector("input");
+      const input = tf.querySelector(".cmp--tf-main input");
       if (input.placeholder) {
         tf.classList.add("filled");
       }
