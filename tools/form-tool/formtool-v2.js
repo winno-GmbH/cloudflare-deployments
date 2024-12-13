@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.3");
+  console.log("Form Submit v0.1.4");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1098,18 +1098,51 @@
           response.json().then((data) => {
             parent.lastChild.lastChild.innerHTML = "";
 
-            const options = data.map((country) => {
-              const option = document.createElement("div");
-              option.className = "cmp--tf-md-option cmp";
-              option.textContent = `${country.emoji} ${country.code} ${country.dial_code}`;
-              return option;
+            const filteredData = data.filter((country) => {
+              const found = existingOptions.find(
+                (option) => option.textContent.trim() === `${country.emoji} ${country.code} ${country.dial_code}`
+              );
+              return !found;
             });
 
+            let options = existingOptions.map((option) => {
+              return {
+                item: option,
+                seperator: false,
+              };
+            });
+
+            if (options.length > 0) {
+              const seperator = document.createElement("div");
+              seperator.className = "el--tf-md-sep el";
+              options.push({
+                item: seperator,
+                seperator: true,
+              });
+            }
+
+            // add options to the options array
+            options = options.concat(
+              filteredData.map((country) => {
+                const option = document.createElement("div");
+                option.className = "cmp--tf-md-option cmp";
+                option.textContent = `${country.emoji} ${country.code} ${country.dial_code}`;
+                return {
+                  item: option,
+                  seperator: false,
+                };
+              })
+            );
+
             options.forEach((option) => {
-              option.addEventListener("click", (e) => {
+              if (option.seperator) {
+                parent.lastChild.lastChild.appendChild(option.item);
+                return;
+              }
+              option.item.addEventListener("click", (e) => {
                 e.stopPropagation();
-                input.value = option.textContent.trim();
-                input.innerHTML = option.textContent.trim();
+                input.value = option.item.textContent.trim();
+                input.innerHTML = option.item.textContent.trim();
                 parent.classList.add("filled");
                 overlay.classList.add("hidden");
                 tf.classList.add("hidden");
@@ -1119,9 +1152,9 @@
                   option.classList.remove("hidden");
                   option.classList.remove("checked");
                 });
-                option.classList.add("checked");
+                option.item.classList.add("checked");
               });
-              parent.lastChild.lastChild.appendChild(option);
+              parent.lastChild.lastChild.appendChild(option.item);
             });
 
             parent.addEventListener("click", () => {
