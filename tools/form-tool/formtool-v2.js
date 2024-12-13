@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.11");
+  console.log("Form Submit v0.1.12");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1209,10 +1209,10 @@
             parent.classList.add("success");
             parent.classList.remove("error");
             options.forEach((option) => {
-              option.classList.remove("hidden");
-              option.classList.remove("checked");
+              option.item.classList.remove("hidden");
+              option.item.classList.remove("checked");
             });
-            option.classList.add("checked");
+            option.item.classList.add("checked");
           });
         });
       }
