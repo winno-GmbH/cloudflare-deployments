@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.10");
+  console.log("Form Submit v0.1.11");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -646,7 +646,7 @@
         observer.observe(preLabel, { childList: true, characterData: true, subtree: true });
       }
 
-      const parents = tf.querySelectorAll(".cmp--tf-pre.cmp, .cmp--tf-main.cmp, .cmp--tf-trail.cmp");
+      const parents = tf.querySelectorAll(".cmp--tf-pre.cmp, .cmp--tf-main.cmp, .cmp--tf-suf.cmp");
 
       parents.forEach((parent) => {
         const input = parent.querySelector("input");
