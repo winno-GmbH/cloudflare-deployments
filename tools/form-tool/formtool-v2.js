@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.9");
+  console.log("Form Submit v0.1.10");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -650,6 +650,7 @@
 
       parents.forEach((parent) => {
         const input = parent.querySelector("input");
+        if (!input) return;
         if (input.placeholder) {
           parent.classList.add("filled");
         }
