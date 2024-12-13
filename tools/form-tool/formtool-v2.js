@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.5");
+  console.log("Form Submit v0.1.6");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -796,7 +796,7 @@
         parent.querySelector(".lbl--tf-pre.lbl") ??
         parent.querySelector(".lbl--tf-suf.lbl");
 
-      const options = Array.from(parent.querySelectorAll(".cmp--tf-md-option.cmp"));
+      let options = Array.from(parent.querySelectorAll(".cmp--tf-md-option.cmp"));
 
       const generateDatePicker = (input, parent) => {
         const months = [
