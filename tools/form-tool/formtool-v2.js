@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.24");
+  console.log("Form Submit v0.1.25");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1281,7 +1281,7 @@ function updatePadding(tfElement) {
   const containerWidth = parentContainer.offsetWidth;
 
   // Get the right padding of .cmp--tf
-  const tfRightPadding = parseFloat(getComputedStyle(targetFieldset).paddingRight);
+  const tfLeftPadding = parseFloat(getComputedStyle(targetFieldset).paddingLeft);
 
   // Get the gap of .lyt--tf.lyt
   let lytGap = 0;
@@ -1290,7 +1290,10 @@ function updatePadding(tfElement) {
   }
 
   // Calculate the padding-left
-  const computedPaddingLeft = containerWidth + tfRightPadding + 2 * lytGap;
+  // icon width + gap lyt + current padding left
+  const computedPaddingLeft = iconElement.offsetWidth + lytGap + tfLeftPadding;
+
+  // const computedPaddingLeft = containerWidth + tfRightPadding + 2 * lytGap;
 
   // Set the padding-left of the target fieldset
   targetFieldset.style.paddingLeft = `${computedPaddingLeft}px`;
