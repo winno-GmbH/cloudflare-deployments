@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.18");
+  console.log("Form Submit v0.1.19");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1153,9 +1153,10 @@
               }
               option.item.addEventListener("click", (e) => {
                 e.stopPropagation();
-                console.log(option.item.textContent.trim());
-                input.value = option.item.textContent.trim();
-                input.innerHTML = option.item.textContent.trim();
+                const text = cleanString(option.item.textContent);
+                console.log(text);
+                input.value = text;
+                input.innerHTML = text;
                 parent.classList.add("filled");
                 overlay.classList.add("hidden");
                 tf.classList.add("hidden");
@@ -1282,3 +1283,9 @@ function updatePadding(tfElement) {
     fieldsetElement.style.paddingLeft = `${computedPaddingLeft}px`;
   }
 }
+
+const cleanString = (input) => {
+  return input
+    .replace(/\s+/g, " ") // Replace multiple whitespaces with a single space
+    .trim(); // Remove leading and trailing whitespace
+};
