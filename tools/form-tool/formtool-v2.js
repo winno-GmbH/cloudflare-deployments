@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.17");
+  console.log("Form Submit v0.1.18");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1134,8 +1134,8 @@
                     <div class="wr_ico--tf-md-option wr_ico">
                     ${country.emoji}
                     </div>
-                    <div class="wr_lbl--tf-md-option wr_p">
-                      <label class="lbl--tf-md-option"> ${country.code} ${country.dial_code}</label>
+                    <div class="wr_lbl--tf-md-option wr_lbl">
+                      <label class="lbl--tf-md-option lbl"> ${country.code} ${country.dial_code}</label>
                     </div>
                   </div>
                 `;
@@ -1153,13 +1153,13 @@
               }
               option.item.addEventListener("click", (e) => {
                 e.stopPropagation();
+                console.log(option.item.textContent.trim());
                 input.value = option.item.textContent.trim();
                 input.innerHTML = option.item.textContent.trim();
                 parent.classList.add("filled");
                 overlay.classList.add("hidden");
                 tf.classList.add("hidden");
                 parent.classList.add("success");
-                console.log(parent.classList);
                 parent.classList.remove("error");
                 options.forEach((option) => {
                   option.item.classList.remove("hidden");
