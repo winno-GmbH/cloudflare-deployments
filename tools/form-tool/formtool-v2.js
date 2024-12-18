@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.23");
+  console.log("Form Submit v0.1.24");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1281,7 +1281,7 @@ function updatePadding(tfElement) {
   const containerWidth = parentContainer.offsetWidth;
 
   // Get the right padding of .cmp--tf
-  const tfRightPadding = parseFloat(getComputedStyle(tfElement).paddingRight);
+  const tfRightPadding = parseFloat(getComputedStyle(targetFieldset).paddingRight);
 
   // Get the gap of .lyt--tf.lyt
   let lytGap = 0;
