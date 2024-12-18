@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.20");
+  console.log("Form Submit v0.1.21");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1258,7 +1258,6 @@
 })();
 
 function updatePadding(tfElement) {
-  const fieldsetElement = tfElement.querySelector("fieldset.fs--tf");
   const lytElement = tfElement.querySelector(".lyt--tf.lyt");
 
   // Find icon element
@@ -1266,7 +1265,7 @@ function updatePadding(tfElement) {
     ".wr_ico--tf-pre-lead.wr_ico, .wr_ico--tf-suf-lead.wr_ico, .wr_ico--tf-lead.wr_ico"
   );
 
-  if (!iconElement || !fieldsetElement) return;
+  if (!iconElement) return;
 
   // Find the parent container (pre, main, or suf)
   const parentContainer = findParentWithClass(iconElement, ["cmp--tf-pre", "cmp--tf-main", "cmp--tf-suf"]);
@@ -1274,9 +1273,7 @@ function updatePadding(tfElement) {
   if (!parentContainer) return;
 
   // Get the corresponding fieldset for this parent
-  const targetFieldset = tfElement.querySelector(
-    `fieldset.fs--tf[data-section="${getContainerType(parentContainer)}"]`
-  );
+  const targetFieldset = parentContainer.querySelector(`fieldset.fs--tf`);
 
   if (!targetFieldset) return;
 
