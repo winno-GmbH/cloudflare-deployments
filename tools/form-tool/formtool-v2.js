@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.25");
+  console.log("Form Submit v0.1.26");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -320,7 +320,7 @@
           if (typeof gtag_report_conversion !== "undefined") {
             gtag_report_conversion();
           }
-          if (dataLayer) {
+          if (typeof dataLayer !== "undefined") {
             dataLayer.push({
               event: "form_conversion",
             });
