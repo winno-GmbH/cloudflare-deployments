@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.16");
+  console.log("Form Submit v0.1.17");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1129,7 +1129,16 @@
               filteredData.map((country) => {
                 const option = document.createElement("div");
                 option.className = "cmp--tf-md-option cmp";
-                option.textContent = `${country.emoji} ${country.code} ${country.dial_code}`;
+                option.innerHTML = `
+                  <div class="lyt--tf-md-option lyt">
+                    <div class="wr_ico--tf-md-option wr_ico">
+                    ${country.emoji}
+                    </div>
+                    <div class="wr_lbl--tf-md-option wr_p">
+                      <label class="lbl--tf-md-option"> ${country.code} ${country.dial_code}</label>
+                    </div>
+                  </div>
+                `;
                 return {
                   item: option,
                   seperator: false,
