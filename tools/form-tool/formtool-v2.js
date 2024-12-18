@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.19");
+  console.log("Form Submit v0.1.20");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1154,7 +1154,6 @@
               option.item.addEventListener("click", (e) => {
                 e.stopPropagation();
                 const text = cleanString(option.item.textContent);
-                console.log(text);
                 input.value = text;
                 input.innerHTML = text;
                 parent.classList.add("filled");
@@ -1259,29 +1258,67 @@
 })();
 
 function updatePadding(tfElement) {
-  const preElement = tfElement.querySelector(".cmp--tf-pre");
   const fieldsetElement = tfElement.querySelector("fieldset.fs--tf");
   const lytElement = tfElement.querySelector(".lyt--tf.lyt");
 
-  if (preElement && fieldsetElement && false) {
-    // Get the width of the .cmp--tf-pre element
-    const preElementWidth = preElement.offsetWidth;
+  // Find icon element
+  const iconElement = tfElement.querySelector(
+    ".wr_ico--tf-pre-lead.wr_ico, .wr_ico--tf-suf-lead.wr_ico, .wr_ico--tf-lead.wr_ico"
+  );
 
-    // Get the right padding of .cmp--tf (which is tfElement)
-    const tfRightPadding = parseFloat(getComputedStyle(tfElement).paddingRight);
+  if (!iconElement || !fieldsetElement) return;
 
-    // Get the gap of .lyt--tf.lyt, if it exists
-    let lytGap = 0;
-    if (lytElement) {
-      lytGap = parseFloat(getComputedStyle(lytElement).gap) || 0; // Default to 0 if gap is not defined
-    }
+  // Find the parent container (pre, main, or suf)
+  const parentContainer = findParentWithClass(iconElement, ["cmp--tf-pre", "cmp--tf-main", "cmp--tf-suf"]);
 
-    // Calculate the padding-left (preElementWidth + tfRightPadding + 2 * lytGap)
-    const computedPaddingLeft = preElementWidth + tfRightPadding + 2 * lytGap;
+  if (!parentContainer) return;
 
-    // Set the padding-left of the fieldset element
-    fieldsetElement.style.paddingLeft = `${computedPaddingLeft}px`;
+  // Get the corresponding fieldset for this parent
+  const targetFieldset = tfElement.querySelector(
+    `fieldset.fs--tf[data-section="${getContainerType(parentContainer)}"]`
+  );
+
+  if (!targetFieldset) return;
+
+  // Get the width of the parent container
+  const containerWidth = parentContainer.offsetWidth;
+
+  // Get the right padding of .cmp--tf
+  const tfRightPadding = parseFloat(getComputedStyle(tfElement).paddingRight);
+
+  // Get the gap of .lyt--tf.lyt
+  let lytGap = 0;
+  if (lytElement) {
+    lytGap = parseFloat(getComputedStyle(lytElement).gap) || 0;
   }
+
+  // Calculate the padding-left
+  const computedPaddingLeft = containerWidth + tfRightPadding + 2 * lytGap;
+
+  // Set the padding-left of the target fieldset
+  targetFieldset.style.paddingLeft = `${computedPaddingLeft}px`;
+}
+
+// Helper function to find parent with specific class
+function findParentWithClass(element, classNames) {
+  let current = element;
+
+  while (current && current.classList) {
+    if (classNames.some((className) => current?.classList.contains(className))) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
+// Helper function to get container type from element
+function getContainerType(element) {
+  if (element.classList.contains("cmp--tf-pre")) return "pre";
+  if (element.classList.contains("cmp--tf-main")) return "main";
+  if (element.classList.contains("cmp--tf-suf")) return "suf";
+  return "";
 }
 
 const cleanString = (input) => {
