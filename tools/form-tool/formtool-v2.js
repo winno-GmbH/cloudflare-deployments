@@ -1253,7 +1253,7 @@ function updatePadding(tfElement) {
   const fieldsetElement = tfElement.querySelector("fieldset.fs--tf");
   const lytElement = tfElement.querySelector(".lyt--tf.lyt");
 
-  if (preElement && fieldsetElement) {
+  if (preElement && fieldsetElement && false) {
     // Get the width of the .cmp--tf-pre element
     const preElementWidth = preElement.offsetWidth;
 
