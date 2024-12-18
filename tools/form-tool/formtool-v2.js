@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.21");
+  console.log("Form Submit v0.1.22");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1273,7 +1273,7 @@ function updatePadding(tfElement) {
   if (!parentContainer) return;
 
   // Get the corresponding fieldset for this parent
-  const targetFieldset = parentContainer.querySelector(`fieldset.fs--tf`);
+  const targetFieldset = parentContainer.querySelector(`fieldset`);
 
   if (!targetFieldset) return;
 
