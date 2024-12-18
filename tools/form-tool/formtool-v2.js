@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.22");
+  console.log("Form Submit v0.1.23");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1258,8 +1258,6 @@
 })();
 
 function updatePadding(tfElement) {
-  const lytElement = tfElement.querySelector(".lyt--tf.lyt");
-
   // Find icon element
   const iconElement = tfElement.querySelector(
     ".wr_ico--tf-pre-lead.wr_ico, .wr_ico--tf-suf-lead.wr_ico, .wr_ico--tf-lead.wr_ico"
@@ -1276,6 +1274,8 @@ function updatePadding(tfElement) {
   const targetFieldset = parentContainer.querySelector(`fieldset`);
 
   if (!targetFieldset) return;
+
+  const lytElement = parentContainer.firstChild;
 
   // Get the width of the parent container
   const containerWidth = parentContainer.offsetWidth;
