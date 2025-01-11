@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.26");
+  console.log("Form Submit v0.1.27");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -389,7 +389,7 @@
         } else {
           if (
             lastActiveIndex ===
-            parseInt(formStepPairs[currentStep].formStepNumber.querySelector(".form-step-nr").innerText)
+            parseInt(formStepPairs[currentStep].formStepNumber.querySelector(".p--form-step-nr").innerText)
           ) {
             nextStepButton.classList.add("hidden");
             submitButton.classList.remove("hidden");
