@@ -121,6 +121,16 @@ other available variables:
 
 A special validator. Here you can put a custom regex to validate
 
+#### attributes for `.wr_btn--form-control-submit.wr_btn`
+
+##### `pending-text`
+
+text which is displayed while loading. Default is `loading...`
+
+##### `target-link`
+
+link to redirect to as soon as the submit succeeds
+
 ### include the form
 
 To use the form script you have to have these three infos:
