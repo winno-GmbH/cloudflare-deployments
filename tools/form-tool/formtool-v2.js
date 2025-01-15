@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.2.1");
+  console.log("Form Submit v0.2.2");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -301,11 +301,12 @@
       };
 
       const buttonWrapper = e.target.closest(".wr_btn--form-control-submit.wr_btn");
-      buttonWrapper?.classList.add("pending");
-      buttonWrapper?.disabled = true;
+      if (!buttonWrapper) return;
+      buttonWrapper.classList.add("pending");
+      buttonWrapper.disabled = true;
       const buttonText = buttonWrapper?.getAttribute("pending-text") ?? "Loading...";
       const targetLink = buttonWrapper?.getAttribute("target-link") ?? null;
-      buttonWrapper?.disabled = true;
+      buttonWrapper.disabled = true;
       e.target.innerText = buttonText;
 
       fetch(serverUrl, requestOptions)
