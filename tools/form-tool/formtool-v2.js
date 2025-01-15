@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.1.27");
+  console.log("Form Submit v0.2.0");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -303,6 +303,7 @@
       e.target.classList.add("pending");
       e.target.disabled = true;
       const buttonText = e.target.getAttribute("pending-text") ?? "Loading...";
+      const targetLink = e.target.getAttribute("target-link") ?? null;
       e.target.disabled = true;
       e.target.innerText = buttonText;
 
@@ -324,6 +325,10 @@
             dataLayer.push({
               event: "form_conversion",
             });
+          }
+
+          if (targetLink) {
+            window.location.href = targetLink;
           }
 
           form.querySelector(".cmp--form-steps.cmp")?.classList.add("hidden");
