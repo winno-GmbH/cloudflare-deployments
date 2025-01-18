@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.2.2");
+  console.log("Form Submit v0.2.3");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -1262,74 +1262,74 @@
       });
     });
   }
-})();
 
-function updatePadding(tfElement) {
-  // Find icon element
-  const iconElement = tfElement.querySelector(
-    ".wr_ico--tf-pre-lead.wr_ico, .wr_ico--tf-suf-lead.wr_ico, .wr_ico--tf-lead.wr_ico"
-  );
+  function updatePadding(tfElement) {
+    // Find icon element
+    const iconElement = tfElement.querySelector(
+      ".wr_ico--tf-pre-lead.wr_ico, .wr_ico--tf-suf-lead.wr_ico, .wr_ico--tf-lead.wr_ico"
+    );
 
-  if (!iconElement) return;
+    if (!iconElement) return;
 
-  // Find the parent container (pre, main, or suf)
-  const parentContainer = findParentWithClass(iconElement, ["cmp--tf-pre", "cmp--tf-main", "cmp--tf-suf"]);
+    // Find the parent container (pre, main, or suf)
+    const parentContainer = findParentWithClass(iconElement, ["cmp--tf-pre", "cmp--tf-main", "cmp--tf-suf"]);
 
-  if (!parentContainer) return;
+    if (!parentContainer) return;
 
-  // Get the corresponding fieldset for this parent
-  const targetFieldset = parentContainer.querySelector(`fieldset`);
+    // Get the corresponding fieldset for this parent
+    const targetFieldset = parentContainer.querySelector(`fieldset`);
 
-  if (!targetFieldset) return;
+    if (!targetFieldset) return;
 
-  const lytElement = parentContainer.firstChild;
+    const lytElement = parentContainer.firstChild;
 
-  // Get the width of the parent container
-  const containerWidth = parentContainer.offsetWidth;
+    // Get the width of the parent container
+    const containerWidth = parentContainer.offsetWidth;
 
-  // Get the right padding of .cmp--tf
-  const tfLeftPadding = parseFloat(getComputedStyle(targetFieldset).paddingLeft);
+    // Get the right padding of .cmp--tf
+    const tfLeftPadding = parseFloat(getComputedStyle(targetFieldset).paddingLeft);
 
-  // Get the gap of .lyt--tf.lyt
-  let lytGap = 0;
-  if (lytElement) {
-    lytGap = parseFloat(getComputedStyle(lytElement).gap) || 0;
-  }
-
-  // Calculate the padding-left
-  // icon width + gap lyt + current padding left
-  const computedPaddingLeft = iconElement.offsetWidth + lytGap + tfLeftPadding;
-
-  // const computedPaddingLeft = containerWidth + tfRightPadding + 2 * lytGap;
-
-  // Set the padding-left of the target fieldset
-  targetFieldset.style.paddingLeft = `${computedPaddingLeft}px`;
-}
-
-// Helper function to find parent with specific class
-function findParentWithClass(element, classNames) {
-  let current = element;
-
-  while (current && current.classList) {
-    if (classNames.some((className) => current?.classList.contains(className))) {
-      return current;
+    // Get the gap of .lyt--tf.lyt
+    let lytGap = 0;
+    if (lytElement) {
+      lytGap = parseFloat(getComputedStyle(lytElement).gap) || 0;
     }
-    current = current.parentElement;
+
+    // Calculate the padding-left
+    // icon width + gap lyt + current padding left
+    const computedPaddingLeft = iconElement.offsetWidth + lytGap + tfLeftPadding;
+
+    // const computedPaddingLeft = containerWidth + tfRightPadding + 2 * lytGap;
+
+    // Set the padding-left of the target fieldset
+    targetFieldset.style.paddingLeft = `${computedPaddingLeft}px`;
   }
 
-  return null;
-}
+  // Helper function to find parent with specific class
+  function findParentWithClass(element, classNames) {
+    let current = element;
 
-// Helper function to get container type from element
-function getContainerType(element) {
-  if (element.classList.contains("cmp--tf-pre")) return "pre";
-  if (element.classList.contains("cmp--tf-main")) return "main";
-  if (element.classList.contains("cmp--tf-suf")) return "suf";
-  return "";
-}
+    while (current && current.classList) {
+      if (classNames.some((className) => current?.classList.contains(className))) {
+        return current;
+      }
+      current = current.parentElement;
+    }
 
-const cleanString = (input) => {
-  return input
-    .replace(/\s+/g, " ") // Replace multiple whitespaces with a single space
-    .trim(); // Remove leading and trailing whitespace
-};
+    return null;
+  }
+
+  // Helper function to get container type from element
+  function getContainerType(element) {
+    if (element.classList.contains("cmp--tf-pre")) return "pre";
+    if (element.classList.contains("cmp--tf-main")) return "main";
+    if (element.classList.contains("cmp--tf-suf")) return "suf";
+    return "";
+  }
+
+  const cleanString = (input) => {
+    return input
+      .replace(/\s+/g, " ") // Replace multiple whitespaces with a single space
+      .trim(); // Remove leading and trailing whitespace
+  };
+})();
