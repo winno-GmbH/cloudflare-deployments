@@ -14,7 +14,7 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.2.4");
+  console.log("Form Submit v0.2.5");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
@@ -86,7 +86,9 @@
           type: field.type,
           value: field.value,
           label: field.label,
+          name: field.name,
         };
+        console.log(req);
         if (field.variable) {
           req.variable = field.variable;
         }
