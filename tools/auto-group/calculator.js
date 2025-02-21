@@ -44,8 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
         loader.classList.add("hidden");
       }
 
-      // Get current path
-
       // Route to appropriate handler based on URL
       if (currentPath === "/contact") {
         handleContactPage(data);

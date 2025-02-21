@@ -719,8 +719,11 @@
     document.querySelectorAll(".cmp--rb.cmp").forEach((rb) => {
       const input = rb.querySelector("input");
       rb.addEventListener("click", () => {
-        document.querySelectorAll(".cmp--rb.cmp").forEach((rb) => {
-          rb.classList.remove("checked");
+        form.querySelectorAll(`input[name="${input.name}"]`).forEach((rb) => {
+          const parent = rb.closest(".cmp--rb.cmp");
+          if (parent) {
+            parent.classList.remove("checked");
+          }
         });
         input.checked = true;
         form.querySelectorAll(`input[name="${input.name}"]`).forEach((radioGroupBtn) => {
