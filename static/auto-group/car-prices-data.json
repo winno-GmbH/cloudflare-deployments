@@ -1,0 +1,54 @@
+{
+  "cars": [
+    {
+      "id": 1,
+      "make": "Toyota",
+      "model": "Camry",
+      "year": 2020,
+      "price": 25000,
+      "mileage": 35000,
+      "condition": "Excellent",
+      "location": "Los Angeles, CA"
+    },
+    {
+      "id": 2,
+      "make": "Honda",
+      "model": "Civic",
+      "year": 2019,
+      "price": 19500,
+      "mileage": 45000,
+      "condition": "Good",
+      "location": "Seattle, WA"
+    },
+    {
+      "id": 3,
+      "make": "Ford",
+      "model": "F-150",
+      "year": 2021,
+      "price": 42000,
+      "mileage": 15000,
+      "condition": "Excellent",
+      "location": "Dallas, TX"
+    },
+    {
+      "id": 4,
+      "make": "BMW",
+      "model": "3 Series",
+      "year": 2018,
+      "price": 28000,
+      "mileage": 52000,
+      "condition": "Good",
+      "location": "Miami, FL"
+    },
+    {
+      "id": 5,
+      "make": "Tesla",
+      "model": "Model 3",
+      "year": 2022,
+      "price": 48000,
+      "mileage": 8000,
+      "condition": "Excellent",
+      "location": "San Francisco, CA"
+    }
+  ]
+}
