@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.4");
+  console.log("v 0.0.5");
 
   const currentPath = window.location.pathname;
 
@@ -66,7 +66,7 @@ function handleVehicleDetailPage(data) {
     return;
   }
 
-  const form = document.querySelector('name=["kontakt-form"]');
+  const form = document.querySelector('[name="kontakt-form"]');
 
   if (!form) {
     console.log("Form not found");
