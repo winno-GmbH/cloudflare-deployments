@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.6");
+  console.log("v 0.0.7");
 
   const currentPath = window.location.pathname;
 
@@ -106,8 +106,7 @@ function handleVehicleDetailPage(data) {
   }
 
   // Get template radio buttons
-  const mietdauerTemplate = mietdauerRadioGroup.querySelector(".cmp--rb.cmp");
-  const kilometerTemplate = kilometerpaketRadioGroup.querySelector(".cmp--rb.cmp");
+  const rbTemplate = form.querySelector(".cmp--rb.cmp");
 
   // Clear existing radio buttons
   mietdauerRadioGroup.innerHTML = "";
@@ -115,7 +114,7 @@ function handleVehicleDetailPage(data) {
 
   // Generate Mietdauer radio buttons
   mietdauerOptions.forEach((option) => {
-    const radioButton = createRadioButton(mietdauerTemplate, {
+    const radioButton = createRadioButton(rbTemplate, {
       label: option.label,
       value: option.value,
       name: "Mietdauer",
@@ -125,7 +124,7 @@ function handleVehicleDetailPage(data) {
 
   // Generate Kilometer radio buttons
   kilometerOptions.forEach((option) => {
-    const radioButton = createRadioButton(kilometerTemplate, {
+    const radioButton = createRadioButton(rbTemplate, {
       label: option.label,
       value: option.value,
       name: "Kilometer",
