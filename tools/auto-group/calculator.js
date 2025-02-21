@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("v 0.0.1");
+
   // Get the loader element
   const loader = document.querySelector(".cmp--calculator-loader.cmp");
 
