@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.1");
+  console.log("v 0.0.2");
 
   const currentPath = window.location.pathname;
 
@@ -20,8 +20,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to handle vehicle detail pages
   function handleVehicleDetailPage(data) {
+    const vehicleName = document.querySelector("h1").textContent;
+    const vehicleData = data.find((item) => item.sheetName === vehicleName);
+
     // Vehicle detail page specific logic
-    console.log("Vehicle detail page handler with pricing data", data);
+    console.log("Vehicle detail page handler with pricing data", vehicleData);
   }
 
   // Function to handle vehicles overview page
