@@ -1,6 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("v 0.0.1");
 
+  const currentPath = window.location.pathname;
+
+  if (currentPath === "/kontakt" || currentPath === "/fahrzeuge" || currentPath.startsWith("/fahrzeuge/")) {
+    console.log("calculator loaded");
+  } else {
+    return;
+  }
+
   // Get the loader element
   const loader = document.querySelector(".cmp--calculator-loader.cmp");
 
@@ -37,7 +45,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Get current path
-      const currentPath = window.location.pathname;
 
       // Route to appropriate handler based on URL
       if (currentPath === "/contact") {
