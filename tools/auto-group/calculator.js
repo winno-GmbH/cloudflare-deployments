@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.5");
+  console.log("v 0.0.6");
 
   const currentPath = window.location.pathname;
 
@@ -106,8 +106,8 @@ function handleVehicleDetailPage(data) {
   }
 
   // Get template radio buttons
-  const mietdauerTemplate = mietdauerRadioGroup.querySelector(".cmp--rb-option.cmp");
-  const kilometerTemplate = kilometerpaketRadioGroup.querySelector(".cmp--rb-option.cmp");
+  const mietdauerTemplate = mietdauerRadioGroup.querySelector(".cmp--rb.cmp");
+  const kilometerTemplate = kilometerpaketRadioGroup.querySelector(".cmp--rb.cmp");
 
   // Clear existing radio buttons
   mietdauerRadioGroup.innerHTML = "";
