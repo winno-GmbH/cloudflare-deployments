@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.20");
+  console.log("v 0.0.21");
 
   const currentPath = window.location.pathname;
 
