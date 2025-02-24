@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.11");
+  console.log("v 0.0.12");
 
   const currentPath = window.location.pathname;
 
@@ -98,14 +98,15 @@ function handleVehicleDetailPage(data) {
     return radioDiv;
   }
 
-  function changeRadioButton(radioDiv, { label, value, name }) {
+  function changeRadioButton(radioDiv, { label, value, name }, isFirstButton) {
     const input = radioDiv.querySelector('input[type="radio"]');
     const labelElement = radioDiv.querySelector(".lbl--rb.lbl");
 
     input.value = value;
     input.name = name;
     labelElement.textContent = label;
-    input.checked = false;
+    input.checked = isFirstButton;
+    input.addEventListener("change", () => {});
   }
 
   // Get template radio button
@@ -116,24 +117,26 @@ function handleVehicleDetailPage(data) {
   kilometerpaketRadioGroup.innerHTML = "";
 
   // Generate Mietdauer radio buttons
-  mietdauerOptions.forEach((option) => {
+  mietdauerOptions.forEach((option, index) => {
     const radioButton = createRadioButton(rbTemplate);
     mietdauerRadioGroup.appendChild(radioButton);
     changeRadioButton(radioButton, {
       label: option.label,
       value: option.value,
       name: "Mietdauer",
+      isFirstButton: index === 0,
     });
   });
 
   // Generate Kilometer radio buttons
-  kilometerOptions.forEach((option) => {
+  kilometerOptions.forEach((option, index) => {
     const radioButton = createRadioButton(rbTemplate);
     kilometerpaketRadioGroup.appendChild(radioButton);
     changeRadioButton(radioButton, {
       label: option.label,
       value: option.value,
       name: "Kilometer",
+      isFirstButton: index === 0,
     });
   });
 
