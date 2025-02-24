@@ -1,5 +1,5 @@
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.21");
+(function () {
+  console.log("v 0.0.22");
 
   const currentPath = window.location.pathname;
 
@@ -54,135 +54,135 @@ document.addEventListener("DOMContentLoaded", function () {
         loader.classList.add("hidden");
       }
     });
-});
 
-// Function to handle vehicle detail pages
-function handleVehicleDetailPage(data) {
-  const vehicleName = document.querySelector("h1").textContent;
-  const vehicleData = data.find((item) => item.sheetName === vehicleName);
+  // Function to handle vehicle detail pages
+  function handleVehicleDetailPage(data) {
+    const vehicleName = document.querySelector("h1").textContent;
+    const vehicleData = data.find((item) => item.sheetName === vehicleName);
 
-  if (!vehicleData) {
-    console.log("Vehicle data not found");
-    return;
-  }
-
-  const form = document.querySelector('[name="kontakt-form"]');
-
-  if (!form) {
-    console.log("Form not found");
-    return;
-  }
-
-  // 0. get radio groups
-  const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
-  const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
-
-  // 1. get pricing data and map it to the mietdauer and kilometerpaket radio groups
-  const mietdauerOptions = vehicleData.pricingData[0].options.map((option) => ({
-    label: option.key,
-    value: option.value,
-  }));
-
-  const kilometerOptions = vehicleData.pricingData.map((item) => ({
-    label: item.distance,
-    value: item.distance,
-  }));
-
-  console.log("Mietdauer options:", mietdauerOptions);
-  console.log("Kilometer options:", kilometerOptions);
-
-  // 2. generate all radio buttons for the pricing data
-  function createRadioButton(template) {
-    // Clone the template and its children
-    const radioDiv = template.cloneNode(true);
-    return radioDiv;
-  }
-
-  function changeRadioButton(radioDiv, { label, value, name }, isFirstButton) {
-    const input = radioDiv.querySelector('input[type="radio"]');
-    const labelElement = radioDiv.querySelector(".lbl--rb.lbl");
-
-    input.value = value;
-    input.name = name;
-    labelElement.textContent = label;
-    input.checked = isFirstButton;
-
-    // Add change event listener
-    // input.addEventListener("change", () => {
-    //   if (input.checked) {
-    //     updatePrice(vehicleData);
-    //   }
-    // });
-
-    if (isFirstButton) {
-      input.closest(".cmp--rb.cmp").dispatchEvent(new Event("click"));
-    }
-  }
-
-  // Get template radio button
-  const rbTemplate = form.querySelector(".cmp--rb.cmp");
-
-  // Clear existing radio buttons
-  mietdauerRadioGroup.innerHTML = "";
-  kilometerpaketRadioGroup.innerHTML = "";
-
-  // Generate Mietdauer radio buttons
-  mietdauerOptions.forEach((option, index) => {
-    const radioButton = createRadioButton(rbTemplate);
-    mietdauerRadioGroup.appendChild(radioButton);
-    changeRadioButton(
-      radioButton,
-      {
-        label: option.label,
-        value: option.value,
-        name: "Mietdauer",
-      },
-      index === 0
-    );
-  });
-
-  // Generate Kilometer radio buttons
-  kilometerOptions.forEach((option, index) => {
-    const radioButton = createRadioButton(rbTemplate);
-    kilometerpaketRadioGroup.appendChild(radioButton);
-    changeRadioButton(
-      radioButton,
-      {
-        label: option.label,
-        value: option.value,
-        name: "Kilometer",
-      },
-      index === 0
-    );
-  });
-
-  // Add new function to update price
-  function updatePrice(vehicleData) {
-    // Get selected values
-    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
-    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
-
-    // Find matching kilometer package
-    const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
-
-    if (!kilometerPackage) {
-      console.error("Kilometer package not found");
+    if (!vehicleData) {
+      console.log("Vehicle data not found");
       return;
     }
 
-    // Find matching mietdauer option and get price
-    const mietdauerOption = kilometerPackage.options.find((option) => option.value === parseInt(selectedMietdauer));
+    const form = document.querySelector('[name="kontakt-form"]');
 
-    if (!mietdauerOption) {
-      console.error("Mietdauer option not found");
+    if (!form) {
+      console.log("Form not found");
       return;
     }
 
-    const price = mietdauerOption.value;
+    // 0. get radio groups
+    const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
+    const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
 
-    document.getElementById("car-price").textContent = `${price}.-`;
+    // 1. get pricing data and map it to the mietdauer and kilometerpaket radio groups
+    const mietdauerOptions = vehicleData.pricingData[0].options.map((option) => ({
+      label: option.key,
+      value: option.value,
+    }));
+
+    const kilometerOptions = vehicleData.pricingData.map((item) => ({
+      label: item.distance,
+      value: item.distance,
+    }));
+
+    console.log("Mietdauer options:", mietdauerOptions);
+    console.log("Kilometer options:", kilometerOptions);
+
+    // 2. generate all radio buttons for the pricing data
+    function createRadioButton(template) {
+      // Clone the template and its children
+      const radioDiv = template.cloneNode(true);
+      return radioDiv;
+    }
+
+    function changeRadioButton(radioDiv, { label, value, name }, isFirstButton) {
+      const input = radioDiv.querySelector('input[type="radio"]');
+      const labelElement = radioDiv.querySelector(".lbl--rb.lbl");
+
+      input.value = value;
+      input.name = name;
+      labelElement.textContent = label;
+      input.checked = isFirstButton;
+
+      // Add change event listener
+      // input.addEventListener("change", () => {
+      //   if (input.checked) {
+      //     updatePrice(vehicleData);
+      //   }
+      // });
+
+      if (isFirstButton) {
+        input.closest(".cmp--rb.cmp").dispatchEvent(new Event("click"));
+      }
+    }
+
+    // Get template radio button
+    const rbTemplate = form.querySelector(".cmp--rb.cmp");
+
+    // Clear existing radio buttons
+    mietdauerRadioGroup.innerHTML = "";
+    kilometerpaketRadioGroup.innerHTML = "";
+
+    // Generate Mietdauer radio buttons
+    mietdauerOptions.forEach((option, index) => {
+      const radioButton = createRadioButton(rbTemplate);
+      mietdauerRadioGroup.appendChild(radioButton);
+      changeRadioButton(
+        radioButton,
+        {
+          label: option.label,
+          value: option.value,
+          name: "Mietdauer",
+        },
+        index === 0
+      );
+    });
+
+    // Generate Kilometer radio buttons
+    kilometerOptions.forEach((option, index) => {
+      const radioButton = createRadioButton(rbTemplate);
+      kilometerpaketRadioGroup.appendChild(radioButton);
+      changeRadioButton(
+        radioButton,
+        {
+          label: option.label,
+          value: option.value,
+          name: "Kilometer",
+        },
+        index === 0
+      );
+    });
+
+    // Add new function to update price
+    function updatePrice(vehicleData) {
+      // Get selected values
+      const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
+      const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
+
+      // Find matching kilometer package
+      const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
+
+      if (!kilometerPackage) {
+        console.error("Kilometer package not found");
+        return;
+      }
+
+      // Find matching mietdauer option and get price
+      const mietdauerOption = kilometerPackage.options.find((option) => option.value === parseInt(selectedMietdauer));
+
+      if (!mietdauerOption) {
+        console.error("Mietdauer option not found");
+        return;
+      }
+
+      const price = mietdauerOption.value;
+
+      document.getElementById("car-price").textContent = `${price}.-`;
+    }
+
+    // Vehicle detail page specific logic
+    console.log("Vehicle detail page handler with pricing data", vehicleData);
   }
-
-  // Vehicle detail page specific logic
-  console.log("Vehicle detail page handler with pricing data", vehicleData);
-}
+})();
