@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.7");
+  console.log("v 0.0.9");
 
   const currentPath = window.location.pathname;
 
@@ -92,20 +92,23 @@ function handleVehicleDetailPage(data) {
   console.log("Kilometer options:", kilometerOptions);
 
   // 2. generate all radio buttons for the pricing data
-  function createRadioButton(template, { label, value, name }) {
+  function createRadioButton(template) {
+    // Clone the template and its children
     const radioDiv = template.cloneNode(true);
+    return radioDiv;
+  }
+
+  function changeRadioButton(radioDiv, { label, value, name }) {
     const input = radioDiv.querySelector('input[type="radio"]');
     const labelElement = radioDiv.querySelector(".lbl--rb.lbl");
 
     input.value = value;
     input.name = name;
-    input.checked = false; // Ensure new buttons aren't checked by default
     labelElement.textContent = label;
-
-    return radioDiv;
+    input.checked = false;
   }
 
-  // Get template radio buttons
+  // Get template radio button
   const rbTemplate = form.querySelector(".cmp--rb.cmp");
 
   // Clear existing radio buttons
@@ -114,22 +117,24 @@ function handleVehicleDetailPage(data) {
 
   // Generate Mietdauer radio buttons
   mietdauerOptions.forEach((option) => {
-    const radioButton = createRadioButton(rbTemplate, {
+    const radioButton = createRadioButton(rbTemplate);
+    mietdauerRadioGroup.appendChild(radioButton);
+    changeRadioButton(radioButton, {
       label: option.label,
       value: option.value,
       name: "Mietdauer",
     });
-    mietdauerRadioGroup.appendChild(radioButton);
   });
 
   // Generate Kilometer radio buttons
   kilometerOptions.forEach((option) => {
-    const radioButton = createRadioButton(rbTemplate, {
+    const radioButton = createRadioButton(rbTemplate);
+    kilometerpaketRadioGroup.appendChild(radioButton);
+    changeRadioButton(radioButton, {
       label: option.label,
       value: option.value,
       name: "Kilometer",
     });
-    kilometerpaketRadioGroup.appendChild(radioButton);
   });
 
   // Vehicle detail page specific logic
