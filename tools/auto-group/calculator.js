@@ -1,4 +1,4 @@
-console.log("v 0.0.32");
+console.log("v 0.0.33");
 
 let scriptLoaded = false;
 
@@ -48,7 +48,6 @@ function init() {
       } else if (currentPath.startsWith("/fahrzeuge/")) {
         handleVehicleDetailPage(data);
       }
-      scriptLoaded = true;
     })
     .catch((error) => {
       console.error("Error fetching pricing data:", error);
@@ -206,6 +205,8 @@ function handleVehicleDetailPage(data) {
 
   // Vehicle detail page specific logic
   console.log("Vehicle detail page handler with pricing data", vehicleData);
+
+  scriptLoaded = true;
 }
 
 function setupInitValues() {
@@ -219,7 +220,7 @@ function setupInitValues() {
       kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
       clearInterval(interval);
     }
-  }, 500);
+  }, 100);
 }
 
 init();
