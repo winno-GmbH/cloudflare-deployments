@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.17");
+  console.log("v 0.0.18");
 
   const currentPath = window.location.pathname;
 
@@ -108,11 +108,11 @@ function handleVehicleDetailPage(data) {
     input.checked = isFirstButton;
 
     // Add change event listener
-    input.addEventListener("change", () => {
-      if (input.checked) {
-        updatePrice(vehicleData);
-      }
-    });
+    // input.addEventListener("change", () => {
+    //   if (input.checked) {
+    //     updatePrice(vehicleData);
+    //   }
+    // });
 
     if (isFirstButton) {
       input.dispatchEvent(new Event("change"));
@@ -180,7 +180,7 @@ function handleVehicleDetailPage(data) {
 
     const price = mietdauerOption.value;
 
-    document.getElementById("car-price").textContent = price;
+    document.getElementById("car-price").textContent = `${price}.-`;
   }
 
   // Vehicle detail page specific logic
