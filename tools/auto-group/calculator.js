@@ -1,4 +1,4 @@
-console.log("v 0.0.24");
+console.log("v 0.0.25");
 
 function init() {
   const currentPath = window.location.pathname;
@@ -191,8 +191,8 @@ function setupInitValues() {
   const mietdauerRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[0];
   const kilometerpaketRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[1];
 
-  mietdauerRadioGroup.querySelector('input[type="radio"]').click();
-  kilometerpaketRadioGroup.querySelector('input[type="radio"]').click();
+  mietdauerRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+  kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
 }
 
 init();
