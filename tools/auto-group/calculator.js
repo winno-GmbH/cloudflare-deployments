@@ -1,4 +1,6 @@
-console.log("v 0.0.25");
+console.log("v 0.0.26");
+
+let scriptLoaded = false;
 
 function init() {
   const currentPath = window.location.pathname;
@@ -46,6 +48,7 @@ function init() {
       } else if (currentPath.startsWith("/fahrzeuge/")) {
         handleVehicleDetailPage(data);
       }
+      scriptLoaded = true;
     })
     .catch((error) => {
       console.error("Error fetching pricing data:", error);
@@ -188,11 +191,17 @@ function handleVehicleDetailPage(data) {
 }
 
 function setupInitValues() {
-  const mietdauerRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[0];
-  const kilometerpaketRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[1];
+  // setup interval to check if the script is loaded
+  const interval = setInterval(() => {
+    if (scriptLoaded) {
+      const mietdauerRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[0];
+      const kilometerpaketRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[1];
 
-  mietdauerRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
-  kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+      mietdauerRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+      kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+      clearInterval(interval);
+    }
+  }, 100);
 }
 
 init();
