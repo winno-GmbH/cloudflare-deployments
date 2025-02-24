@@ -1,4 +1,4 @@
-console.log("v 0.0.27");
+console.log("v 0.0.28");
 
 let scriptLoaded = false;
 
@@ -136,7 +136,7 @@ function handleVehicleDetailPage(data) {
       radioButton,
       {
         label: option.label,
-        value: option.value,
+        value: option.label,
         name: "Mietdauer",
       },
       index === 0
@@ -151,7 +151,7 @@ function handleVehicleDetailPage(data) {
       radioButton,
       {
         label: option.label,
-        value: option.value,
+        value: option.label,
         name: "Kilometer",
       },
       index === 0
