@@ -1,4 +1,4 @@
-console.log("v 0.0.31");
+console.log("v 0.0.32");
 
 let scriptLoaded = false;
 
@@ -219,7 +219,7 @@ function setupInitValues() {
       kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
       clearInterval(interval);
     }
-  }, 200);
+  }, 500);
 }
 
 init();
