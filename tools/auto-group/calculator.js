@@ -188,8 +188,8 @@ function handleVehicleDetailPage(data) {
 }
 
 function setupInitValues() {
-  const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
-  const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
+  const mietdauerRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[0];
+  const kilometerpaketRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[1];
 
   mietdauerRadioGroup.querySelector('input[type="radio"]').click();
   kilometerpaketRadioGroup.querySelector('input[type="radio"]').click();
