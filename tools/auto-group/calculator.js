@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.9");
+  console.log("v 0.0.10");
 
   const currentPath = window.location.pathname;
 
@@ -74,8 +74,8 @@ function handleVehicleDetailPage(data) {
   }
 
   // 0. get radio groups
-  const mietdauerRadioGroup = form.querySelectorAll(".cmp--rb.cmp")[0];
-  const kilometerpaketRadioGroup = form.querySelectorAll(".cmp--rb.cmp")[1];
+  const mietdauerRadioGroup = form.querySelectorAll(".cmp--rb-group.cmp")[0];
+  const kilometerpaketRadioGroup = form.querySelectorAll(".cmp--rb-group.cmp")[1];
 
   // 1. get pricing data and map it to the mietdauer and kilometerpaket radio groups
   const mietdauerOptions = vehicleData.pricingData[0].options.map((option) => ({
