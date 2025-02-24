@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.18");
+  console.log("v 0.0.19");
 
   const currentPath = window.location.pathname;
 
@@ -115,7 +115,7 @@ function handleVehicleDetailPage(data) {
     // });
 
     if (isFirstButton) {
-      input.dispatchEvent(new Event("change"));
+      input.dispatchEvent(new Event("click"));
     }
   }
 
