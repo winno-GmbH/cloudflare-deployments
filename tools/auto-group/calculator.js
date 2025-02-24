@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.16");
+  console.log("v 0.0.17");
 
   const currentPath = window.location.pathname;
 
@@ -179,9 +179,8 @@ function handleVehicleDetailPage(data) {
     }
 
     const price = mietdauerOption.value;
-    console.log("Selected price:", price);
 
-    // TODO: Update price display in the UI
+    document.getElementById("car-price").textContent = price;
   }
 
   // Vehicle detail page specific logic
