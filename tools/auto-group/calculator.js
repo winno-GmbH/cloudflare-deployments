@@ -1,4 +1,4 @@
-console.log("v 0.0.30");
+console.log("v 0.0.31");
 
 let scriptLoaded = false;
 
@@ -158,6 +158,14 @@ function handleVehicleDetailPage(data) {
     );
   });
 
+  form
+    .querySelectorAll('input[name="premium-versicherung"], input[name="parkschaden-versicherung"]')
+    .forEach((input) => {
+      input.addEventListener("change", () => {
+        updatePrice(vehicleData);
+      });
+    });
+
   // Add new function to update price
   function updatePrice(vehicleData) {
     // Get selected values
@@ -211,7 +219,7 @@ function setupInitValues() {
       kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
       clearInterval(interval);
     }
-  }, 100);
+  }, 200);
 }
 
 init();
