@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.12");
+  console.log("v 0.0.13");
 
   const currentPath = window.location.pathname;
 
@@ -120,24 +120,30 @@ function handleVehicleDetailPage(data) {
   mietdauerOptions.forEach((option, index) => {
     const radioButton = createRadioButton(rbTemplate);
     mietdauerRadioGroup.appendChild(radioButton);
-    changeRadioButton(radioButton, {
-      label: option.label,
-      value: option.value,
-      name: "Mietdauer",
-      isFirstButton: index === 0,
-    });
+    changeRadioButton(
+      radioButton,
+      {
+        label: option.label,
+        value: option.value,
+        name: "Mietdauer",
+      },
+      index === 0
+    );
   });
 
   // Generate Kilometer radio buttons
   kilometerOptions.forEach((option, index) => {
     const radioButton = createRadioButton(rbTemplate);
     kilometerpaketRadioGroup.appendChild(radioButton);
-    changeRadioButton(radioButton, {
-      label: option.label,
-      value: option.value,
-      name: "Kilometer",
-      isFirstButton: index === 0,
-    });
+    changeRadioButton(
+      radioButton,
+      {
+        label: option.label,
+        value: option.value,
+        name: "Kilometer",
+      },
+      index === 0
+    );
   });
 
   // Vehicle detail page specific logic
