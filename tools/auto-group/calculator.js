@@ -1,4 +1,4 @@
-console.log("v 0.0.28");
+console.log("v 0.0.29");
 
 let scriptLoaded = false;
 
@@ -176,7 +176,7 @@ function handleVehicleDetailPage(data) {
     }
 
     // Find matching mietdauer option and get price
-    const mietdauerOption = kilometerPackage.options.find((option) => option.value === parseInt(selectedMietdauer));
+    const mietdauerOption = kilometerPackage.options.find((option) => option.label === selectedMietdauer);
 
     if (!mietdauerOption) {
       console.error("Mietdauer option not found");
