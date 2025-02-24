@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("v 0.0.15");
+  console.log("v 0.0.16");
 
   const currentPath = window.location.pathname;
 
@@ -159,8 +159,8 @@ function handleVehicleDetailPage(data) {
   // Add new function to update price
   function updatePrice(vehicleData) {
     // Get selected values
-    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked').value;
-    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked').value;
+    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
+    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
 
     // Find matching kilometer package
     const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
