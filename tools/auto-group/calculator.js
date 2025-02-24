@@ -1,4 +1,4 @@
-console.log("v 0.0.26");
+console.log("v 0.0.27");
 
 let scriptLoaded = false;
 
@@ -110,12 +110,11 @@ function handleVehicleDetailPage(data) {
     labelElement.textContent = label;
     input.checked = isFirstButton;
 
-    // Add change event listener
-    // input.addEventListener("change", () => {
-    //   if (input.checked) {
-    //     updatePrice(vehicleData);
-    //   }
-    // });
+    input.addEventListener("change", () => {
+      if (input.checked) {
+        updatePrice(vehicleData);
+      }
+    });
 
     if (isFirstButton) {
       input.closest(".cmp--rb.cmp").dispatchEvent(new Event("click"));
@@ -165,6 +164,9 @@ function handleVehicleDetailPage(data) {
     const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
     const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
 
+    const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
+    const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
+
     // Find matching kilometer package
     const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
 
@@ -181,7 +183,15 @@ function handleVehicleDetailPage(data) {
       return;
     }
 
-    const price = mietdauerOption.value;
+    let price = mietdauerOption.value;
+
+    if (premiumAddon) {
+      price += vehicleData.premiumInsurance;
+    }
+
+    if (parkingAddon) {
+      price += vehicleData.parkingDamageInsurance;
+    }
 
     document.getElementById("car-price").textContent = `${price}.-`;
   }
