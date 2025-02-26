@@ -1,4 +1,4 @@
-console.log("v 0.1.1");
+console.log("v 0.1.2");
 
 let scriptLoaded = false;
 
@@ -225,6 +225,13 @@ function handleVehiclesPage(data) {
     const numB = parseInt(b.split(" ")[0]);
     return numA - numB;
   });
+
+  const form = document.querySelector('[name="kontakt-form"]');
+
+  if (!form) {
+    console.log("Form not found");
+    return;
+  }
 
   const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
   const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
