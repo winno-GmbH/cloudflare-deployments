@@ -1,4 +1,4 @@
-console.log("v 0.2.0");
+console.log("v 0.2.1");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -251,6 +251,24 @@ class AutoGroupCalculator {
     console.log("Parking addon", parkingAddon);
 
     // Additional contact page logic can be implemented here
+  }
+
+  generateCarSelectOptions(form) {
+    const parent = form.querySelector(".select-options:empty");
+    if (!parent) return;
+
+    const options = this.pricingData.map((item) => item.sheetName);
+    options.forEach((option) => {
+      this.generateSelectOption(option, parent);
+    });
+  }
+
+  generateSelectOption(option, parent) {
+    const html = `
+      <div class="cmp--tf-md-option cmp"><div class="lyt--tf-md-option lyt"><div class="wr_lbl--tf-md-option wr_lbl"><div class="lbl--tf-md-option lbl">${option}</div></div></div></div>
+    `;
+
+    parent.insertAdjacentHTML("beforeend", html);
   }
 
   handleVehiclesPage() {
