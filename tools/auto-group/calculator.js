@@ -1,4 +1,4 @@
-console.log("v 0.2.11");
+console.log("v 0.2.12");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -440,11 +440,41 @@ function setupInitValues() {
   }, 100);
 
   const setupNormal = () => {
-    const mietdauerRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[0];
-    const kilometerpaketRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[1];
+    const selectedMietdauer = localStorage.getItem("selectedMietdauer");
+    const selectedKilometer = localStorage.getItem("selectedKilometer");
+    const premiumAddon = localStorage.getItem("premiumAddon");
+    const parkingAddon = localStorage.getItem("parkingAddon");
 
-    mietdauerRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
-    kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+    const form = document.querySelector('[name="kontakt-form"]');
+    if (!form) return;
+
+    const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
+    const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
+
+    if (mietdauerRadioGroup) {
+      selectedMietdauer
+        ? mietdauerRadioGroup
+            .querySelector(`input[type="radio"][value="${selectedMietdauer}"]`)
+            .closest(".cmp--rb.cmp")
+            .click()
+        : mietdauerRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+    }
+    if (kilometerpaketRadioGroup) {
+      selectedKilometer
+        ? kilometerpaketRadioGroup
+            .querySelector(`input[type="radio"][value="${selectedKilometer}"]`)
+            .closest(".cmp--rb.cmp")
+            .click()
+        : kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+    }
+
+    if (premiumAddon) {
+      form.querySelector('input[name="premium-versicherung"]').click();
+    }
+    if (parkingAddon) {
+      form.querySelector('input[name="parkschaden-versicherung"]').click();
+    }
+
     clearInterval(interval);
   };
 
