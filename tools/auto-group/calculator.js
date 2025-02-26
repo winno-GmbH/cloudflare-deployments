@@ -1,4 +1,4 @@
-console.log("v 0.1.7");
+console.log("v 0.1.8");
 
 let scriptLoaded = false;
 
@@ -252,8 +252,8 @@ function handleVehiclesPage(data) {
     changeRadioButton(
       radioButton,
       {
-        label: option.label,
-        value: option.label,
+        label: option,
+        value: option,
         name: "Mietdauer",
       },
       index === 0,
@@ -269,8 +269,8 @@ function handleVehiclesPage(data) {
     changeRadioButton(
       radioButton,
       {
-        label: option.label,
-        value: option.label,
+        label: option,
+        value: option,
         name: "Kilometer",
       },
       index === 0,
