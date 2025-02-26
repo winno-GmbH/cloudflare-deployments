@@ -1,4 +1,4 @@
-console.log("v 0.1.10");
+console.log("v 0.1.11");
 
 let scriptLoaded = false;
 
@@ -302,6 +302,9 @@ function handleVehiclesPage(data) {
     const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked').value;
     const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked').value;
 
+    const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
+    const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
+
     // Get all car cards
     const carCards = document.querySelectorAll(".lyt--l-cars.lyt.w-dyn-items .cmp--l-car");
 
@@ -354,8 +357,17 @@ function handleVehiclesPage(data) {
         }
       }
 
+      let price = mietdauerOption.value;
+
+      if (premiumAddon) {
+        price += vehicleData.premiumInsurance;
+      }
+
+      if (parkingAddon) {
+        price += vehicleData.parkingDamageInsurance;
+      }
       // Update the price
-      priceElement.textContent = `${mietdauerOption.value}.-`;
+      priceElement.textContent = `${price}.-`;
     });
   }
 
