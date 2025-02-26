@@ -1,4 +1,4 @@
-console.log("v 0.1.0");
+console.log("v 0.1.1");
 
 let scriptLoaded = false;
 
@@ -226,55 +226,42 @@ function handleVehiclesPage(data) {
     return numA - numB;
   });
 
-  // Create the filter section
-  const filterSection = document.createElement("div");
-  filterSection.className = "calculator-filter-section";
-  filterSection.innerHTML = `
-    <div class="filter-container">
-      <div class="filter-group mietdauer-group">
-        <h4>Mietdauer</h4>
-        <div class="radio-buttons mietdauer-buttons"></div>
-      </div>
-      <div class="filter-group kilometer-group">
-        <h4>Kilometerpaket</h4>
-        <div class="radio-buttons kilometer-buttons"></div>
-      </div>
-    </div>
-  `;
+  const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
+  const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
 
-  // Find a good place to insert the filter section
-  const carsContainer = document.querySelector(".lyt--l-cars.lyt.w-dyn-items");
-  if (!carsContainer) {
-    console.error("Cars container not found");
-    return;
-  }
+  const rbTemplate = form.querySelector(".cmp--rb.cmp");
 
-  carsContainer.parentNode.insertBefore(filterSection, carsContainer);
-
-  // Get radio button containers
-  const mietdauerContainer = filterSection.querySelector(".mietdauer-buttons");
-  const kilometerContainer = filterSection.querySelector(".kilometer-buttons");
+  mietdauerRadioGroup.innerHTML = "";
+  kilometerpaketRadioGroup.innerHTML = "";
 
   // Create radio buttons for mietdauer
   mietdauerOptions.forEach((option, index) => {
-    const radioButton = document.createElement("label");
-    radioButton.className = "radio-button";
-    radioButton.innerHTML = `
-      <input type="radio" name="mietdauer" value="${option}" ${index === 0 ? "checked" : ""}>
-      <span>${option}</span>
-    `;
-    mietdauerContainer.appendChild(radioButton);
+    const radioButton = createRadioButton(rbTemplate);
+    mietdauerRadioGroup.appendChild(radioButton);
+    changeRadioButton(
+      radioButton,
+      {
+        label: option.label,
+        value: option.label,
+        name: "Mietdauer",
+      },
+      index === 0
+    );
   });
 
   // Create radio buttons for kilometer
   kilometerOptions.forEach((option, index) => {
-    const radioButton = document.createElement("label");
-    radioButton.className = "radio-button";
-    radioButton.innerHTML = `
-      <input type="radio" name="kilometer" value="${option}" ${index === 0 ? "checked" : ""}>
-      <span>${option}</span>
-    `;
-    kilometerContainer.appendChild(radioButton);
+    const radioButton = createRadioButton(rbTemplate);
+    kilometerpaketRadioGroup.appendChild(radioButton);
+    changeRadioButton(
+      radioButton,
+      {
+        label: option.label,
+        value: option.label,
+        name: "Kilometer",
+      },
+      index === 0
+    );
   });
 
   // Add event listeners to all radio buttons
@@ -289,8 +276,8 @@ function handleVehiclesPage(data) {
 
   // Function to update prices for all vehicles
   function updateAllVehiclePrices(data) {
-    const selectedMietdauer = filterSection.querySelector('input[name="mietdauer"]:checked').value;
-    const selectedKilometer = filterSection.querySelector('input[name="kilometer"]:checked').value;
+    const selectedMietdauer = filterSection.querySelector('input[name="Mietdauer"]:checked').value;
+    const selectedKilometer = filterSection.querySelector('input[name="Kilometer"]:checked').value;
 
     // Get all car cards
     const carCards = document.querySelectorAll(".lyt--l-cars.lyt.w-dyn-items .car-card");
