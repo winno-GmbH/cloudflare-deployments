@@ -1,4 +1,4 @@
-console.log("v 0.1.6");
+console.log("v 0.1.7");
 
 let scriptLoaded = false;
 
@@ -339,6 +339,8 @@ function handleVehiclesPage(data) {
       priceElement.textContent = `${mietdauerOption.value}.-`;
     });
   }
+
+  scriptLoaded = true;
 }
 
 function setupInitValues() {
