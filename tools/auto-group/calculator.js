@@ -1,4 +1,4 @@
-console.log("v 0.1.9");
+console.log("v 0.1.10");
 
 let scriptLoaded = false;
 
@@ -329,8 +329,7 @@ function handleVehiclesPage(data) {
       const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
 
       if (!kilometerPackage) {
-        // This vehicle doesn't have this kilometer option
-        priceElement.textContent = "Option nicht verfügbar";
+        updateOptions(priceElement, false);
         return;
       }
 
@@ -338,9 +337,21 @@ function handleVehiclesPage(data) {
       const mietdauerOption = kilometerPackage.options.find((option) => option.key === selectedMietdauer);
 
       if (!mietdauerOption) {
-        // This vehicle doesn't have this mietdauer option
-        priceElement.textContent = "Option nicht verfügbar";
+        updateOptions(priceElement, false);
         return;
+      }
+
+      updateOptions(priceElement, true);
+
+      function updateOptions(priceElement, show) {
+        const parent = priceElement.closest(".wr_p--form-item.wr_p").parentElement;
+        if (show) {
+          parent.querySelector(".wr_p--form-item.wr_p").classList.remove("hidden");
+          parent.querySelector(".wr_p--form-item.wr_p.not-available").classList.add("hidden");
+        } else {
+          parent.querySelector(".wr_p--form-item.wr_p").classList.add("hidden");
+          parent.querySelector(".wr_p--form-item.wr_p.not-available").classList.remove("hidden");
+        }
       }
 
       // Update the price
