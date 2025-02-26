@@ -1,4 +1,4 @@
-console.log("v 0.0.33");
+console.log("v 0.0.34");
 
 let scriptLoaded = false;
 
@@ -13,18 +13,6 @@ function init() {
 
   // Get the loader element
   const loader = document.querySelector(".cmp--calculator-loader.cmp");
-
-  // Function to handle contact page
-  function handleContactPage(data) {
-    // Contact page specific logic
-    console.log("Contact page handler with pricing data", data);
-  }
-
-  // Function to handle vehicles overview page
-  function handleVehiclesPage(data) {
-    // Vehicles overview page specific logic
-    console.log("Vehicles overview page handler with pricing data", data);
-  }
 
   // Show loader
   if (loader) {
@@ -89,9 +77,6 @@ function handleVehicleDetailPage(data) {
     label: item.distance,
     value: item.distance,
   }));
-
-  console.log("Mietdauer options:", mietdauerOptions);
-  console.log("Kilometer options:", kilometerOptions);
 
   // 2. generate all radio buttons for the pricing data
   function createRadioButton(template) {
@@ -203,10 +188,19 @@ function handleVehicleDetailPage(data) {
     document.getElementById("car-price").textContent = `${price}.-`;
   }
 
-  // Vehicle detail page specific logic
-  console.log("Vehicle detail page handler with pricing data", vehicleData);
-
   scriptLoaded = true;
+}
+
+// Function to handle contact page
+function handleContactPage(data) {
+  // Contact page specific logic
+  console.log("Contact page handler with pricing data", data);
+}
+
+// Function to handle vehicles overview page
+function handleVehiclesPage(data) {
+  // Vehicles overview page specific logic
+  console.log("Vehicles overview page handler with pricing data", data);
 }
 
 function setupInitValues() {
