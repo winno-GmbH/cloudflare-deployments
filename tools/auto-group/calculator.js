@@ -1,4 +1,4 @@
-console.log("v 0.1.2");
+console.log("v 0.1.3");
 
 let scriptLoaded = false;
 
@@ -272,7 +272,7 @@ function handleVehiclesPage(data) {
   });
 
   // Add event listeners to all radio buttons
-  filterSection.querySelectorAll('input[type="radio"]').forEach((input) => {
+  form.querySelectorAll('input[type="radio"]').forEach((input) => {
     input.addEventListener("change", () => {
       updateAllVehiclePrices(data);
     });
@@ -283,8 +283,8 @@ function handleVehiclesPage(data) {
 
   // Function to update prices for all vehicles
   function updateAllVehiclePrices(data) {
-    const selectedMietdauer = filterSection.querySelector('input[name="Mietdauer"]:checked').value;
-    const selectedKilometer = filterSection.querySelector('input[name="Kilometer"]:checked').value;
+    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked').value;
+    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked').value;
 
     // Get all car cards
     const carCards = document.querySelectorAll(".lyt--l-cars.lyt.w-dyn-items .car-card");
