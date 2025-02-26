@@ -1,4 +1,4 @@
-console.log("v 0.2.5");
+console.log("v 0.2.6");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -269,6 +269,7 @@ class AutoGroupCalculator {
       "Kilometer",
       updateAllPrices
     );
+    scriptLoaded = true;
   }
 
   generateCarSelectOptions(form) {
