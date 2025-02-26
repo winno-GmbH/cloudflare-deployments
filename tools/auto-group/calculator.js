@@ -1,4 +1,4 @@
-console.log("v 0.2.1");
+console.log("v 0.2.2");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -250,7 +250,11 @@ class AutoGroupCalculator {
     console.log("Premium addon", premiumAddon);
     console.log("Parking addon", parkingAddon);
 
+    const form = document.querySelector('[name="kontakt-form"]');
+    if (!form) return;
+
     // Additional contact page logic can be implemented here
+    this.generateCarSelectOptions(form);
   }
 
   generateCarSelectOptions(form) {
