@@ -1,4 +1,4 @@
-console.log("v 0.2.9");
+console.log("v 0.2.10");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -235,8 +235,6 @@ class AutoGroupCalculator {
   }
 
   handleContactPage() {
-    console.log("Contact page handler with pricing data", this.pricingData);
-
     // Retrieve stored selections
     const selectedVehicle = localStorage.getItem("selectedVehicle");
 
@@ -291,8 +289,6 @@ class AutoGroupCalculator {
   }
 
   handleVehiclesPage() {
-    console.log("Vehicles overview page handler with pricing data");
-
     // Find all unique options across all vehicles
     const allOptions = this.collectUniqueOptions();
 
