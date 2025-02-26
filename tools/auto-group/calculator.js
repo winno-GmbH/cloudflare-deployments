@@ -1,4 +1,4 @@
-console.log("v 0.2.2");
+console.log("v 0.2.3");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -239,6 +239,8 @@ class AutoGroupCalculator {
 
     // Retrieve stored selections
     const selectedVehicle = localStorage.getItem("selectedVehicle");
+
+    const updateAllPrices = () => this.updateVehiclePrice(vehicleData);
 
     const formElements = this.setupForm("kontakt-form", updateAllPrices);
     if (!formElements) return;
