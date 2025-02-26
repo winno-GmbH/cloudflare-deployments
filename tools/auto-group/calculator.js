@@ -239,22 +239,34 @@ class AutoGroupCalculator {
 
     // Retrieve stored selections
     const selectedVehicle = localStorage.getItem("selectedVehicle");
-    const selectedMietdauer = localStorage.getItem("selectedMietdauer");
-    const selectedKilometer = localStorage.getItem("selectedKilometer");
-    const premiumAddon = localStorage.getItem("premiumAddon");
-    const parkingAddon = localStorage.getItem("parkingAddon");
 
-    console.log("Selected vehicle", selectedVehicle);
-    console.log("Selected mietdauer", selectedMietdauer);
-    console.log("Selected kilometer", selectedKilometer);
-    console.log("Premium addon", premiumAddon);
-    console.log("Parking addon", parkingAddon);
+    const formElements = this.setupForm("kontakt-form", updateAllPrices);
+    if (!formElements) return;
 
-    const form = document.querySelector('[name="kontakt-form"]');
-    if (!form) return;
+    const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = formElements;
+
+    const vehicleData = selectedVehicle
+      ? this.pricingData.find((item) => item.sheetName === selectedVehicle)
+      : this.pricingData[0];
 
     // Additional contact page logic can be implemented here
     this.generateCarSelectOptions(form);
+
+    // Generate radio buttons
+    this.generateRadioButtons(
+      mietdauerRadioGroup,
+      rbTemplate,
+      vehicleData.pricingData[0].options,
+      "Mietdauer",
+      updateAllPrices
+    );
+    this.generateRadioButtons(
+      kilometerpaketRadioGroup,
+      rbTemplate,
+      vehicleData.pricingData,
+      "Kilometer",
+      updateAllPrices
+    );
   }
 
   generateCarSelectOptions(form) {
