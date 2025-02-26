@@ -1,4 +1,4 @@
-console.log("v 0.0.34");
+console.log("v 0.1.0");
 
 let scriptLoaded = false;
 
