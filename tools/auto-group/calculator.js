@@ -1,4 +1,4 @@
-console.log("v 0.2.10");
+console.log("v 0.2.11");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -173,6 +173,8 @@ class AutoGroupCalculator {
       localStorage.setItem("premiumAddon", premiumAddon);
       localStorage.setItem("parkingAddon", parkingAddon);
       localStorage.setItem("selectedVehicle", vehicleName);
+
+      window.location.href = "/formular";
     });
   }
 
