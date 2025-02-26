@@ -1,4 +1,4 @@
-console.log("v 0.2.12");
+console.log("v 0.2.13");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -229,6 +229,12 @@ class AutoGroupCalculator {
     if (premiumAddon) price += vehicleData.premiumInsurance;
     if (parkingAddon) price += vehicleData.parkingDamageInsurance;
 
+    // save to localstorage
+    localStorage.setItem("selectedMietdauer", selectedMietdauer);
+    localStorage.setItem("selectedKilometer", selectedKilometer);
+    localStorage.setItem("premiumAddon", premiumAddon);
+    localStorage.setItem("parkingAddon", parkingAddon);
+
     // Update price display
     const priceElement = document.getElementById("car-price");
     if (priceElement) {
@@ -361,6 +367,12 @@ class AutoGroupCalculator {
     const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
     const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
     const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
+
+    // save to localstorage
+    localStorage.setItem("selectedMietdauer", selectedMietdauer);
+    localStorage.setItem("selectedKilometer", selectedKilometer);
+    localStorage.setItem("premiumAddon", premiumAddon);
+    localStorage.setItem("parkingAddon", parkingAddon);
 
     // Get all car cards
     const carCards = document.querySelectorAll(".lyt--l-cars.lyt.w-dyn-items .cmp--l-car");
