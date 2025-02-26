@@ -1,11 +1,11 @@
-console.log("v 0.1.14");
+console.log("v 0.1.15");
 
 let scriptLoaded = false;
 
 function init() {
   const currentPath = window.location.pathname;
 
-  if (currentPath === "/kontakt" || currentPath === "/fahrzeuge" || currentPath.startsWith("/fahrzeuge/")) {
+  if (currentPath === "/formular" || currentPath === "/fahrzeuge" || currentPath.startsWith("/fahrzeuge/")) {
     console.log("calculator loaded");
   } else {
     return;
