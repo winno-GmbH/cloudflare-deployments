@@ -1,4 +1,4 @@
-console.log("v 0.1.12");
+console.log("v 0.1.13");
 
 let scriptLoaded = false;
 
@@ -105,7 +105,7 @@ function handleVehicleDetailPage(data) {
     value: item.distance,
   }));
 
-  const anfragenButton = form.querySelectorAll(".wr_btn--form.wr_btn:last-child");
+  const anfragenButton = form.querySelector(".wr_btn--form.wr_btn:last-child");
 
   if (!anfragenButton) {
     console.log("Anfragen button not found");
