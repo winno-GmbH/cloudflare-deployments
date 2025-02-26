@@ -1,335 +1,329 @@
-console.log("v 0.1.16");
-
+console.log("v 0.2.0");
 let scriptLoaded = false;
 
-function init() {
-  const currentPath = window.location.pathname;
-
-  if (currentPath === "/formular" || currentPath === "/fahrzeuge" || currentPath.startsWith("/fahrzeuge/")) {
-    console.log("calculator loaded");
-  } else {
-    return;
+class AutoGroupCalculator {
+  constructor() {
+    this.pricingData = null;
+    this.currentPath = window.location.pathname;
+    this.loader = document.querySelector(".cmp--calculator-loader.cmp");
   }
 
-  // Get the loader element
-  const loader = document.querySelector(".cmp--calculator-loader.cmp");
-
-  // Show loader
-  if (loader) {
-    loader.classList.remove("hidden");
-  }
-
-  // Fetch the pricing data
-  fetch("https://pub-ca3292da20874e628ec9745223ecc04e.r2.dev/pricing-data.json")
-    .then((response) => response.json())
-    .then((data) => {
-      // Hide loader
-      if (loader) {
-        loader.classList.add("hidden");
-      }
-
-      // Route to appropriate handler based on URL
-      if (currentPath === "/formular") {
-        handleContactPage(data);
-      } else if (currentPath === "/fahrzeuge") {
-        handleVehiclesPage(data);
-      } else if (currentPath.startsWith("/fahrzeuge/")) {
-        handleVehicleDetailPage(data);
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching pricing data:", error);
-      // Hide loader on error
-      if (loader) {
-        loader.classList.add("hidden");
-      }
-    });
-}
-
-// generate all radio buttons for the pricing data
-function createRadioButton(template) {
-  // Clone the template and its children
-  const radioDiv = template.cloneNode(true);
-  return radioDiv;
-}
-
-function changeRadioButton(radioDiv, { label, value, name }, isFirstButton, updatePrice, vehicleData) {
-  const input = radioDiv.querySelector('input[type="radio"]');
-  const labelElement = radioDiv.querySelector(".lbl--rb.lbl");
-
-  input.value = value;
-  input.name = name;
-  labelElement.textContent = label;
-  input.checked = isFirstButton;
-
-  input.addEventListener("change", () => {
-    if (input.checked) {
-      updatePrice(vehicleData);
+  init() {
+    // Only run on relevant pages
+    if (!this.isRelevantPage()) {
+      return;
     }
-  });
 
-  if (isFirstButton) {
-    input.closest(".cmp--rb.cmp").dispatchEvent(new Event("click"));
-  }
-}
-
-function setupForm(formName, updatePrice, data) {
-  const form = document.querySelector(`[name="${formName}"]`);
-
-  if (!form) {
-    console.log("Form not found");
-    return;
+    console.log("Calculator loaded");
+    this.showLoader();
+    this.fetchPricingData()
+      .then(() => {
+        this.hideLoader();
+        this.routeToHandler();
+      })
+      .catch(this.handleError.bind(this));
   }
 
-  const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
-  const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
+  isRelevantPage() {
+    return (
+      this.currentPath === "/formular" ||
+      this.currentPath === "/fahrzeuge" ||
+      this.currentPath.startsWith("/fahrzeuge/")
+    );
+  }
 
-  const rbTemplate = form.querySelector(".cmp--rb.cmp");
+  showLoader() {
+    if (this.loader) {
+      this.loader.classList.remove("hidden");
+    }
+  }
 
-  mietdauerRadioGroup.innerHTML = "";
-  kilometerpaketRadioGroup.innerHTML = "";
+  hideLoader() {
+    if (this.loader) {
+      this.loader.classList.add("hidden");
+    }
+  }
 
-  form
-    .querySelectorAll('input[name="premium-versicherung"], input[name="parkschaden-versicherung"]')
-    .forEach((input) => {
-      input.addEventListener("change", () => {
-        updatePrice(data);
-      });
+  async fetchPricingData() {
+    const response = await fetch("https://pub-ca3292da20874e628ec9745223ecc04e.r2.dev/pricing-data.json");
+    this.pricingData = await response.json();
+    return this.pricingData;
+  }
+
+  handleError(error) {
+    console.error("Error fetching pricing data:", error);
+    this.hideLoader();
+  }
+
+  routeToHandler() {
+    if (this.currentPath === "/formular") {
+      this.handleContactPage();
+    } else if (this.currentPath === "/fahrzeuge") {
+      this.handleVehiclesPage();
+    } else if (this.currentPath.startsWith("/fahrzeuge/")) {
+      this.handleVehicleDetailPage();
+    }
+  }
+
+  createRadioButton(template, { label, value, name }, isFirstButton, onChangeCallback) {
+    // Clone the template and its children
+    const radioDiv = template.cloneNode(true);
+    const input = radioDiv.querySelector('input[type="radio"]');
+    const labelElement = radioDiv.querySelector(".lbl--rb.lbl");
+
+    input.value = value;
+    input.name = name;
+    labelElement.textContent = label;
+    input.checked = isFirstButton;
+
+    input.addEventListener("change", () => {
+      if (input.checked && onChangeCallback) {
+        onChangeCallback();
+      }
     });
 
-  return { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate };
-}
-
-// Function to handle vehicle detail pages
-function handleVehicleDetailPage(data) {
-  const vehicleName = document.querySelector("h1").textContent;
-  const vehicleData = data.find((item) => item.sheetName === vehicleName);
-
-  if (!vehicleData) {
-    console.log("Vehicle data not found");
-    return;
+    return radioDiv;
   }
 
-  const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = setupForm(
-    "kontakt-form",
-    updatePrice,
-    vehicleData
-  );
+  setupForm(formName, updatePriceCallback) {
+    const form = document.querySelector(`[name="${formName}"]`);
+    if (!form) {
+      console.log("Form not found");
+      return null;
+    }
 
-  if (!form || !mietdauerRadioGroup || !kilometerpaketRadioGroup || !rbTemplate) {
-    console.log("Form not found");
-    return;
+    const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
+    const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
+    const rbTemplate = form.querySelector(".cmp--rb.cmp");
+
+    if (!mietdauerRadioGroup || !kilometerpaketRadioGroup || !rbTemplate) {
+      console.log("Form elements not found");
+      return null;
+    }
+
+    // Clear existing radio buttons
+    mietdauerRadioGroup.innerHTML = "";
+    kilometerpaketRadioGroup.innerHTML = "";
+
+    // Add event listeners to insurance checkboxes
+    form
+      .querySelectorAll('input[name="premium-versicherung"], input[name="parkschaden-versicherung"]')
+      .forEach((input) => {
+        input.addEventListener("change", updatePriceCallback);
+      });
+
+    return { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate };
   }
 
-  // 1. get pricing data and map it to the mietdauer and kilometerpaket radio groups
-  const mietdauerOptions = vehicleData.pricingData[0].options.map((option) => ({
-    label: option.key,
-    value: option.value,
-  }));
+  handleVehicleDetailPage() {
+    const vehicleName = document.querySelector("h1").textContent;
+    const vehicleData = this.pricingData.find((item) => item.sheetName === vehicleName);
 
-  const kilometerOptions = vehicleData.pricingData.map((item) => ({
-    label: item.distance,
-    value: item.distance,
-  }));
+    if (!vehicleData) {
+      console.log("Vehicle data not found");
+      return;
+    }
 
-  const anfragenButton = form.querySelector(".wr_btn--form.wr_btn:last-child");
+    const updatePrice = () => this.updateVehiclePrice(vehicleData);
 
-  if (!anfragenButton) {
-    console.log("Anfragen button not found");
-    return;
+    const formElements = this.setupForm("kontakt-form", updatePrice);
+    if (!formElements) return;
+
+    const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = formElements;
+
+    // Get options from vehicle data
+    const mietdauerOptions = vehicleData.pricingData[0].options.map((option) => ({
+      label: option.key,
+      value: option.key,
+    }));
+
+    const kilometerOptions = vehicleData.pricingData.map((item) => ({
+      label: item.distance,
+      value: item.distance,
+    }));
+
+    // Setup "Anfragen" button to save selections to localStorage
+    this.setupAnfragenButton(form, vehicleName);
+
+    // Generate radio buttons
+    this.generateRadioButtons(mietdauerRadioGroup, rbTemplate, mietdauerOptions, "Mietdauer", updatePrice);
+    this.generateRadioButtons(kilometerpaketRadioGroup, rbTemplate, kilometerOptions, "Kilometer", updatePrice);
+
+    // Initial price update
+    updatePrice();
+    scriptLoaded = true;
   }
 
-  anfragenButton.addEventListener("click", () => {
-    // get the selected values and save them to the local storage
-    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
-    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
-    const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
-    const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
+  setupAnfragenButton(form, vehicleName) {
+    const anfragenButton = form.querySelector(".wr_btn--form.wr_btn:last-child");
+    if (!anfragenButton) {
+      console.log("Anfragen button not found");
+      return;
+    }
 
-    localStorage.setItem("selectedMietdauer", selectedMietdauer);
-    localStorage.setItem("selectedKilometer", selectedKilometer);
-    localStorage.setItem("premiumAddon", premiumAddon);
-    localStorage.setItem("parkingAddon", parkingAddon);
-    localStorage.setItem("selectedVehicle", vehicleName);
-  });
+    anfragenButton.addEventListener("click", () => {
+      // Save selected values to localStorage
+      const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
+      const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
+      const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
+      const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
 
-  // Generate Mietdauer radio buttons
-  mietdauerOptions.forEach((option, index) => {
-    const radioButton = createRadioButton(rbTemplate);
-    mietdauerRadioGroup.appendChild(radioButton);
-    changeRadioButton(
-      radioButton,
-      {
-        label: option.label,
-        value: option.label,
-        name: "Mietdauer",
-      },
-      index === 0,
-      updatePrice,
-      vehicleData
-    );
-  });
+      localStorage.setItem("selectedMietdauer", selectedMietdauer);
+      localStorage.setItem("selectedKilometer", selectedKilometer);
+      localStorage.setItem("premiumAddon", premiumAddon);
+      localStorage.setItem("parkingAddon", parkingAddon);
+      localStorage.setItem("selectedVehicle", vehicleName);
+    });
+  }
 
-  // Generate Kilometer radio buttons
-  kilometerOptions.forEach((option, index) => {
-    const radioButton = createRadioButton(rbTemplate);
-    kilometerpaketRadioGroup.appendChild(radioButton);
-    changeRadioButton(
-      radioButton,
-      {
-        label: option.label,
-        value: option.label,
-        name: "Kilometer",
-      },
-      index === 0,
-      updatePrice,
-      vehicleData
-    );
-  });
+  generateRadioButtons(container, template, options, name, onChangeCallback) {
+    options.forEach((option, index) => {
+      const radioButton = this.createRadioButton(
+        template,
+        {
+          label: option.label,
+          value: option.value,
+          name: name,
+        },
+        index === 0,
+        onChangeCallback
+      );
 
-  // Add new function to update price
-  function updatePrice(vehicleData) {
+      container.appendChild(radioButton);
+
+      // Trigger click event on first button
+      if (index === 0) {
+        radioButton.dispatchEvent(new Event("click"));
+      }
+    });
+  }
+
+  updateVehiclePrice(vehicleData) {
+    const form = document.querySelector('[name="kontakt-form"]');
+    if (!form) return;
+
     // Get selected values
     const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
     const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
-
     const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
     const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
 
     // Find matching kilometer package
     const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
-
     if (!kilometerPackage) {
       console.error("Kilometer package not found");
       return;
     }
 
-    // Find matching mietdauer option and get price
+    // Find matching mietdauer option
     const mietdauerOption = kilometerPackage.options.find((option) => option.key === selectedMietdauer);
-
     if (!mietdauerOption) {
       console.error("Mietdauer option not found");
       return;
     }
 
+    // Calculate price
     let price = mietdauerOption.value;
+    if (premiumAddon) price += vehicleData.premiumInsurance;
+    if (parkingAddon) price += vehicleData.parkingDamageInsurance;
 
-    if (premiumAddon) {
-      price += vehicleData.premiumInsurance;
+    // Update price display
+    const priceElement = document.getElementById("car-price");
+    if (priceElement) {
+      priceElement.textContent = `${price}.-`;
     }
-
-    if (parkingAddon) {
-      price += vehicleData.parkingDamageInsurance;
-    }
-
-    document.getElementById("car-price").textContent = `${price}.-`;
   }
 
-  scriptLoaded = true;
-}
+  handleContactPage() {
+    console.log("Contact page handler with pricing data", this.pricingData);
 
-// Function to handle contact page
-function handleContactPage(data) {
-  // Contact page specific logic
-  console.log("Contact page handler with pricing data", data);
+    // Retrieve stored selections
+    const selectedVehicle = localStorage.getItem("selectedVehicle");
+    const selectedMietdauer = localStorage.getItem("selectedMietdauer");
+    const selectedKilometer = localStorage.getItem("selectedKilometer");
+    const premiumAddon = localStorage.getItem("premiumAddon");
+    const parkingAddon = localStorage.getItem("parkingAddon");
 
-  const selectedVehicle = localStorage.getItem("selectedVehicle");
-  const selectedMietdauer = localStorage.getItem("selectedMietdauer");
-  const selectedKilometer = localStorage.getItem("selectedKilometer");
-  const premiumAddon = localStorage.getItem("premiumAddon");
-  const parkingAddon = localStorage.getItem("parkingAddon");
+    console.log("Selected vehicle", selectedVehicle);
+    console.log("Selected mietdauer", selectedMietdauer);
+    console.log("Selected kilometer", selectedKilometer);
+    console.log("Premium addon", premiumAddon);
+    console.log("Parking addon", parkingAddon);
 
-  console.log("Selected vehicle", selectedVehicle);
-  console.log("Selected mietdauer", selectedMietdauer);
-  console.log("Selected kilometer", selectedKilometer);
-  console.log("Premium addon", premiumAddon);
-  console.log("Parking addon", parkingAddon);
+    // Additional contact page logic can be implemented here
+  }
 
-  // .select-options
-}
+  handleVehiclesPage() {
+    console.log("Vehicles overview page handler with pricing data");
 
-// Function to handle vehicles overview page
-function handleVehiclesPage(data) {
-  console.log("Vehicles overview page handler with pricing data");
+    // Find all unique options across all vehicles
+    const allOptions = this.collectUniqueOptions();
 
-  // Find all unique kilometer options across all vehicles
-  const allKilometerOptions = new Set();
-  // Find all unique mietdauer options across all vehicles
-  const allMietdauerOptions = new Set();
+    const updateAllPrices = () => this.updateAllVehiclePrices();
 
-  // Collect all unique options
-  data.forEach((vehicle) => {
-    vehicle.pricingData.forEach((item) => {
-      allKilometerOptions.add(item.distance);
+    const formElements = this.setupForm("kontakt-form", updateAllPrices);
+    if (!formElements) return;
 
-      item.options.forEach((option) => {
-        allMietdauerOptions.add(option.key);
+    const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = formElements;
+
+    // Generate radio buttons
+    this.generateRadioButtons(
+      mietdauerRadioGroup,
+      rbTemplate,
+      allOptions.mietdauerOptions,
+      "Mietdauer",
+      updateAllPrices
+    );
+    this.generateRadioButtons(
+      kilometerpaketRadioGroup,
+      rbTemplate,
+      allOptions.kilometerOptions,
+      "Kilometer",
+      updateAllPrices
+    );
+
+    // Initial price update
+    updateAllPrices();
+    scriptLoaded = true;
+  }
+
+  collectUniqueOptions() {
+    const allKilometerOptions = new Set();
+    const allMietdauerOptions = new Set();
+
+    // Collect all unique options
+    this.pricingData.forEach((vehicle) => {
+      vehicle.pricingData.forEach((item) => {
+        allKilometerOptions.add(item.distance);
+        item.options.forEach((option) => {
+          allMietdauerOptions.add(option.key);
+        });
       });
     });
-  });
 
-  // Convert sets to sorted arrays
-  const kilometerOptions = Array.from(allKilometerOptions).sort();
-  const mietdauerOptions = Array.from(allMietdauerOptions).sort((a, b) => {
-    // Sort by the numeric value in the string (e.g., "1 Monat" comes before "3 Monate")
-    const numA = parseInt(a.split(" ")[0]);
-    const numB = parseInt(b.split(" ")[0]);
-    return numA - numB;
-  });
+    // Convert sets to sorted arrays
+    const kilometerOptions = Array.from(allKilometerOptions)
+      .sort()
+      .map((option) => ({ label: option, value: option }));
 
-  const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = setupForm(
-    "kontakt-form",
-    updateAllVehiclePrices,
-    data
-  );
+    const mietdauerOptions = Array.from(allMietdauerOptions)
+      .sort((a, b) => {
+        // Sort by the numeric value in the string (e.g., "1 Monat" comes before "3 Monate")
+        const numA = parseInt(a.split(" ")[0]);
+        const numB = parseInt(b.split(" ")[0]);
+        return numA - numB;
+      })
+      .map((option) => ({ label: option, value: option }));
 
-  if (!form || !mietdauerRadioGroup || !kilometerpaketRadioGroup || !rbTemplate) {
-    console.log("Form not found");
-    return;
+    return { kilometerOptions, mietdauerOptions };
   }
 
-  // Create radio buttons for mietdauer
-  mietdauerOptions.forEach((option, index) => {
-    const radioButton = createRadioButton(rbTemplate);
-    mietdauerRadioGroup.appendChild(radioButton);
-    changeRadioButton(
-      radioButton,
-      {
-        label: option,
-        value: option,
-        name: "Mietdauer",
-      },
-      index === 0,
-      updateAllVehiclePrices,
-      data
-    );
-  });
+  updateAllVehiclePrices() {
+    const form = document.querySelector('[name="kontakt-form"]');
+    if (!form) return;
 
-  // Create radio buttons for kilometer
-  kilometerOptions.forEach((option, index) => {
-    const radioButton = createRadioButton(rbTemplate);
-    kilometerpaketRadioGroup.appendChild(radioButton);
-    changeRadioButton(
-      radioButton,
-      {
-        label: option,
-        value: option,
-        name: "Kilometer",
-      },
-      index === 0,
-      updateAllVehiclePrices,
-      data
-    );
-  });
-
-  // Initial price update
-  updateAllVehiclePrices(data);
-
-  // Function to update prices for all vehicles
-  function updateAllVehiclePrices(data) {
-    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked').value;
-    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked').value;
-
+    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
+    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
     const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
     const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
 
@@ -341,8 +335,7 @@ function handleVehiclesPage(data) {
       const vehicleName = card.querySelector("h3").textContent.trim();
 
       // Find the matching vehicle data
-      const vehicleData = data.find((item) => item.sheetName === vehicleName);
-
+      const vehicleData = this.pricingData.find((item) => item.sheetName === vehicleName);
       if (!vehicleData) {
         console.log(`Vehicle data not found for: ${vehicleName}`);
         return;
@@ -350,7 +343,6 @@ function handleVehiclesPage(data) {
 
       // Get the price element
       const priceElement = card.querySelector(".car-price");
-
       if (!priceElement) {
         console.log(`Price element not found for: ${vehicleName}`);
         return;
@@ -358,49 +350,48 @@ function handleVehiclesPage(data) {
 
       // Find the matching kilometer package
       const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
-
       if (!kilometerPackage) {
-        updateOptions(priceElement, false);
+        this.updateAvailabilityDisplay(priceElement, false);
         return;
       }
 
       // Find the matching mietdauer option
       const mietdauerOption = kilometerPackage.options.find((option) => option.key === selectedMietdauer);
-
       if (!mietdauerOption) {
-        updateOptions(priceElement, false);
+        this.updateAvailabilityDisplay(priceElement, false);
         return;
       }
 
-      updateOptions(priceElement, true);
+      this.updateAvailabilityDisplay(priceElement, true);
 
-      function updateOptions(priceElement, show) {
-        const parent = priceElement.closest(".wr_p--form-item.wr_p").parentElement;
-        if (show) {
-          parent.querySelector(".wr_p--form-item.wr_p").classList.remove("hidden");
-          parent.querySelector(".wr_p--form-item.wr_p.not-available").classList.add("hidden");
-        } else {
-          parent.querySelector(".wr_p--form-item.wr_p").classList.add("hidden");
-          parent.querySelector(".wr_p--form-item.wr_p.not-available").classList.remove("hidden");
-        }
-      }
-
+      // Calculate price
       let price = mietdauerOption.value;
+      if (premiumAddon) price += vehicleData.premiumInsurance;
+      if (parkingAddon) price += vehicleData.parkingDamageInsurance;
 
-      if (premiumAddon) {
-        price += vehicleData.premiumInsurance;
-      }
-
-      if (parkingAddon) {
-        price += vehicleData.parkingDamageInsurance;
-      }
       // Update the price
       priceElement.textContent = `${price}.-`;
     });
   }
 
-  scriptLoaded = true;
+  updateAvailabilityDisplay(priceElement, isAvailable) {
+    const parent = priceElement.closest(".wr_p--form-item.wr_p").parentElement;
+    const availableElement = parent.querySelector(".wr_p--form-item.wr_p");
+    const notAvailableElement = parent.querySelector(".wr_p--form-item.wr_p.not-available");
+
+    if (isAvailable) {
+      availableElement.classList.remove("hidden");
+      notAvailableElement.classList.add("hidden");
+    } else {
+      availableElement.classList.add("hidden");
+      notAvailableElement.classList.remove("hidden");
+    }
+  }
 }
+
+// Initialize the calculator
+const calculator = new AutoGroupCalculator();
+calculator.init();
 
 function setupInitValues() {
   // setup interval to check if the script is loaded
@@ -415,5 +406,3 @@ function setupInitValues() {
     }
   }, 100);
 }
-
-init();
