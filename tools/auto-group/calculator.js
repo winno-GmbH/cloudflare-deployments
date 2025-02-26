@@ -1,4 +1,4 @@
-console.log("v 0.1.15");
+console.log("v 0.1.16");
 
 let scriptLoaded = false;
 
@@ -73,6 +73,33 @@ function changeRadioButton(radioDiv, { label, value, name }, isFirstButton, upda
   }
 }
 
+function setupForm(formName, updatePrice, data) {
+  const form = document.querySelector(`[name="${formName}"]`);
+
+  if (!form) {
+    console.log("Form not found");
+    return;
+  }
+
+  const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
+  const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
+
+  const rbTemplate = form.querySelector(".cmp--rb.cmp");
+
+  mietdauerRadioGroup.innerHTML = "";
+  kilometerpaketRadioGroup.innerHTML = "";
+
+  form
+    .querySelectorAll('input[name="premium-versicherung"], input[name="parkschaden-versicherung"]')
+    .forEach((input) => {
+      input.addEventListener("change", () => {
+        updatePrice(data);
+      });
+    });
+
+  return { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate };
+}
+
 // Function to handle vehicle detail pages
 function handleVehicleDetailPage(data) {
   const vehicleName = document.querySelector("h1").textContent;
@@ -83,16 +110,16 @@ function handleVehicleDetailPage(data) {
     return;
   }
 
-  const form = document.querySelector('[name="kontakt-form"]');
+  const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = setupForm(
+    "kontakt-form",
+    updatePrice,
+    vehicleData
+  );
 
-  if (!form) {
+  if (!form || !mietdauerRadioGroup || !kilometerpaketRadioGroup || !rbTemplate) {
     console.log("Form not found");
     return;
   }
-
-  // 0. get radio groups
-  const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
-  const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
 
   // 1. get pricing data and map it to the mietdauer and kilometerpaket radio groups
   const mietdauerOptions = vehicleData.pricingData[0].options.map((option) => ({
@@ -125,13 +152,6 @@ function handleVehicleDetailPage(data) {
     localStorage.setItem("parkingAddon", parkingAddon);
     localStorage.setItem("selectedVehicle", vehicleName);
   });
-
-  // Get template radio button
-  const rbTemplate = form.querySelector(".cmp--rb.cmp");
-
-  // Clear existing radio buttons
-  mietdauerRadioGroup.innerHTML = "";
-  kilometerpaketRadioGroup.innerHTML = "";
 
   // Generate Mietdauer radio buttons
   mietdauerOptions.forEach((option, index) => {
@@ -166,14 +186,6 @@ function handleVehicleDetailPage(data) {
       vehicleData
     );
   });
-
-  form
-    .querySelectorAll('input[name="premium-versicherung"], input[name="parkschaden-versicherung"]')
-    .forEach((input) => {
-      input.addEventListener("change", () => {
-        updatePrice(vehicleData);
-      });
-    });
 
   // Add new function to update price
   function updatePrice(vehicleData) {
@@ -232,6 +244,8 @@ function handleContactPage(data) {
   console.log("Selected kilometer", selectedKilometer);
   console.log("Premium addon", premiumAddon);
   console.log("Parking addon", parkingAddon);
+
+  // .select-options
 }
 
 // Function to handle vehicles overview page
@@ -263,28 +277,16 @@ function handleVehiclesPage(data) {
     return numA - numB;
   });
 
-  const form = document.querySelector('[name="kontakt-form"]');
+  const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = setupForm(
+    "kontakt-form",
+    updateAllVehiclePrices,
+    data
+  );
 
-  if (!form) {
+  if (!form || !mietdauerRadioGroup || !kilometerpaketRadioGroup || !rbTemplate) {
     console.log("Form not found");
     return;
   }
-
-  const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
-  const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
-
-  const rbTemplate = form.querySelector(".cmp--rb.cmp");
-
-  mietdauerRadioGroup.innerHTML = "";
-  kilometerpaketRadioGroup.innerHTML = "";
-
-  form
-    .querySelectorAll('input[name="premium-versicherung"], input[name="parkschaden-versicherung"]')
-    .forEach((input) => {
-      input.addEventListener("change", () => {
-        updateAllVehiclePrices(data);
-      });
-    });
 
   // Create radio buttons for mietdauer
   mietdauerOptions.forEach((option, index) => {
@@ -318,13 +320,6 @@ function handleVehiclesPage(data) {
       updateAllVehiclePrices,
       data
     );
-  });
-
-  // Add event listeners to all radio buttons
-  form.querySelectorAll('input[type="radio"]').forEach((input) => {
-    input.addEventListener("change", () => {
-      updateAllVehiclePrices(data);
-    });
   });
 
   // Initial price update
