@@ -1,4 +1,4 @@
-console.log("v 0.1.11");
+console.log("v 0.1.12");
 
 let scriptLoaded = false;
 
@@ -104,6 +104,27 @@ function handleVehicleDetailPage(data) {
     label: item.distance,
     value: item.distance,
   }));
+
+  const anfragenButton = form.querySelectorAll(".wr_btn--form.wr_btn:last-child");
+
+  if (!anfragenButton) {
+    console.log("Anfragen button not found");
+    return;
+  }
+
+  anfragenButton.addEventListener("click", () => {
+    // get the selected values and save them to the local storage
+    const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
+    const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
+    const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
+    const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
+
+    localStorage.setItem("selectedMietdauer", selectedMietdauer);
+    localStorage.setItem("selectedKilometer", selectedKilometer);
+    localStorage.setItem("premiumAddon", premiumAddon);
+    localStorage.setItem("parkingAddon", parkingAddon);
+    localStorage.setItem("selectedVehicle", vehicleName);
+  });
 
   // Get template radio button
   const rbTemplate = form.querySelector(".cmp--rb.cmp");
