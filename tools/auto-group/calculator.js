@@ -1,4 +1,4 @@
-console.log("v 0.2.8");
+console.log("v 0.2.9");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -485,5 +485,6 @@ function setupInitValues() {
         option.click();
       }
     });
+    clearInterval(interval);
   };
 }
