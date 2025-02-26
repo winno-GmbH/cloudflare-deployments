@@ -1,4 +1,4 @@
-console.log("v 0.2.4");
+console.log("v 0.2.5");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -430,15 +430,55 @@ const calculator = new AutoGroupCalculator();
 calculator.init();
 
 function setupInitValues() {
-  // setup interval to check if the script is loaded
   const interval = setInterval(() => {
     if (scriptLoaded) {
-      const mietdauerRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[0];
-      const kilometerpaketRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[1];
-
-      mietdauerRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
-      kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
-      clearInterval(interval);
+      if (window.location.pathname === "/formular") {
+        setupForm();
+      } else {
+        setupNormal();
+      }
     }
   }, 100);
+
+  const setupNormal = () => {
+    const mietdauerRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[0];
+    const kilometerpaketRadioGroup = document.querySelectorAll(".lyt--rb-group.lyt")[1];
+
+    mietdauerRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+    kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
+    clearInterval(interval);
+  };
+
+  const setupForm = () => {
+    const selectedVehicle = localStorage.getItem("selectedVehicle");
+    const selectedMietdauer = localStorage.getItem("selectedMietdauer");
+    const selectedKilometer = localStorage.getItem("selectedKilometer");
+    const premiumAddon = localStorage.getItem("premiumAddon");
+    const parkingAddon = localStorage.getItem("parkingAddon");
+
+    const form = document.querySelector('[name="kontakt-form"]');
+    if (!form) return;
+
+    const mietdauerRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[0];
+    const kilometerpaketRadioGroup = form.querySelectorAll(".lyt--rb-group.lyt")[1];
+
+    mietdauerRadioGroup
+      .querySelector(`input[type="radio"][value="${selectedMietdauer}"]`)
+      .closest(".cmp--rb.cmp")
+      .click();
+    kilometerpaketRadioGroup
+      .querySelector(`input[type="radio"][value="${selectedKilometer}"]`)
+      .closest(".cmp--rb.cmp")
+      .click();
+
+    form.querySelector('input[name="premium-versicherung"]').checked = premiumAddon;
+    form.querySelector('input[name="parkschaden-versicherung"]').checked = parkingAddon;
+
+    const options = form.querySelectorAll(".cmp--tf-md-option.cmp");
+    options.forEach((option) => {
+      if (option.textContent === selectedVehicle) {
+        option.click();
+      }
+    });
+  };
 }
