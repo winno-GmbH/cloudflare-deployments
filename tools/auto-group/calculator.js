@@ -1,4 +1,4 @@
-console.log("v 0.2.3");
+console.log("v 0.2.4");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -258,14 +258,14 @@ class AutoGroupCalculator {
     this.generateRadioButtons(
       mietdauerRadioGroup,
       rbTemplate,
-      vehicleData.pricingData[0].options,
+      vehicleData.pricingData[0].options.map((option) => ({ label: option.key, value: option.key })),
       "Mietdauer",
       updateAllPrices
     );
     this.generateRadioButtons(
       kilometerpaketRadioGroup,
       rbTemplate,
-      vehicleData.pricingData,
+      vehicleData.pricingData.map((item) => ({ label: item.distance, value: item.distance })),
       "Kilometer",
       updateAllPrices
     );
