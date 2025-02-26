@@ -1,4 +1,4 @@
-console.log("v 0.1.8");
+console.log("v 0.1.9");
 
 let scriptLoaded = false;
 
@@ -244,6 +244,14 @@ function handleVehiclesPage(data) {
 
   mietdauerRadioGroup.innerHTML = "";
   kilometerpaketRadioGroup.innerHTML = "";
+
+  form
+    .querySelectorAll('input[name="premium-versicherung"], input[name="parkschaden-versicherung"]')
+    .forEach((input) => {
+      input.addEventListener("change", () => {
+        updateAllVehiclePrices(data);
+      });
+    });
 
   // Create radio buttons for mietdauer
   mietdauerOptions.forEach((option, index) => {
