@@ -1,4 +1,4 @@
-console.log("v 0.1.13");
+console.log("v 0.1.14");
 
 let scriptLoaded = false;
 
@@ -29,7 +29,7 @@ function init() {
       }
 
       // Route to appropriate handler based on URL
-      if (currentPath === "/contact") {
+      if (currentPath === "/formular") {
         handleContactPage(data);
       } else if (currentPath === "/fahrzeuge") {
         handleVehiclesPage(data);
@@ -220,6 +220,18 @@ function handleVehicleDetailPage(data) {
 function handleContactPage(data) {
   // Contact page specific logic
   console.log("Contact page handler with pricing data", data);
+
+  const selectedVehicle = localStorage.getItem("selectedVehicle");
+  const selectedMietdauer = localStorage.getItem("selectedMietdauer");
+  const selectedKilometer = localStorage.getItem("selectedKilometer");
+  const premiumAddon = localStorage.getItem("premiumAddon");
+  const parkingAddon = localStorage.getItem("parkingAddon");
+
+  console.log("Selected vehicle", selectedVehicle);
+  console.log("Selected mietdauer", selectedMietdauer);
+  console.log("Selected kilometer", selectedKilometer);
+  console.log("Premium addon", premiumAddon);
+  console.log("Parking addon", parkingAddon);
 }
 
 // Function to handle vehicles overview page
