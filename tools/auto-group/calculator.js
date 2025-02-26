@@ -1,4 +1,4 @@
-console.log("v 0.2.7");
+console.log("v 0.2.8");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -472,8 +472,12 @@ function setupInitValues() {
       .closest(".cmp--rb.cmp")
       .click();
 
-    form.querySelector('input[name="premium-versicherung"]').checked = premiumAddon === "true";
-    form.querySelector('input[name="parkschaden-versicherung"]').checked = parkingAddon === "true";
+    if (premiumAddon === "true") {
+      form.querySelector('input[name="premium-versicherung"]').click();
+    }
+    if (parkingAddon === "true") {
+      form.querySelector('input[name="parkschaden-versicherung"]').click();
+    }
 
     const options = form.querySelectorAll(".cmp--tf-md-option.cmp");
     options.forEach((option) => {
