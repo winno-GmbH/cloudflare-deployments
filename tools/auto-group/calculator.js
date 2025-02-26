@@ -1,4 +1,4 @@
-console.log("v 0.1.4");
+console.log("v 0.1.5");
 
 let scriptLoaded = false;
 
@@ -53,7 +53,7 @@ function createRadioButton(template) {
   return radioDiv;
 }
 
-function changeRadioButton(radioDiv, { label, value, name }, isFirstButton, updatePrice) {
+function changeRadioButton(radioDiv, { label, value, name }, isFirstButton, updatePrice, vehicleData) {
   const input = radioDiv.querySelector('input[type="radio"]');
   const labelElement = radioDiv.querySelector(".lbl--rb.lbl");
 
@@ -124,7 +124,8 @@ function handleVehicleDetailPage(data) {
         name: "Mietdauer",
       },
       index === 0,
-      updatePrice
+      updatePrice,
+      vehicleData
     );
   });
 
@@ -140,7 +141,8 @@ function handleVehicleDetailPage(data) {
         name: "Kilometer",
       },
       index === 0,
-      updatePrice
+      updatePrice,
+      vehicleData
     );
   });
 
@@ -255,7 +257,8 @@ function handleVehiclesPage(data) {
         name: "Mietdauer",
       },
       index === 0,
-      updateAllVehiclePrices
+      updateAllVehiclePrices,
+      data
     );
   });
 
@@ -271,7 +274,8 @@ function handleVehiclesPage(data) {
         name: "Kilometer",
       },
       index === 0,
-      updateAllVehiclePrices
+      updateAllVehiclePrices,
+      data
     );
   });
 
