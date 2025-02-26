@@ -1,4 +1,4 @@
-console.log("v 0.1.5");
+console.log("v 0.1.6");
 
 let scriptLoaded = false;
 
@@ -295,11 +295,11 @@ function handleVehiclesPage(data) {
     const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked').value;
 
     // Get all car cards
-    const carCards = document.querySelectorAll(".lyt--l-cars.lyt.w-dyn-items .car-card");
+    const carCards = document.querySelectorAll(".lyt--l-cars.lyt.w-dyn-items .cmp--l-car");
 
     carCards.forEach((card) => {
       // Get the vehicle name from the card
-      const vehicleName = card.querySelector(".car-name").textContent.trim();
+      const vehicleName = card.querySelector("h3").textContent.trim();
 
       // Find the matching vehicle data
       const vehicleData = data.find((item) => item.sheetName === vehicleName);
