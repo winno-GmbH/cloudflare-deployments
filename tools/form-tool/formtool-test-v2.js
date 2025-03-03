@@ -1,10 +1,103 @@
 /**
  * Form Tool v2
- * Compiled on 2025-03-03T14:46:05.783Z
+ * Compiled on 2025-03-03T14:52:11.004Z
+ * Dependencies resolved automatically
  */
 (function() {
-// Define a global object to store exported values
+// Define a global object to store exports
 window.FormToolV2 = window.FormToolV2 || {};
+
+// Declare all variables at the top to handle forward references
+var getFields;
+var fields;
+var elements;
+var type;
+var required;
+var value;
+var customValidatorRegex;
+var name;
+var label;
+var convertFieldsToFormData;
+var allFields;
+var req;
+var existingField;
+var convertFormDataToFields;
+var lastStepName;
+var formStepParent;
+var labelEl;
+var parent;
+var input;
+var selectedItems;
+var inputLabel;
+var inputParent;
+var getElementByXpathWithIndex;
+var xpathResult;
+var i;
+var descendantElements;
+var FormTool;
+var scriptSrc;
+var urlParams;
+var scripts;
+var preLabel;
+var observer;
+var parents;
+var overlay;
+var options;
+var filteredData;
+var found;
+var seperator;
+var option;
+var text;
+var submitButton;
+var formTool;
+var FormSteps;
+var lastActiveIndex;
+var stepNumber;
+var currentStepNumber;
+var formSteps;
+var formStepNumbers;
+var conditionalSteps;
+var response;
+var data;
+var formData;
+var isValid;
+var categories;
+var FormSubmission;
+var buttonWrapper;
+var targetLink;
+var success;
+var request;
+var buttonText;
+var cleanString;
+var findParentWithClass;
+var current;
+var getContainerType;
+var getCookie;
+var cookieArray;
+var cookie;
+var updatePadding;
+var iconElement;
+var parentContainer;
+var targetFieldset;
+var lytElement;
+var containerWidth;
+var tfLeftPadding;
+var lytGap;
+var computedPaddingLeft;
+var validateTextInput;
+var validateCheckbox;
+var checkboxes;
+var oneChecked;
+var validateRadio;
+var radios;
+var validateFields;
+var fieldIsValid;
+var formItem;
+var lastChild;
+
+
+// Source: types.js
+
 
 
 // Source: fields.js
@@ -850,10 +943,6 @@ class FormSubmission {
 }
 
 
-// Source: types.js
-
-
-
 // Source: utils.js
 function cleanString(input) {
     return input
@@ -1001,5 +1090,10 @@ function validateFields(fields, form) {
     return isValid;
 }
 
+
+// Export main FormTool object to global scope if it exists
+if (typeof FormTool !== 'undefined') {
+  window.FormTool = FormTool;
+}
 
 })();
