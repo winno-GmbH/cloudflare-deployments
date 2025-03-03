@@ -31,7 +31,7 @@ function removeSync(dirPath) {
   }
 }
 
-// Helper function to remove imports and exports from file content
+// Helper function to clean module code by removing imports/exports
 function cleanModuleCode(content) {
   // Remove ES Module imports
   content = content.replace(/import\s+(?:(?:\{[^}]*\})|(?:[\w*]+))(?:\s+as\s+[\w*]+)?\s+from\s+['"][^'"]+['"];?/g, "");
@@ -138,17 +138,62 @@ async function bundleFiles() {
 
     // Read file contents and extract dependencies
     const fileInfos = [];
+    const allDefinitions = new Set();
+    const duplicateDefinitions = new Set();
+
+    // First pass: gather all definitions to identify duplicates
+    for (const file of files) {
+      const filePath = path.join(sourceDir, file);
+      let content = fs.readFileSync(filePath, "utf8");
+      content = cleanModuleCode(content);
+
+      const { definitions } = extractDependencies(content);
+
+      // Track duplicates
+      for (const def of definitions) {
+        if (allDefinitions.has(def)) {
+          duplicateDefinitions.add(def);
+        } else {
+          allDefinitions.add(def);
+        }
+      }
+    }
+
+    console.log(
+      `Found ${duplicateDefinitions.size} duplicate definitions:`,
+      duplicateDefinitions.size > 0 ? [...duplicateDefinitions].join(", ") : "none"
+    );
+
+    // Second pass: process files and transform code
     for (const file of files) {
       const filePath = path.join(sourceDir, file);
       let content = fs.readFileSync(filePath, "utf8");
 
-      // Process the content to remove imports and exports
-      const cleanedContent = cleanModuleCode(content);
-      const { definitions, usages } = extractDependencies(cleanedContent);
+      // Clean module code
+      content = cleanModuleCode(content);
+
+      // Extract dependency info
+      const { definitions, usages } = extractDependencies(content);
+
+      // Process local declarations that conflict with others
+      for (const def of definitions) {
+        if (duplicateDefinitions.has(def)) {
+          // Rename local variable declarations that conflict globally
+          const varDefRegex = new RegExp(`((?:const|let|var|function)\\s+)(${def})(\\s*=|\\s*\\(|\\s*\\{)`, "g");
+          // Generate a unique name for this file's version of the variable
+          const fileBaseName = path.basename(file, ".js").replace(/[^a-zA-Z0-9]/g, "_");
+          const newName = `_${def}_${fileBaseName}`;
+          content = content.replace(varDefRegex, `$1${newName}$3`);
+
+          // Also rename all usages within this file
+          const usageRegex = new RegExp(`\\b${def}\\b(?!\\s*=|\\()`, "g");
+          content = content.replace(usageRegex, newName);
+        }
+      }
 
       fileInfos.push({
         file,
-        content: cleanedContent,
+        content,
         definitions: [...definitions],
         usages: [...usages],
         included: false,
@@ -160,17 +205,23 @@ async function bundleFiles() {
 
     // Helper function to check if all dependencies of a file are included
     function areDependenciesSatisfied(fileInfo) {
-      return fileInfo.usages.every((usage) => {
+      const satisfiedDependencies = fileInfo.usages.filter((usage) => {
         // Check if any already included file defines this variable
-        return orderedFiles.some((includedFile) =>
+        const isSatisfied = orderedFiles.some((includedFile) =>
           fileInfos.find((f) => f.file === includedFile).definitions.includes(usage)
         );
+
+        // Also satisfied if it's a duplicate that will be handled specially
+        return isSatisfied || duplicateDefinitions.has(usage);
       });
+
+      // File is satisfied if all dependencies are satisfied or if there are no dependencies
+      return satisfiedDependencies.length === fileInfo.usages.length;
     }
 
     // First, include files that don't have any special dependencies
     fileInfos
-      .filter((info) => info.usages.length === 0)
+      .filter((info) => info.usages.length === 0 || areDependenciesSatisfied(info))
       .forEach((info) => {
         if (!info.included) {
           orderedFiles.push(info.file);
@@ -180,8 +231,12 @@ async function bundleFiles() {
 
     // Then, iteratively include files as their dependencies are satisfied
     let madeProgress = true;
-    while (madeProgress) {
+    let iterations = 0;
+    const maxIterations = files.length * 2; // Safety limit
+
+    while (madeProgress && iterations < maxIterations) {
       madeProgress = false;
+      iterations++;
 
       for (const info of fileInfos) {
         if (!info.included && areDependenciesSatisfied(info)) {
@@ -193,12 +248,14 @@ async function bundleFiles() {
     }
 
     // Include any remaining files (circular dependencies case)
-    fileInfos
-      .filter((info) => !info.included)
-      .forEach((info) => {
-        console.warn(`Warning: Circular dependency or unresolved dependency in ${info.file}`);
+    const remainingFiles = fileInfos.filter((info) => !info.included);
+    if (remainingFiles.length > 0) {
+      console.warn(`Warning: Circular dependencies detected in ${remainingFiles.length} files`);
+      remainingFiles.forEach((info) => {
+        console.warn(`  - ${info.file}`);
         orderedFiles.push(info.file);
       });
+    }
 
     // Create bundle header
     let bundleContent = `/**
@@ -206,16 +263,9 @@ async function bundleFiles() {
  * Compiled on ${new Date().toISOString()}
  * Dependencies resolved automatically
  */
-(function() {
-// Define a global object to store exports
-window.FormToolV2 = window.FormToolV2 || {};
-
-// Declare all variables at the top to handle forward references
-${fileInfos
-  .flatMap((info) => info.definitions)
-  .filter((value, index, self) => self.indexOf(value) === index) // unique values
-  .map((varName) => `var ${varName};`)
-  .join("\n")}
+(function(window) {
+  // Shared namespace for resolving references
+  var _internal = {};
 
 `;
 
@@ -226,12 +276,15 @@ ${fileInfos
     }
 
     bundleContent += `
-// Export main FormTool object to global scope if it exists
-if (typeof FormTool !== 'undefined') {
-  window.FormTool = FormTool;
-}
-
-})();`;
+  // Export main objects to global scope
+  window.FormToolV2 = window.FormToolV2 || {};
+  
+  // Export main FormTool object if it exists
+  if (typeof FormTool !== 'undefined') {
+    window.FormTool = FormTool;
+  }
+  
+})(window);`;
 
     // Ensure target directory exists
     ensureDirSync(path.dirname(targetFile));
