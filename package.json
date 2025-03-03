@@ -4,7 +4,8 @@
   "description": "Form tool project with TypeScript compilation workflow",
   "scripts": {
     "build": "cd dev/form-tool/form-tool-v2 && npm run build",
-    "install-deps": "cd dev/form-tool/form-tool-v2 && npm install && npm install fs-extra"
+    "install-deps": "cd dev/form-tool/form-tool-v2 && npm install",
+    "deploy": "node scripts/deploy.js"
   },
   "dependencies": {
     "fs-extra": "^11.1.1"

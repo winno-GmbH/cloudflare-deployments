@@ -1,8 +1,0 @@
-# Exclude everything
-*
-
-# Except the tools directory
-!tools/
-
-# And the wrangler.toml file if needed
-!wrangler.toml
