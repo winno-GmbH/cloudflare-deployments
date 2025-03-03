@@ -1,12 +1,12 @@
 {
-  "name": "form-tool-project",
-  "version": "1.0.0",
-  "description": "Form tool project with TypeScript compilation workflow",
   "scripts": {
-    "build": "cd dev/form-tool/form-tool-v2 && npm run build",
-    "install-deps": "cd dev/form-tool/form-tool-v2 && npm install"
+    "build": "webpack --config webpack.config.js"
   },
-  "dependencies": {
-    "fs-extra": "^11.1.1"
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "terser-webpack-plugin": "^5.3.10"
   }
 }
