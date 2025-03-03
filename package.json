@@ -4,7 +4,6 @@
   "description": "Form tool project with TypeScript compilation workflow",
   "scripts": {
     "build": "cd dev/form-tool/form-tool-v2 && npm run build",
-    "pages:build": "node scripts/pages-build.js",
     "install-deps": "cd dev/form-tool/form-tool-v2 && npm install"
   },
   "dependencies": {

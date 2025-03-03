@@ -31,6 +31,37 @@ function removeSync(dirPath) {
   }
 }
 
+// Helper function to remove imports and exports from file content
+function cleanModuleCode(content) {
+  // Remove ES Module imports
+  content = content.replace(/import\s+(?:(?:\{[^}]*\})|(?:[\w*]+))(?:\s+as\s+[\w*]+)?\s+from\s+['"][^'"]+['"];?/g, "");
+  content = content.replace(/import\s+['"][^'"]+['"];?/g, "");
+  content = content.replace(/import\s*\(\s*['"][^'"]+['"](?:,\s*\{[^}]*\})?\s*\)\s*;?/g, "");
+
+  // Remove require statements
+  content = content.replace(
+    /(?:const|let|var)\s+(?:\{[^}]*\}|\w+)\s*=\s*require\s*\(\s*['"][^'"]+['"](?:,\s*\{[^}]*\})?\s*\)\s*;?/g,
+    ""
+  );
+  content = content.replace(/const\s+\w+\s*=\s*require\s*\([^)]+\)\s*;?/g, "");
+
+  // Remove ES Module exports
+  content = content.replace(/export\s+default\s+/g, "");
+  content = content.replace(/export\s+const\s+/g, "const ");
+  content = content.replace(/export\s+let\s+/g, "let ");
+  content = content.replace(/export\s+var\s+/g, "var ");
+  content = content.replace(/export\s+function\s+/g, "function ");
+  content = content.replace(/export\s+class\s+/g, "class ");
+  content = content.replace(/export\s+\{[^}]*\};?/g, "");
+  content = content.replace(/export\s+\*\s+from\s+['"][^'"]+['"];?/g, "");
+
+  // Remove CommonJS exports
+  content = content.replace(/module\.exports\s*=\s*/g, "");
+  content = content.replace(/exports\.\w+\s*=\s*/g, "");
+
+  return content;
+}
+
 async function bundleFiles() {
   try {
     // Ensure source directory exists
@@ -56,12 +87,19 @@ async function bundleFiles() {
  * Compiled on ${new Date().toISOString()}
  */
 (function() {
+// Define a global object to store exported values
+window.FormToolV2 = window.FormToolV2 || {};
+
 `;
 
     // Read and concatenate all files
     for (const file of files) {
       const filePath = path.join(sourceDir, file);
-      const content = fs.readFileSync(filePath, "utf8");
+      let content = fs.readFileSync(filePath, "utf8");
+
+      // Process the content to remove imports and exports
+      content = cleanModuleCode(content);
+
       bundleContent += `\n// Source: ${file}\n${content}\n`;
     }
 

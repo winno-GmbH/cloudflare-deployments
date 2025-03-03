@@ -1,11 +1,14 @@
 /**
  * Form Tool v2
- * Compiled on 2025-03-03T14:17:25.780Z
+ * Compiled on 2025-03-03T14:46:05.783Z
  */
 (function() {
+// Define a global object to store exported values
+window.FormToolV2 = window.FormToolV2 || {};
+
 
 // Source: fields.js
-export function getFields(parent) {
+function getFields(parent) {
     const fields = [];
     const elements = Array.from(parent.querySelectorAll("input, textarea")).filter((el) => !el.closest('[condition-active="false"]'));
     elements.forEach((field) => {
@@ -43,7 +46,7 @@ export function getFields(parent) {
     });
     return fields;
 }
-export function convertFieldsToFormData(fields) {
+function convertFieldsToFormData(fields) {
     const allFields = [];
     fields.forEach((field) => {
         const req = {
@@ -74,7 +77,7 @@ export function convertFieldsToFormData(fields) {
     });
     return allFields;
 }
-export function convertFormDataToFields(formData, form) {
+function convertFormDataToFields(formData, form) {
     let lastStepName = "";
     formData.categories.forEach((category) => {
         const formStepParent = form.querySelector(`[name="${category.name}"]`);
@@ -142,10 +145,10 @@ function getElementByXpathWithIndex(xpath, parent, index) {
 
 
 // Source: formtool-v2.js
-import { FormSteps } from './steps';
-import { FormSubmission } from './submission';
-import { updatePadding, cleanString } from './utils';
-import { validateTextInput } from './validation';
+
+
+
+
 class FormTool {
     constructor() {
         this.formSteps = null;
@@ -501,9 +504,9 @@ formTool.init();
 
 
 // Source: steps.js
-import { getFields, convertFieldsToFormData, convertFormDataToFields } from './fields';
-import { validateFields } from './validation';
-export class FormSteps {
+
+
+class FormSteps {
     constructor(form, accessKey) {
         this.currentStep = 0;
         this.formStepPairs = [];
@@ -697,10 +700,10 @@ export class FormSteps {
 
 
 // Source: submission.js
-import { getFields, convertFieldsToFormData } from './fields';
-import { validateFields } from './validation';
-import { getCookie } from './utils';
-export class FormSubmission {
+
+
+
+class FormSubmission {
     constructor(form, accessKey, captchaKey) {
         this.serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
         this.form = form;
@@ -848,16 +851,16 @@ export class FormSubmission {
 
 
 // Source: types.js
-export {};
+
 
 
 // Source: utils.js
-export function cleanString(input) {
+function cleanString(input) {
     return input
         .replace(/\s+/g, " ")
         .trim();
 }
-export function findParentWithClass(element, classNames) {
+function findParentWithClass(element, classNames) {
     let current = element;
     while (current && current.classList) {
         if (classNames.some((className) => current?.classList.contains(className))) {
@@ -867,7 +870,7 @@ export function findParentWithClass(element, classNames) {
     }
     return null;
 }
-export function getContainerType(element) {
+function getContainerType(element) {
     if (element.classList.contains("cmp--tf-pre"))
         return "pre";
     if (element.classList.contains("cmp--tf-main"))
@@ -876,7 +879,7 @@ export function getContainerType(element) {
         return "suf";
     return "";
 }
-export function getElementByXpathWithIndex(xpath, parent, index) {
+function getElementByXpathWithIndex(xpath, parent, index) {
     const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     let elements = [];
     for (let i = 0; i < xpathResult.snapshotLength; i++) {
@@ -885,7 +888,7 @@ export function getElementByXpathWithIndex(xpath, parent, index) {
     const descendantElements = elements.filter((element) => parent.contains(element));
     return descendantElements[index] || null;
 }
-export function getCookie(name) {
+function getCookie(name) {
     const cookieArray = document.cookie.split("; ");
     for (let i = 0; i < cookieArray.length; i++) {
         const cookie = cookieArray[i].split("=");
@@ -895,7 +898,7 @@ export function getCookie(name) {
     }
     return null;
 }
-export function updatePadding(tfElement) {
+function updatePadding(tfElement) {
     const iconElement = tfElement.querySelector(".wr_ico--tf-pre-lead.wr_ico, .wr_ico--tf-suf-lead.wr_ico, .wr_ico--tf-lead.wr_ico");
     if (!iconElement)
         return;
@@ -918,7 +921,7 @@ export function updatePadding(tfElement) {
 
 
 // Source: validation.js
-export function validateTextInput(field) {
+function validateTextInput(field) {
     const { value, required, customValidatorRegex, type } = field;
     if (required) {
         if (customValidatorRegex && !new RegExp(customValidatorRegex).test(value)) {
@@ -940,7 +943,7 @@ export function validateTextInput(field) {
     }
     return true;
 }
-export function validateCheckbox(field, form) {
+function validateCheckbox(field, form) {
     const { required, name } = field;
     const checkboxes = form.querySelectorAll(`input[name="${name}"]`);
     let oneChecked = false;
@@ -954,7 +957,7 @@ export function validateCheckbox(field, form) {
     }
     return true;
 }
-export function validateRadio(field, form) {
+function validateRadio(field, form) {
     const { required, name } = field;
     const radios = form.querySelectorAll(`input[name="${name}"]`);
     let oneChecked = false;
@@ -968,7 +971,7 @@ export function validateRadio(field, form) {
     }
     return true;
 }
-export function validateFields(fields, form) {
+function validateFields(fields, form) {
     let isValid = true;
     fields.forEach((field) => {
         let fieldIsValid = true;
