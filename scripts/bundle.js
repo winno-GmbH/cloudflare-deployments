@@ -276,13 +276,6 @@ async function bundleFiles() {
     }
 
     bundleContent += `
-  // Export main objects to global scope
-  window.FormToolV2 = window.FormToolV2 || {};
-  
-  // Export main FormTool object if it exists
-  if (typeof FormTool !== 'undefined') {
-    window.FormTool = FormTool;
-  }
   
 })(window);`;
 
