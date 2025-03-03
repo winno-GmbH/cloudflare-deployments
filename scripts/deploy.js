@@ -5,7 +5,6 @@ const { execSync } = require("child_process");
 // Configuration
 const sourceDir = path.resolve(__dirname, "../tools");
 const deployDir = path.resolve(__dirname, "../.deploy");
-const wranglerConfigPath = path.resolve(__dirname, "../wrangler.toml");
 
 // Create a clean deployment directory
 console.log("Preparing deployment directory...");
@@ -19,11 +18,17 @@ fs.mkdirSync(deployDir, { recursive: true });
 console.log("Copying tools directory...");
 fs.cpSync(sourceDir, path.join(deployDir, "tools"), { recursive: true });
 
-// Copy wrangler.toml if it exists
-if (fs.existsSync(wranglerConfigPath)) {
-  console.log("Copying wrangler.toml...");
-  fs.copyFileSync(wranglerConfigPath, path.join(deployDir, "wrangler.toml"));
-}
+// Create a minimal wrangler.toml file
+console.log("Creating wrangler.toml configuration...");
+const wranglerConfig = `
+name = "form-tool-worker"
+main = "./tools/form-tool/formtool-v2.js"
+compatibility_date = "2023-10-30"
+
+# Add any additional configuration you need here
+`;
+
+fs.writeFileSync(path.join(deployDir, "wrangler.toml"), wranglerConfig);
 
 // Deploy using wrangler
 console.log("Deploying to Cloudflare Workers...");
