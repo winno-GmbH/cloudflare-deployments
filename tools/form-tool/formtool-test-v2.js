@@ -4,9 +4,6 @@
  * Dependencies resolved automatically
  */
 (function () {
-  // Define a global object to store exports
-  window.FormToolV2 = window.FormToolV2 || {};
-
   // Declare all variables at the top to handle forward references
   var getFields;
   var fields;
