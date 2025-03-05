@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.24");
+    console.log("Form Submit v0.2.25");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -795,8 +795,7 @@ class FormTool {
         dataTransfer.items.add(file);
       });
 
-      input.files = dataTransfer.files;
-      updateFilePreviews(input.files);
+      updateFilePreviews(dataTransfer.files);
     };
 
     // Handle file input change
