@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.7");
+    console.log("Form Submit v0.2.9");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -205,6 +205,7 @@ class FormTool {
 
     // Select / Datepicker
     this.setupSelectAndDatepicker();
+    this.setupDragAndDrop();
   }
 
   private setupSelectAndDatepicker(): void {
@@ -672,6 +673,34 @@ class FormTool {
       parent.querySelector(".el--tf-md-overlay.el")?.classList.add("hidden");
       parent.querySelector(".cmp--tf-md.cmp")?.classList.add("hidden");
       input.dispatchEvent(new Event("blur"));
+    });
+  }
+
+  private setupDragAndDrop(): void {
+    const parent = this.form?.querySelector('.cmp--fu.cmp');
+
+    if (!parent) return;
+
+    const dragDropElement = parent.querySelector('.cmp--fu-drag.cmp');
+    const input = parent.querySelector('input');
+
+    if (!dragDropElement || !input) return;
+
+    document.body.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dragDropElement.classList.add('dragging');
+    });
+
+    document.body.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragDropElement.classList.remove('dragging');
+    });
+
+    document.body.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragDropElement.classList.remove('dragging');
+      input.value = e.dataTransfer?.files[0].name || '';
+      console.log(e.dataTransfer?.files[0].name);
     });
   }
 
