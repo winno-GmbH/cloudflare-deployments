@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.23");
+    console.log("Form Submit v0.2.24");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -777,6 +777,8 @@ class FormTool {
       }
 
       dragDropElement.classList.remove('error');
+
+      console.log("handleFiles", newFiles);
 
       // Create a new FileList-like object
       const dataTransfer = new DataTransfer();
