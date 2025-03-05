@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.14");
+    console.log("Form Submit v0.2.15");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -686,6 +686,28 @@ class FormTool {
 
     if (!dragDropElement || !input) return;
 
+    // Add click handler to open file input
+    parent.addEventListener('click', () => {
+      input.click();
+    });
+
+    // Handle file input change
+    input.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const allowedTypes = input.getAttribute('accept')?.split(',') || [];
+        if (allowedTypes.length > 0 && !allowedTypes.some(type => file.type.match(type.replace('*', '.*')))) {
+          dragDropElement.classList.add('error');
+          return;
+        }
+        dragDropElement.classList.remove('error');
+        // Create a new FileList-like object
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input.files = dataTransfer.files;
+      }
+    });
+
     document.body.addEventListener('dragover', (e) => {
       e.preventDefault();
       dragDropElement.classList.add('dragging');
@@ -705,8 +727,21 @@ class FormTool {
     document.body.addEventListener('drop', (e) => {
       e.preventDefault();
       dragDropElement.classList.remove('dragging');
-      input.value = e.dataTransfer?.files[0].name || '';
-      console.log(e.dataTransfer?.files[0].name);
+      dragDropElement.classList.add('hidden');
+
+      const file = e.dataTransfer?.files[0];
+      if (file) {
+        const allowedTypes = input.getAttribute('accept')?.split(',') || [];
+        if (allowedTypes.length > 0 && !allowedTypes.some(type => file.type.match(type.replace('*', '.*')))) {
+          dragDropElement.classList.add('error');
+          return;
+        }
+        dragDropElement.classList.remove('error');
+        // Create a new FileList-like object
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input.files = dataTransfer.files;
+      }
     });
   }
 
