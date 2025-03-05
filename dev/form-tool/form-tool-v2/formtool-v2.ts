@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.18");
+    console.log("Form Submit v0.2.19");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -683,7 +683,7 @@ class FormTool {
 
     const dragDropElement = parent.querySelector('.cmp--fu-drag.cmp');
     const input = parent.querySelector('input');
-    const uploadsContainer = parent.querySelector('.cmp--fu-uploads.cmp');
+    const uploadsContainer = parent.querySelector('.lyt--fu-uploads.lyt');
 
     if (!dragDropElement || !input || !uploadsContainer) return;
 
@@ -710,7 +710,9 @@ class FormTool {
             ${file.type.startsWith('image/')
             ? `<div class="cmp--fu-upload-preview cmp">
                   <div class="lyt--fu-upload-preview lyt">
-                    <img src="${URL.createObjectURL(file)}" alt="${file.name}" />
+                    <div class="wr_img--fu-upload-preview wr_img">
+                      <img src="${URL.createObjectURL(file)}" alt="${file.name}" />
+                    </div>
                   </div>
                 </div>`
             : `<div class="cmp--fu-upload-name cmp">
