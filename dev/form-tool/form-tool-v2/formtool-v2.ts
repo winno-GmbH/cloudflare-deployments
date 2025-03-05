@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.22");
+    console.log("Form Submit v0.2.23");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -799,7 +799,44 @@ class FormTool {
 
     // Handle file input change
     input.addEventListener('change', (e) => {
-      handleFiles((e.target as HTMLInputElement).files);
+      const newFiles = (e.target as HTMLInputElement).files;
+      if (!newFiles || newFiles.length === 0) return;
+
+      const allowedTypes = input.getAttribute('accept')?.split(',') || [];
+      let hasError = false;
+
+      // Check all new files for valid types
+      for (let i = 0; i < newFiles.length; i++) {
+        if (allowedTypes.length > 0 && !allowedTypes.some(type => newFiles[i].type.match(type.replace('*', '.*')))) {
+          hasError = true;
+          break;
+        }
+      }
+
+      if (hasError) {
+        dragDropElement.classList.add('error');
+        return;
+      }
+
+      dragDropElement.classList.remove('error');
+
+      // Create a new FileList-like object
+      const dataTransfer = new DataTransfer();
+
+      // Add all files from the input
+      if (input.files) {
+        Array.from(input.files).forEach(file => {
+          dataTransfer.items.add(file);
+        });
+      }
+
+      // Add new files
+      Array.from(newFiles).forEach(file => {
+        dataTransfer.items.add(file);
+      });
+
+      input.files = dataTransfer.files;
+      updateFilePreviews(input.files);
     });
 
     document.body.addEventListener('dragover', (e) => {
