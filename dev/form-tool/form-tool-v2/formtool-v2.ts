@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.12");
+    console.log("Form Submit v0.2.13");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -696,8 +696,8 @@ class FormTool {
     document.body.addEventListener('dragleave', (e) => {
       e.preventDefault();
       console.log("dragleave");
-      // dragDropElement.classList.remove('dragging');
-      // dragDropElement.classList.add('hidden');
+      dragDropElement.classList.remove('dragging');
+      dragDropElement.classList.add('hidden');
     });
 
     document.body.addEventListener('drop', (e) => {
