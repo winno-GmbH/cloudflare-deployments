@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.21");
+    console.log("Form Submit v0.2.22");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -778,20 +778,20 @@ class FormTool {
 
       dragDropElement.classList.remove('error');
 
-      // Create a new FileList-like object with existing and new files
+      // Create a new FileList-like object
       const dataTransfer = new DataTransfer();
 
-      // Add existing files
+      // Add all files from the input
       if (input.files) {
-        for (let i = 0; i < input.files.length; i++) {
-          dataTransfer.items.add(input.files[i]);
-        }
+        Array.from(input.files).forEach(file => {
+          dataTransfer.items.add(file);
+        });
       }
 
       // Add new files
-      for (let i = 0; i < newFiles.length; i++) {
-        dataTransfer.items.add(newFiles[i]);
-      }
+      Array.from(newFiles).forEach(file => {
+        dataTransfer.items.add(file);
+      });
 
       input.files = dataTransfer.files;
       updateFilePreviews(input.files);
