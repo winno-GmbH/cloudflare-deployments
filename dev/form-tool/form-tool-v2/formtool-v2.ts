@@ -683,13 +683,76 @@ class FormTool {
 
     const dragDropElement = parent.querySelector('.cmp--fu-drag.cmp');
     const input = parent.querySelector('input');
+    const uploadsContainer = parent.querySelector('.cmp--fu-uploads.cmp');
 
-    if (!dragDropElement || !input) return;
+    if (!dragDropElement || !input || !uploadsContainer) return;
 
     // Add click handler to open file input
     parent.addEventListener('click', () => {
       input.click();
     });
+
+    const updateFilePreviews = (files: FileList | null) => {
+      if (!files || files.length === 0) {
+        uploadsContainer.classList.add('hidden');
+        return;
+      }
+
+      uploadsContainer.classList.remove('hidden');
+      uploadsContainer.innerHTML = '';
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const uploadElement = document.createElement('div');
+        uploadElement.className = 'cmp--fu-upload cmp';
+        uploadElement.innerHTML = `
+          <div class="lyt--fu-upload lyt">
+            ${file.type.startsWith('image/')
+            ? `<div class="cmp--fu-upload-preview cmp">
+                  <div class="lyt--fu-upload-preview lyt">
+                    <img src="${URL.createObjectURL(file)}" alt="${file.name}" />
+                  </div>
+                </div>`
+            : `<div class="cmp--fu-upload-name cmp">
+                  <div class="lyt--fu-upload-name lyt">
+                    <div class="wr_p--fu-upload-name wr_p">
+                      <p class="p--m">${file.name}</p>
+                    </div>
+                  </div>
+                </div>`
+          }
+            <div class="cmp--fu-upload-delete cmp">
+              <div class="lyt--fu-upload-delete lyt">
+                <div class="wr_ico--fu-upload-delete wr_ico">
+                  <div class="ico--fu-upload-delete w-embed">
+                    <svg viewBox="0 0 9 9" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" clip-rule="evenodd" d="M7.57684 8.9231L8.93713 7.56274L5.86017 4.48853L8.93713 1.41797L7.57812 0.0563965L4.49994 3.12939L1.42303 0.0539551L0.0627441 1.41406L3.13843 4.48853L0.0627441 7.55908L1.42175 8.91919L4.49866 5.84741L7.57684 8.9231Z"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Add delete functionality
+        const deleteButton = uploadElement.querySelector('.cmp--fu-upload-delete.cmp');
+        if (deleteButton) {
+          deleteButton.addEventListener('click', () => {
+            const dataTransfer = new DataTransfer();
+            for (let j = 0; j < files.length; j++) {
+              if (j !== i) {
+                dataTransfer.items.add(files[j]);
+              }
+            }
+            input.files = dataTransfer.files;
+            updateFilePreviews(input.files);
+          });
+        }
+
+        uploadsContainer.appendChild(uploadElement);
+      }
+    };
 
     // Handle file input change
     input.addEventListener('change', (e) => {
@@ -718,6 +781,7 @@ class FormTool {
           dataTransfer.items.add(files[i]);
         }
         input.files = dataTransfer.files;
+        updateFilePreviews(input.files);
       }
     });
 
@@ -767,6 +831,7 @@ class FormTool {
           dataTransfer.items.add(files[i]);
         }
         input.files = dataTransfer.files;
+        updateFilePreviews(input.files);
       }
     });
   }

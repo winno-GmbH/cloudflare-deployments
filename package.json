@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "build-push": "node update-version.js && webpack --config webpack.config.js && git add --all && git commit -m 'push new version' && git push"
+    "build-push": "node update-version.js && webpack --config webpack.config.js && git add --all && git commit -m 'push new version' && git push && clear"
   },
   "devDependencies": {
     "ts-loader": "^9.5.1",
