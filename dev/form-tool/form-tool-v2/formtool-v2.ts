@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.19");
+    console.log("Form Submit v0.2.20");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -694,11 +694,11 @@ class FormTool {
 
     const updateFilePreviews = (files: FileList | null) => {
       if (!files || files.length === 0) {
-        uploadsContainer.classList.add('hidden');
+        uploadsContainer.parentElement?.classList.add('hidden');
         return;
       }
 
-      uploadsContainer.classList.remove('hidden');
+      uploadsContainer.parentElement?.classList.remove('hidden');
       uploadsContainer.innerHTML = '';
 
       for (let i = 0; i < files.length; i++) {
