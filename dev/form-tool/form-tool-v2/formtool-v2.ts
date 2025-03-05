@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.17");
+    console.log("Form Submit v0.2.18");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -738,7 +738,8 @@ class FormTool {
         // Add delete functionality
         const deleteButton = uploadElement.querySelector('.cmp--fu-upload-delete.cmp');
         if (deleteButton) {
-          deleteButton.addEventListener('click', () => {
+          deleteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
             const dataTransfer = new DataTransfer();
             for (let j = 0; j < files.length; j++) {
               if (j !== i) {
