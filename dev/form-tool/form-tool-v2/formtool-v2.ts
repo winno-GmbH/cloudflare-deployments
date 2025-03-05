@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.15");
+    console.log("Form Submit v0.2.16");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -693,17 +693,30 @@ class FormTool {
 
     // Handle file input change
     input.addEventListener('change', (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
+      const files = (e.target as HTMLInputElement).files;
+      if (files && files.length > 0) {
         const allowedTypes = input.getAttribute('accept')?.split(',') || [];
-        if (allowedTypes.length > 0 && !allowedTypes.some(type => file.type.match(type.replace('*', '.*')))) {
+        let hasError = false;
+
+        // Check all files for valid types
+        for (let i = 0; i < files.length; i++) {
+          if (allowedTypes.length > 0 && !allowedTypes.some(type => files[i].type.match(type.replace('*', '.*')))) {
+            hasError = true;
+            break;
+          }
+        }
+
+        if (hasError) {
           dragDropElement.classList.add('error');
           return;
         }
+
         dragDropElement.classList.remove('error');
-        // Create a new FileList-like object
+        // Create a new FileList-like object with all files
         const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
+        for (let i = 0; i < files.length; i++) {
+          dataTransfer.items.add(files[i]);
+        }
         input.files = dataTransfer.files;
       }
     });
@@ -729,17 +742,30 @@ class FormTool {
       dragDropElement.classList.remove('dragging');
       dragDropElement.classList.add('hidden');
 
-      const file = e.dataTransfer?.files[0];
-      if (file) {
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
         const allowedTypes = input.getAttribute('accept')?.split(',') || [];
-        if (allowedTypes.length > 0 && !allowedTypes.some(type => file.type.match(type.replace('*', '.*')))) {
+        let hasError = false;
+
+        // Check all files for valid types
+        for (let i = 0; i < files.length; i++) {
+          if (allowedTypes.length > 0 && !allowedTypes.some(type => files[i].type.match(type.replace('*', '.*')))) {
+            hasError = true;
+            break;
+          }
+        }
+
+        if (hasError) {
           dragDropElement.classList.add('error');
           return;
         }
+
         dragDropElement.classList.remove('error');
-        // Create a new FileList-like object
+        // Create a new FileList-like object with all files
         const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
+        for (let i = 0; i < files.length; i++) {
+          dataTransfer.items.add(files[i]);
+        }
         input.files = dataTransfer.files;
       }
     });
