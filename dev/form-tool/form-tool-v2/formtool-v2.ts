@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.26");
+    console.log("Form Submit v0.2.27");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -219,21 +219,34 @@ class FormTool {
 
       const options = Array.from(parent?.querySelectorAll(".cmp--tf-md-option.cmp") || []);
 
+      if (!parent || !input) return;
+
       if (options.length === 0 || tf.getAttribute("generate") === "true") {
         if (tf.getAttribute("data-type") === "country-code") {
           this.setupCountryCodePicker(input as HTMLElement, tf as HTMLElement, options);
+          parent = tf;
         } else {
           this.setupDatePicker(input as HTMLElement, parent as HTMLElement);
         }
       } else {
         this.setupOptions(input as HTMLElement, parent as HTMLElement, options);
       }
+      parent.addEventListener("click", () => {
+        parent.querySelector(".el--tf-md-overlay.el")?.classList.remove("hidden");
+        parent.querySelector(".cmp--tf-md.cmp")?.classList.remove("hidden");
+      });
+
+      parent.querySelector(".el--tf-md-overlay.el")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        parent.querySelector(".el--tf-md-overlay.el")?.classList.add("hidden");
+        parent.querySelector(".cmp--tf-md.cmp")?.classList.add("hidden");
+        input.dispatchEvent(new Event("blur"));
+      });
     });
   }
 
   private setupCountryCodePicker(input: HTMLElement, tf: HTMLElement, existingOptions: Element[]): void {
     const overlay = tf.querySelector(".el--tf-md-overlay.el") as HTMLElement;
-    console.log("here");
     fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json")
       .then((response) => response.json())
       .then((data) => {
@@ -662,18 +675,6 @@ class FormTool {
           option.classList.add("hidden");
         }
       });
-    });
-
-    parent.addEventListener("click", () => {
-      parent.querySelector(".el--tf-md-overlay.el")?.classList.remove("hidden");
-      parent.querySelector(".cmp--tf-md.cmp")?.classList.remove("hidden");
-    });
-
-    parent.querySelector(".el--tf-md-overlay.el")?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      parent.querySelector(".el--tf-md-overlay.el")?.classList.add("hidden");
-      parent.querySelector(".cmp--tf-md.cmp")?.classList.add("hidden");
-      input.dispatchEvent(new Event("blur"));
     });
   }
 
