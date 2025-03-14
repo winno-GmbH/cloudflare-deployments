@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.25");
+    console.log("Form Submit v0.2.26");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -233,6 +233,7 @@ class FormTool {
 
   private setupCountryCodePicker(input: HTMLElement, tf: HTMLElement, existingOptions: Element[]): void {
     const overlay = tf.querySelector(".el--tf-md-overlay.el") as HTMLElement;
+    console.log("here");
     fetch("https://cloudflare-test-7u4.pages.dev/tools/form-tool/country-codes.json")
       .then((response) => response.json())
       .then((data) => {
