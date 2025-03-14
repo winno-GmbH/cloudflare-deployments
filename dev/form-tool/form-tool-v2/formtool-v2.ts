@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.31");
+    console.log("Form Submit v0.2.32");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -227,7 +227,6 @@ class FormTool {
       if (options.length === 0 || tf.getAttribute("generate") === "true") {
         if (tf.getAttribute("data-type") === "country-code") {
           this.setupCountryCodePicker(input as HTMLElement, tf as HTMLElement, options);
-          parent = tf;
         } else {
           this.setupDatePicker(input as HTMLElement, parent as HTMLElement);
         }
