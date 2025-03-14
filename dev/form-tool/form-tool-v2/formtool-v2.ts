@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.29");
+    console.log("Form Submit v0.2.30");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -211,9 +211,11 @@ class FormTool {
   private setupSelectAndDatepicker(): void {
     document.querySelectorAll(".cmp--tf-md.cmp").forEach((tf) => {
       let parent = tf.closest(".cmp--tf.cmp");
-      const pre = tf.querySelector(".cmp.cmp--tf-pre");
+      if (!parent) return;
+
+      const pre = parent.querySelector(".cmp.cmp--tf-pre");
       console.log(pre);
-      const suf = tf.querySelector(".cmp.cmp--tf-suf");
+      const suf = parent.querySelector(".cmp.cmp--tf-suf");
       parent = pre ?? suf ?? parent;
       const input = parent?.querySelector("input") ??
         parent?.querySelector(".lbl--tf-pre.lbl") ??
@@ -221,7 +223,7 @@ class FormTool {
 
       const options = Array.from(parent?.querySelectorAll(".cmp--tf-md-option.cmp") || []);
 
-      if (!parent || !input) return;
+      if (!input) return;
 
       if (options.length === 0 || tf.getAttribute("generate") === "true") {
         if (tf.getAttribute("data-type") === "country-code") {
