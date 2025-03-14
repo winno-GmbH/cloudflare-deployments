@@ -137,6 +137,9 @@ export class FormSubmission {
     const formSteps = this.form.querySelectorAll(".cmp--form.cmp");
     console.log(formSteps);
     formSteps.forEach((formStep) => {
+      console.log(formStep.getAttribute("id"));
+      console.log(formStep.getAttribute("condition-active"));
+      console.log(!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true"));
       if (!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true")) {
         const fields = convertFieldsToFormData(getFields(formStep as HTMLElement));
         categories.push({
