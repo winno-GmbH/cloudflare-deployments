@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.32");
+    console.log("Form Submit v0.2.33");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -215,7 +215,7 @@ class FormTool {
 
       const pre = parent.querySelector(".cmp.cmp--tf-pre");
       const suf = parent.querySelector(".cmp.cmp--tf-suf");
-      parent = pre !== null ? pre : suf !== null ? suf : parent;
+      parent = pre ?? suf ?? parent;
       const input = parent?.querySelector("input") ??
         parent?.querySelector(".lbl--tf-pre.lbl") ??
         parent?.querySelector(".lbl--tf-suf.lbl");
