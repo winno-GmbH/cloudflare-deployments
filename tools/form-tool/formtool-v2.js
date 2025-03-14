@@ -187,7 +187,7 @@
       }
       const categories = [];
       formStepPairs.forEach((formStep) => {
-        if (formStep.id !== "" && formStep.formStep.getAttribute("condition-active") !== "true") {
+        if (!(formStep.id !== "" && formStep.formStep.getAttribute("condition-active") !== "true")) {
           const fields = convertFieldsToFormData(getFields(formStep.formStep));
           const category = {
             name: formStep.name,

@@ -136,19 +136,26 @@ export class FormSubmission {
     const categories: FormCategory[] = [];
     const formSteps = this.form.querySelectorAll(".cmp--form.cmp");
     console.log(formSteps);
-    formSteps.forEach((formStep) => {
-      console.log(formStep.getAttribute("id"));
-      console.log(formStep.getAttribute("condition-active"));
-      console.log(!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true"));
-      if (!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true")) {
-        const fields = convertFieldsToFormData(getFields(formStep as HTMLElement));
-        categories.push({
-          name: formStep.getAttribute("name") || "",
-          form: fields,
-        });
-      }
-    });
-
+    if (formSteps.length === 1) {
+      const fields = convertFieldsToFormData(getFields(formSteps[0] as HTMLElement));
+      categories.push({
+        name: formSteps[0].getAttribute("name") || "",
+        form: fields,
+      });
+    } else {
+      formSteps.forEach((formStep) => {
+        console.log(formStep.getAttribute("id"));
+        console.log(formStep.getAttribute("condition-active"));
+        console.log(!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true"));
+        if (!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true")) {
+          const fields = convertFieldsToFormData(getFields(formStep as HTMLElement));
+          categories.push({
+            name: formStep.getAttribute("name") || "",
+            form: fields,
+          });
+        }
+      });
+    }
     try {
       window.fbq("track", "Lead");
     } catch (error) {
