@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.33");
+    console.log("Form Submit v0.2.34");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }

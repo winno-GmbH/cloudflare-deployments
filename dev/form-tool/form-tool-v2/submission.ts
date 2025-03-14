@@ -129,6 +129,8 @@ export class FormSubmission {
   public async handleSubmit(e: Event): Promise<void> {
     const fields = getFields(this.form);
     const isValid = validateFields(fields, this.form);
+    console.log(isValid);
+    console.log(fields);
     if (!isValid) return;
 
     const categories: FormCategory[] = [];
