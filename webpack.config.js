@@ -31,6 +31,9 @@ module.exports = {
           format: {
             comments: false,
           },
+          mangle: false,
+          keep_classnames: true,
+          keep_fnames: true,
         },
         extractComments: false,
       }),

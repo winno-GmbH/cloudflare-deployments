@@ -129,13 +129,10 @@ export class FormSubmission {
   public async handleSubmit(e: Event): Promise<void> {
     const fields = getFields(this.form);
     const isValid = validateFields(fields, this.form);
-    console.log(isValid);
-    console.log(fields);
     if (!isValid) return;
 
     const categories: FormCategory[] = [];
     const formSteps = this.form.querySelectorAll(".cmp--form.cmp");
-    console.log(formSteps);
     if (formSteps.length === 1) {
       const fields = convertFieldsToFormData(getFields(formSteps[0] as HTMLElement));
       categories.push({
@@ -144,9 +141,6 @@ export class FormSubmission {
       });
     } else {
       formSteps.forEach((formStep) => {
-        console.log(formStep.getAttribute("id"));
-        console.log(formStep.getAttribute("condition-active"));
-        console.log(!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true"));
         if (!(formStep.getAttribute("id") !== "" && formStep.getAttribute("condition-active") !== "true")) {
           const fields = convertFieldsToFormData(getFields(formStep as HTMLElement));
           categories.push({
