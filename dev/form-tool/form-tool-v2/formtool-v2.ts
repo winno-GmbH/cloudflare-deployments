@@ -21,7 +21,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.40");
+    console.log("Form Submit v0.2.41");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -696,7 +696,7 @@ class FormTool {
       input.click();
     });
 
-    const updateFilePreviews = (files: FileList | null) => {
+    const updateFilePreviews = (files: FileList) => {
       if (!files || files.length === 0) {
         uploadsContainer.parentElement?.classList.add('hidden');
         return;
@@ -746,14 +746,8 @@ class FormTool {
         if (deleteButton) {
           deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
-            const dataTransfer = new DataTransfer();
-            for (let j = 0; j < files.length; j++) {
-              if (j !== i) {
-                dataTransfer.items.add(files[j]);
-              }
-            }
-            input.files = dataTransfer.files;
-            updateFilePreviews(input.files);
+            const files = combineFiles(input, input.files || new FileList());
+            updateFilePreviews(files);
           });
         }
 
@@ -782,8 +776,11 @@ class FormTool {
 
       dragDropElement.classList.remove('error');
 
-      console.log("handleFiles", newFiles);
+      const files = combineFiles(input, newFiles);
+      updateFilePreviews(files);
+    };
 
+    const combineFiles = (input: HTMLInputElement, newFiles: FileList) => {
       // Create a new FileList-like object
       const dataTransfer = new DataTransfer();
 
@@ -800,9 +797,8 @@ class FormTool {
       });
 
       input.files = dataTransfer.files;
-
-      updateFilePreviews(dataTransfer.files);
-    };
+      return dataTransfer.files;
+    }
 
     // Handle file input change
     input.addEventListener('change', (e) => {
@@ -827,23 +823,8 @@ class FormTool {
 
       dragDropElement.classList.remove('error');
 
-      // Create a new FileList-like object
-      const dataTransfer = new DataTransfer();
-
-      // Add all files from the input
-      if (input.files) {
-        Array.from(input.files).forEach(file => {
-          dataTransfer.items.add(file);
-        });
-      }
-
-      // Add new files
-      Array.from(newFiles).forEach(file => {
-        dataTransfer.items.add(file);
-      });
-
-      input.files = dataTransfer.files;
-      updateFilePreviews(input.files);
+      const files = combineFiles(input, newFiles);
+      updateFilePreviews(files);
     });
 
     document.body.addEventListener('dragover', (e) => {
