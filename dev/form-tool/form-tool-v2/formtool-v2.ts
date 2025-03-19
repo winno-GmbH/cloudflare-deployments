@@ -2,6 +2,7 @@ import { FormSteps } from './steps';
 import { FormSubmission } from './submission';
 import { updatePadding, cleanString } from './utils';
 import { validateTextInput } from './validation';
+import { FileHandler } from './file-handler';
 
 class FormTool {
   private currentScript: HTMLScriptElement;
@@ -21,7 +22,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.41");
+    console.log("Form Submit v0.2.42");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -686,15 +687,10 @@ class FormTool {
     if (!parent) return;
 
     const dragDropElement = parent.querySelector('.cmp--fu-drag.cmp');
-    const input = parent.querySelector('input');
+    const input = parent.querySelector('input') as HTMLInputElement;
     const uploadsContainer = parent.querySelector('.lyt--fu-uploads.lyt');
 
     if (!dragDropElement || !input || !uploadsContainer) return;
-
-    // Add click handler to open file input
-    parent.addEventListener('click', () => {
-      input.click();
-    });
 
     const updateFilePreviews = (files: FileList) => {
       if (!files || files.length === 0) {
@@ -746,8 +742,7 @@ class FormTool {
         if (deleteButton) {
           deleteButton.addEventListener('click', (e) => {
             e.stopPropagation();
-            const files = combineFiles(input, input.files || new FileList());
-            updateFilePreviews(files);
+            fileHandler.removeFile(i);
           });
         }
 
@@ -755,76 +750,25 @@ class FormTool {
       }
     };
 
-    const handleFiles = (newFiles: FileList | null) => {
-      if (!newFiles || newFiles.length === 0) return;
+    // Create the file handler instance
+    const fileHandler = new FileHandler(input, updateFilePreviews);
 
-      const allowedTypes = input.getAttribute('accept')?.split(',') || [];
-      let hasError = false;
-
-      // Check all new files for valid types
-      for (let i = 0; i < newFiles.length; i++) {
-        if (allowedTypes.length > 0 && !allowedTypes.some(type => newFiles[i].type.match(type.replace('*', '.*')))) {
-          hasError = true;
-          break;
-        }
-      }
-
-      if (hasError) {
-        dragDropElement.classList.add('error');
-        return;
-      }
-
-      dragDropElement.classList.remove('error');
-
-      const files = combineFiles(input, newFiles);
-      updateFilePreviews(files);
-    };
-
-    const combineFiles = (input: HTMLInputElement, newFiles: FileList) => {
-      // Create a new FileList-like object
-      const dataTransfer = new DataTransfer();
-
-      // Add all files from the input
-      if (input.files) {
-        Array.from(input.files).forEach(file => {
-          dataTransfer.items.add(file);
-        });
-      }
-
-      // Add new files
-      Array.from(newFiles).forEach(file => {
-        dataTransfer.items.add(file);
-      });
-
-      input.files = dataTransfer.files;
-      return dataTransfer.files;
-    }
+    // Add click handler to open file input
+    parent.addEventListener('click', () => {
+      input.click();
+    });
 
     // Handle file input change
     input.addEventListener('change', (e) => {
-      const newFiles = (e.target as HTMLInputElement).files;
-      if (!newFiles || newFiles.length === 0) return;
-
-      const allowedTypes = input.getAttribute('accept')?.split(',') || [];
-      let hasError = false;
-
-      // Check all new files for valid types
-      for (let i = 0; i < newFiles.length; i++) {
-        if (allowedTypes.length > 0 && !allowedTypes.some(type => newFiles[i].type.match(type.replace('*', '.*')))) {
-          hasError = true;
-          break;
+      const fileInput = e.target as HTMLInputElement;
+      if (fileInput.files && fileInput.files.length > 0) {
+        const success = fileHandler.addFiles(fileInput.files);
+        if (!success) {
+          dragDropElement.classList.add('error');
+        } else {
+          dragDropElement.classList.remove('error');
         }
       }
-
-      if (hasError) {
-        dragDropElement.classList.add('error');
-        return;
-      }
-
-      dragDropElement.classList.remove('error');
-
-      const files = combineFiles(input, newFiles);
-      updateFilePreviews(files);
     });
 
     document.body.addEventListener('dragover', (e) => {
@@ -847,7 +791,15 @@ class FormTool {
       e.preventDefault();
       dragDropElement.classList.remove('dragging');
       dragDropElement.classList.add('hidden');
-      handleFiles(e.dataTransfer?.files || null);
+
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        const success = fileHandler.addFiles(e.dataTransfer.files);
+        if (!success) {
+          dragDropElement.classList.add('error');
+        } else {
+          dragDropElement.classList.remove('error');
+        }
+      }
     });
   }
 
