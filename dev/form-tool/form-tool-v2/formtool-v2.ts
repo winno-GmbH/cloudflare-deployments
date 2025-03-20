@@ -22,7 +22,7 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.42");
+    console.log("Form Submit v0.2.43");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -692,6 +692,31 @@ class FormTool {
 
     if (!dragDropElement || !input || !uploadsContainer) return;
 
+    // Create error message element
+    const errorMessageElement = document.createElement('div');
+    errorMessageElement.className = 'cmp--fu-error-message';
+    errorMessageElement.style.color = 'red';
+    errorMessageElement.style.marginTop = '8px';
+    errorMessageElement.style.display = 'none';
+    parent.appendChild(errorMessageElement);
+
+    // Create info message element
+    const infoMessageElement = document.createElement('div');
+    infoMessageElement.className = 'cmp--fu-info-message';
+    infoMessageElement.style.color = '#666';
+    infoMessageElement.style.marginTop = '8px';
+    infoMessageElement.style.fontSize = '14px';
+    infoMessageElement.textContent = 'Maximum 5 files (5MB each)';
+    parent.appendChild(infoMessageElement);
+
+    const showError = (message: string) => {
+      errorMessageElement.textContent = message;
+      errorMessageElement.style.display = 'block';
+      setTimeout(() => {
+        errorMessageElement.style.display = 'none';
+      }, 5000); // Hide the error message after 5 seconds
+    };
+
     const updateFilePreviews = (files: FileList) => {
       if (!files || files.length === 0) {
         uploadsContainer.parentElement?.classList.add('hidden');
@@ -748,13 +773,37 @@ class FormTool {
 
         uploadsContainer.appendChild(uploadElement);
       }
+
+      // Update the remaining files count info
+      const remainingFiles = fileHandler.getMaxFileCount() - fileHandler.getFileCount();
+      if (remainingFiles === 0) {
+        infoMessageElement.textContent = 'Maximum number of files reached (5)';
+        infoMessageElement.style.color = '#ff9900';
+      } else {
+        infoMessageElement.textContent = `Maximum 5 files (5MB each) - ${remainingFiles} remaining`;
+        infoMessageElement.style.color = '#666';
+      }
     };
 
     // Create the file handler instance
     const fileHandler = new FileHandler(input, updateFilePreviews);
 
     // Add click handler to open file input
-    parent.addEventListener('click', () => {
+    parent.addEventListener('click', (e) => {
+      // Don't trigger the file dialog if we're at the maximum file count
+      if (fileHandler.isFileLimitReached()) {
+        showError('Maximum number of files (5) already reached. Please remove a file first.');
+        e.stopPropagation();
+        return;
+      }
+
+      // Don't open file dialog if clicking on a delete button or an existing file
+      if (e.target !== parent &&
+        !parent.contains(e.target as Node) ||
+        (e.target as HTMLElement).closest('.cmp--fu-upload')) {
+        return;
+      }
+
       input.click();
     });
 
@@ -765,14 +814,46 @@ class FormTool {
         const success = fileHandler.addFiles(fileInput.files);
         if (!success) {
           dragDropElement.classList.add('error');
+
+          // Check if any file is over the size limit
+          const maxSize = fileHandler.getMaxFileSize();
+          let oversizedFiles = [];
+
+          for (let i = 0; i < fileInput.files.length; i++) {
+            if (fileInput.files[i].size > maxSize) {
+              oversizedFiles.push(fileInput.files[i].name);
+            }
+          }
+
+          if (oversizedFiles.length > 0) {
+            const message = oversizedFiles.length === 1
+              ? `File "${oversizedFiles[0]}" exceeds the maximum size of 5MB.`
+              : `${oversizedFiles.length} files exceed the maximum size of 5MB.`;
+            showError(message);
+          } else if (fileHandler.getFileCount() + fileInput.files.length > fileHandler.getMaxFileCount()) {
+            showError(`Cannot add ${fileInput.files.length} files. You can only upload a maximum of 5 files.`);
+          } else {
+            showError('File type not allowed.');
+          }
         } else {
           dragDropElement.classList.remove('error');
+          errorMessageElement.style.display = 'none';
         }
       }
     });
 
     document.body.addEventListener('dragover', (e) => {
       e.preventDefault();
+
+      // If at max files, show a different cursor and class
+      if (fileHandler.isFileLimitReached()) {
+        (e.dataTransfer as DataTransfer).dropEffect = 'none';
+        dragDropElement.classList.add('max-reached');
+      } else {
+        (e.dataTransfer as DataTransfer).dropEffect = 'copy';
+        dragDropElement.classList.remove('max-reached');
+      }
+
       dragDropElement.classList.add('dragging');
       dragDropElement.classList.remove('hidden');
     });
@@ -792,15 +873,53 @@ class FormTool {
       dragDropElement.classList.remove('dragging');
       dragDropElement.classList.add('hidden');
 
+      // Don't process the drop if we're at max files
+      if (fileHandler.isFileLimitReached()) {
+        showError('Maximum number of files (5) already reached. Please remove a file first.');
+        return;
+      }
+
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
         const success = fileHandler.addFiles(e.dataTransfer.files);
         if (!success) {
           dragDropElement.classList.add('error');
+
+          // Check if any file is over the size limit
+          const maxSize = fileHandler.getMaxFileSize();
+          let oversizedFiles = [];
+
+          for (let i = 0; i < e.dataTransfer.files.length; i++) {
+            if (e.dataTransfer.files[i].size > maxSize) {
+              oversizedFiles.push(e.dataTransfer.files[i].name);
+            }
+          }
+
+          if (oversizedFiles.length > 0) {
+            const message = oversizedFiles.length === 1
+              ? `File "${oversizedFiles[0]}" exceeds the maximum size of 5MB.`
+              : `${oversizedFiles.length} files exceed the maximum size of 5MB.`;
+            showError(message);
+          } else if (fileHandler.getFileCount() + e.dataTransfer.files.length > fileHandler.getMaxFileCount()) {
+            showError(`Cannot add ${e.dataTransfer.files.length} files. You can only upload a maximum of 5 files.`);
+          } else {
+            showError('File type not allowed.');
+          }
         } else {
           dragDropElement.classList.remove('error');
+          errorMessageElement.style.display = 'none';
         }
       }
     });
+
+    // Add some CSS for the max-reached state
+    const style = document.createElement('style');
+    style.textContent = `
+      .cmp--fu-drag.max-reached {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   public init(): void {
