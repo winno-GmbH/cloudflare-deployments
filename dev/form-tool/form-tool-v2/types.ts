@@ -78,6 +78,7 @@ export interface FormRequest {
   id?: string;
   googleAds?: GoogleAdsData;
   metaAds?: MetaAdsData;
+  sessionId: string;
 }
 
 export interface Month {

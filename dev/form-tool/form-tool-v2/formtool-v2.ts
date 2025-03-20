@@ -12,6 +12,7 @@ class FormTool {
   private form: HTMLElement | null;
   private formSteps: FormSteps | null = null;
   private formSubmission: FormSubmission | null = null;
+  private sessionId: string;
 
   constructor() {
     this.currentScript = this.getCurrentScript();
@@ -22,9 +23,15 @@ class FormTool {
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
 
-    console.log("Form Submit v0.2.43");
+    this.sessionId = this.generateSessionId();
+
+    console.log("Form Submit v0.2.44");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
+  }
+
+  private generateSessionId(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
   private getCurrentScript(): HTMLScriptElement {
@@ -709,6 +716,13 @@ class FormTool {
     infoMessageElement.textContent = 'Maximum 5 files (5MB each)';
     parent.appendChild(infoMessageElement);
 
+    // Create upload status element for visual feedback
+    const uploadStatusElement = document.createElement('div');
+    uploadStatusElement.className = 'cmp--fu-upload-status';
+    uploadStatusElement.style.marginTop = '8px';
+    uploadStatusElement.style.display = 'none';
+    parent.appendChild(uploadStatusElement);
+
     const showError = (message: string) => {
       errorMessageElement.textContent = message;
       errorMessageElement.style.display = 'block';
@@ -785,8 +799,21 @@ class FormTool {
       }
     };
 
-    // Create the file handler instance
-    const fileHandler = new FileHandler(input, updateFilePreviews);
+    // Create the file handler instance with access key and session ID
+    const fileHandler = new FileHandler(
+      input,
+      updateFilePreviews,
+      this.accessKey,
+      this.sessionId,
+    );
+
+    // Provide a method to update the sessionId if needed later
+    window.addEventListener('formtool:session-updated', (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && detail.sessionId) {
+        fileHandler.setSessionId(detail.sessionId);
+      }
+    });
 
     // Add click handler to open file input
     parent.addEventListener('click', (e) => {
@@ -937,7 +964,7 @@ class FormTool {
     this.formSubmission = new FormSubmission(this.form, this.accessKey, this.captchaKey);
     const submitButton = this.form.querySelector(".wr_btn--form-control-submit.wr_btn");
     if (submitButton) {
-      submitButton.addEventListener("click", (e) => this.formSubmission?.handleSubmit(e));
+      submitButton.addEventListener("click", (e) => this.formSubmission?.handleSubmit(e, this.sessionId));
     }
   }
 }

@@ -126,7 +126,7 @@ export class FormSubmission {
     }
   }
 
-  public async handleSubmit(e: Event): Promise<void> {
+  public async handleSubmit(e: Event, sessionId: string): Promise<void> {
     const fields = getFields(this.form);
     const isValid = validateFields(fields, this.form);
     if (!isValid) return;
@@ -165,6 +165,7 @@ export class FormSubmission {
       id: localStorage.getItem("form-save-id") || undefined,
       googleAds: this.getGoogleAdsData(),
       metaAds: this.getMetaAdsData(),
+      sessionId: sessionId,
     };
 
     const buttonWrapper = (e.target as HTMLElement).closest(".wr_btn--form-control-submit.wr_btn");
