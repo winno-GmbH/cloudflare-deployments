@@ -500,10 +500,10 @@ function setupInitValues() {
         : kilometerpaketRadioGroup.querySelector('input[type="radio"]').closest(".cmp--rb.cmp").click();
     }
 
-    if (premiumAddon) {
+    if (premiumAddon === "true") {
       form.querySelector('input[name="premium-versicherung"]').click();
     }
-    if (parkingAddon) {
+    if (parkingAddon === "true") {
       form.querySelector('input[name="parkschaden-versicherung"]').click();
     }
 
