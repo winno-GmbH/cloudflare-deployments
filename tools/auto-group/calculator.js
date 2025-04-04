@@ -1,4 +1,4 @@
-console.log("v 0.2.15");
+console.log("v 0.2.16");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -209,8 +209,6 @@ class AutoGroupCalculator {
     const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
     const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
     const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
-
-    console.log(selectedMietdauer, selectedKilometer, premiumAddon, parkingAddon);
 
     // Find matching kilometer package
     const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
@@ -498,6 +496,8 @@ function setupInitValues() {
     const selectedKilometer = localStorage.getItem("selectedKilometer");
     const premiumAddon = localStorage.getItem("premiumAddon");
     const parkingAddon = localStorage.getItem("parkingAddon");
+
+    console.log(selectedVehicle, selectedMietdauer, selectedKilometer, premiumAddon, parkingAddon);
 
     const form = document.querySelector('[name="kontakt-form"]');
     if (!form) return;
