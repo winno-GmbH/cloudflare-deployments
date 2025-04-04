@@ -1,4 +1,4 @@
-console.log("v 0.2.20");
+console.log("v 0.2.21");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
