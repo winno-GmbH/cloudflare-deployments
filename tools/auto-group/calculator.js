@@ -1,4 +1,4 @@
-console.log("v 0.2.17");
+console.log("v 0.2.18");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -454,6 +454,7 @@ function setupInitValues() {
   }, 100);
 
   const setupNormal = () => {
+    console.log("setupNormal");
     const selectedMietdauer = localStorage.getItem("selectedMietdauer");
     const selectedKilometer = localStorage.getItem("selectedKilometer");
     const premiumAddon = localStorage.getItem("premiumAddon");
