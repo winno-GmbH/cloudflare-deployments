@@ -499,14 +499,7 @@ function setupInitValues() {
     const premiumAddon = localStorage.getItem("premiumAddon");
     const parkingAddon = localStorage.getItem("parkingAddon");
 
-    console.log(
-      selectedVehicle,
-      selectedMietdauer,
-      selectedKilometer,
-      premiumAddon,
-      parkingAddon,
-      premiumAddon === "true"
-    );
+    console.log(selectedVehicle, selectedMietdauer, selectedKilometer, premiumAddon, parkingAddon);
 
     const form = document.querySelector('[name="kontakt-form"]');
     if (!form) return;
@@ -523,10 +516,10 @@ function setupInitValues() {
       .closest(".cmp--rb.cmp")
       .click();
 
-    if (premiumAddon) {
+    if (premiumAddon === "true") {
       form.querySelector('input[name="premium-versicherung"]').click();
     }
-    if (parkingAddon) {
+    if (parkingAddon === "true") {
       form.querySelector('input[name="parkschaden-versicherung"]').click();
     }
 
