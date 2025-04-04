@@ -26,9 +26,7 @@ class AutoGroupCalculator {
 
   isRelevantPage() {
     return (
-      this.currentPath === "/formular" ||
-      this.currentPath === "/fahrzeuge" ||
-      this.currentPath.startsWith("/fahrzeuge/")
+      this.currentPath === "/formular" || this.currentPath === "/auto-abo" || this.currentPath.startsWith("/auto-abo/")
     );
   }
 
@@ -58,9 +56,9 @@ class AutoGroupCalculator {
   routeToHandler() {
     if (this.currentPath === "/formular") {
       this.handleContactPage();
-    } else if (this.currentPath === "/fahrzeuge") {
+    } else if (this.currentPath === "/auto-abo") {
       this.handleVehiclesPage();
-    } else if (this.currentPath.startsWith("/fahrzeuge/")) {
+    } else if (this.currentPath.startsWith("/auto-abo/")) {
       this.handleVehicleDetailPage();
     }
   }
