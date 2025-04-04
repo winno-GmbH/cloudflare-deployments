@@ -111,7 +111,7 @@ export class FormSteps {
 
     this.setStepsActivity();
 
-    if (localStorage.getItem("form-save-id")) {
+    if (localStorage.getItem("form-save-id") && this.form.getAttribute("save-steps") !== "false") {
       this.loadSavedForm();
     }
   }
@@ -173,26 +173,28 @@ export class FormSteps {
       }
     });
 
-    try {
-      const response = await fetch("https://gecko-form-tool-be-new.vercel.app/api/forms/save-step", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: localStorage.getItem("form-save-id") || undefined,
-          data: {
-            categories: categories,
+    if (this.form.getAttribute("save-steps") !== "false") {
+      try {
+        const response = await fetch("https://gecko-form-tool-be-new.vercel.app/api/forms/save-step", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          token: this.accessKey,
-        }),
-      });
-      const data = await response.json();
-      if (data.id) {
-        localStorage.setItem("form-save-id", data.id);
+          body: JSON.stringify({
+            id: localStorage.getItem("form-save-id") || undefined,
+            data: {
+              categories: categories,
+            },
+            token: this.accessKey,
+          }),
+        });
+        const data = await response.json();
+        if (data.id) {
+          localStorage.setItem("form-save-id", data.id);
+        }
+      } catch (error) {
+        console.error("Error saving form step:", error);
       }
-    } catch (error) {
-      console.error("Error saving form step:", error);
     }
   }
 
