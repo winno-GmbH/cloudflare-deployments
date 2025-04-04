@@ -55,12 +55,10 @@ class AutoGroupCalculator {
 
   routeToHandler() {
     if (this.currentPath === "/formular") {
-      console.log(localStorage);
       this.handleContactPage();
     } else if (this.currentPath === "/auto-abo") {
       this.handleVehiclesPage();
     } else if (this.currentPath.startsWith("/auto-abo/")) {
-      console.log(localStorage);
       this.handleVehicleDetailPage();
     }
   }
@@ -209,12 +207,9 @@ class AutoGroupCalculator {
     // Click either the selected button or the first one
     if (selectedButton) {
       selectedButton.dispatchEvent(new Event("click"));
-      console.log("clicked selected button");
     } else if (firstButton) {
       firstButton.dispatchEvent(new Event("click"));
-      console.log("clicked first button");
     }
-    console.log("generated radio buttons");
   }
 
   updateVehiclePrice(vehicleData) {
@@ -322,7 +317,7 @@ class AutoGroupCalculator {
     const formElements = this.setupForm("kontakt-form", updateAllPrices);
     if (!formElements) return;
 
-    const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = formElements;
+    const { mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = formElements;
 
     // Generate radio buttons
     this.generateRadioButtons(
@@ -513,8 +508,6 @@ function setupInitValues() {
     const selectedKilometer = localStorage.getItem("selectedKilometer");
     const premiumAddon = localStorage.getItem("premiumAddon");
     const parkingAddon = localStorage.getItem("parkingAddon");
-
-    console.log(selectedVehicle, selectedMietdauer, selectedKilometer, premiumAddon, parkingAddon);
 
     const form = document.querySelector('[name="kontakt-form"]');
     if (!form) return;
