@@ -1,4 +1,4 @@
-console.log("v 0.2.18");
+console.log("v 0.2.19");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -179,6 +179,10 @@ class AutoGroupCalculator {
   }
 
   generateRadioButtons(container, template, options, name, onChangeCallback) {
+    const selectedValue = localStorage.getItem(`selected${name}`);
+    let firstButton = null;
+    let selectedButton = null;
+
     options.forEach((option, index) => {
       const radioButton = this.createRadioButton(
         template,
@@ -193,12 +197,21 @@ class AutoGroupCalculator {
 
       container.appendChild(radioButton);
 
-      // Trigger click event on first button
       if (index === 0) {
-        console.log(option);
-        radioButton.dispatchEvent(new Event("click"));
+        firstButton = radioButton;
+      }
+
+      if (selectedValue && option.value === selectedValue) {
+        selectedButton = radioButton;
       }
     });
+
+    // Click either the selected button or the first one
+    if (selectedButton) {
+      selectedButton.dispatchEvent(new Event("click"));
+    } else if (firstButton) {
+      firstButton.dispatchEvent(new Event("click"));
+    }
     console.log("generated radio buttons");
   }
 
