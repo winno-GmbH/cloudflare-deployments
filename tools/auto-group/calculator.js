@@ -1,4 +1,4 @@
-console.log("v 0.2.14");
+console.log("v 0.2.15");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -55,10 +55,12 @@ class AutoGroupCalculator {
 
   routeToHandler() {
     if (this.currentPath === "/formular") {
+      console.log(localStorage);
       this.handleContactPage();
     } else if (this.currentPath === "/auto-abo") {
       this.handleVehiclesPage();
     } else if (this.currentPath.startsWith("/auto-abo/")) {
+      console.log(localStorage);
       this.handleVehicleDetailPage();
     }
   }
