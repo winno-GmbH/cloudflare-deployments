@@ -514,10 +514,10 @@ function setupInitValues() {
       .closest(".cmp--rb.cmp")
       .click();
 
-    if (premiumAddon === "true") {
+    if (premiumAddon) {
       form.querySelector('input[name="premium-versicherung"]').click();
     }
-    if (parkingAddon === "true") {
+    if (parkingAddon) {
       form.querySelector('input[name="parkschaden-versicherung"]').click();
     }
 
