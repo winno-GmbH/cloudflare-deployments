@@ -102,22 +102,16 @@ export function convertFormDataToFields(formData: { categories: FormCategory[] }
         selectedItems.forEach((item) => {
           const inputLabel = getElementByXpathWithIndex(`//label[text()="${item}"]`, parent as HTMLElement, 0);
           const inputParent = inputLabel?.closest(".cmp--cb.cmp");
-          const input = inputParent?.querySelector("input") as HTMLInputElement;
-          if (input) {
-            input.checked = true;
-            inputParent?.classList.add("checked");
-            input.dispatchEvent(new Event("change"));
+          if (inputParent) {
+            inputParent.dispatchEvent(new Event("click"));
           }
         });
       } else if (field.type === "radio") {
         const parent = labelEl.closest(".cmp--form-item.cmp");
         const inputLabel = getElementByXpathWithIndex(`//label[text()="${field.value}"]`, parent as HTMLElement, 0);
         const inputParent = inputLabel?.closest(".cmp--rb.cmp");
-        const input = inputParent?.querySelector("input") as HTMLInputElement;
-        if (input) {
-          input.checked = true;
-          inputParent?.classList.add("checked");
-          input.dispatchEvent(new Event("change"));
+        if (inputParent) {
+          inputParent.dispatchEvent(new Event("click"));
         }
       } else {
         const parent = labelEl.closest(".cmp--tf.cmp");
