@@ -206,8 +206,10 @@ class AutoGroupCalculator {
 
     // Click either the selected button or the first one
     if (selectedButton) {
+      console.log("clicked selected button, value: ", selectedButton.value);
       selectedButton.dispatchEvent(new Event("click"));
     } else if (firstButton) {
+      console.log("clicked first button, value: ", firstButton.value);
       firstButton.dispatchEvent(new Event("click"));
     }
   }
