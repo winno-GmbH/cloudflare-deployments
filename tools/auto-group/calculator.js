@@ -454,7 +454,6 @@ function setupInitValues() {
   }, 100);
 
   const setupNormal = () => {
-    console.log("setupNormal");
     const selectedMietdauer = localStorage.getItem("selectedMietdauer");
     const selectedKilometer = localStorage.getItem("selectedKilometer");
     const premiumAddon = localStorage.getItem("premiumAddon");
@@ -500,7 +499,14 @@ function setupInitValues() {
     const premiumAddon = localStorage.getItem("premiumAddon");
     const parkingAddon = localStorage.getItem("parkingAddon");
 
-    console.log(selectedVehicle, selectedMietdauer, selectedKilometer, premiumAddon, parkingAddon);
+    console.log(
+      selectedVehicle,
+      selectedMietdauer,
+      selectedKilometer,
+      premiumAddon,
+      parkingAddon,
+      premiumAddon === "true"
+    );
 
     const form = document.querySelector('[name="kontakt-form"]');
     if (!form) return;
