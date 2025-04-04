@@ -63,7 +63,7 @@ class AutoGroupCalculator {
     }
   }
 
-  createRadioButton(template, { label, value, name }, onChangeCallback) {
+  createRadioButton(template, { label, value, name, isSelected }, onChangeCallback) {
     // Clone the template and its children
     const radioDiv = template.cloneNode(true);
     const input = radioDiv.querySelector('input[type="radio"]');
@@ -72,6 +72,10 @@ class AutoGroupCalculator {
     input.value = value;
     input.name = name;
     labelElement.textContent = label;
+
+    if (isSelected) {
+      input.checked = true;
+    }
 
     input.addEventListener("change", () => {
       if (input.checked && onChangeCallback) {
@@ -180,13 +184,17 @@ class AutoGroupCalculator {
     let firstButton = null;
     let selectedButton = null;
 
+    const selectedOption = options.find((option) => option.value === selectedValue);
+
     options.forEach((option, index) => {
+      const isSelected = selectedOption ? selectedOption.value === option.value : index === 0;
       const radioButton = this.createRadioButton(
         template,
         {
           label: option.label,
           value: option.value,
           name: name,
+          isSelected: isSelected,
         },
         onChangeCallback
       );
