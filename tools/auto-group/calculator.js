@@ -210,6 +210,8 @@ class AutoGroupCalculator {
     const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
     const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
 
+    console.log(selectedMietdauer, selectedKilometer, premiumAddon, parkingAddon);
+
     // Find matching kilometer package
     const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
     if (!kilometerPackage) {
