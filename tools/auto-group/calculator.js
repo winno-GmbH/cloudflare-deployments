@@ -1,4 +1,4 @@
-console.log("v 0.2.19");
+console.log("v 0.2.20");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -209,8 +209,10 @@ class AutoGroupCalculator {
     // Click either the selected button or the first one
     if (selectedButton) {
       selectedButton.dispatchEvent(new Event("click"));
+      console.log("clicked selected button");
     } else if (firstButton) {
       firstButton.dispatchEvent(new Event("click"));
+      console.log("clicked first button");
     }
     console.log("generated radio buttons");
   }
