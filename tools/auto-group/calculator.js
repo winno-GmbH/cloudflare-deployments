@@ -1,4 +1,4 @@
-console.log("v 0.2.16");
+console.log("v 0.2.17");
 let scriptLoaded = false;
 
 class AutoGroupCalculator {
@@ -195,9 +195,11 @@ class AutoGroupCalculator {
 
       // Trigger click event on first button
       if (index === 0) {
+        console.log(option);
         radioButton.dispatchEvent(new Event("click"));
       }
     });
+    console.log("generated radio buttons");
   }
 
   updateVehiclePrice(vehicleData) {
