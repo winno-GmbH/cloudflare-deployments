@@ -341,7 +341,7 @@ class AutoGroupCalculator {
     const formElements = this.setupForm("kontakt-form", updateAllPrices);
     if (!formElements) return;
 
-    const { mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = formElements;
+    const { mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate, form } = formElements;
 
     // Generate radio buttons
     this.generateRadioButtons(
