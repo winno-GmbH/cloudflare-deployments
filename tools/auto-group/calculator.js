@@ -194,15 +194,15 @@ class AutoGroupCalculator {
     if (premiumAddon === "true") {
       const input = form.querySelector('input[name="premium-versicherung"]');
       if (input) {
-        input.click();
         input.closest(".cmp--cb.cmp").classList.add("checked");
+        input.click();
       }
     }
     if (parkingAddon === "true") {
       const input = form.querySelector('input[name="parkschaden-versicherung"]');
       if (input) {
-        input.click();
         input.closest(".cmp--cb.cmp").classList.add("checked");
+        input.click();
       }
     }
   }
