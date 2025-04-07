@@ -151,7 +151,7 @@ class AutoGroupCalculator {
     this.generateRadioButtons(mietdauerRadioGroup, rbTemplate, mietdauerOptions, "Mietdauer", updatePrice);
     this.generateRadioButtons(kilometerpaketRadioGroup, rbTemplate, kilometerOptions, "Kilometer", updatePrice);
 
-    this.setupCheckboxes(form);
+    // this.setupCheckboxes(form);
 
     // Initial price update
     updatePrice();
@@ -310,7 +310,7 @@ class AutoGroupCalculator {
       updateAllPrices
     );
 
-    this.setupCheckboxes(form);
+    // this.setupCheckboxes(form);
     scriptLoaded = true;
   }
 
@@ -359,7 +359,7 @@ class AutoGroupCalculator {
       updateAllPrices
     );
 
-    this.setupCheckboxes(form);
+    // this.setupCheckboxes(form);
 
     // Initial price update
     updateAllPrices();
