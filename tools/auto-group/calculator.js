@@ -344,6 +344,15 @@ class AutoGroupCalculator {
       updateAllPrices
     );
 
+    const premiumAddon = localStorage.getItem("premiumAddon");
+    const parkingAddon = localStorage.getItem("parkingAddon");
+    if (premiumAddon === "true") {
+      form.querySelector('input[name="premium-versicherung"]').click();
+    }
+    if (parkingAddon === "true") {
+      form.querySelector('input[name="parkschaden-versicherung"]').click();
+    }
+
     // Initial price update
     updateAllPrices();
     scriptLoaded = true;
