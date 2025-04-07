@@ -469,7 +469,7 @@ function setupInitValues() {
         setupNormal();
       }
     }
-  }, 100);
+  }, 300);
 
   const setupNormal = () => {
     const selectedMietdauer = localStorage.getItem("selectedMietdauer");
