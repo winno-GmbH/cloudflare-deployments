@@ -463,13 +463,15 @@ calculator.init();
 function setupInitValues() {
   const interval = setInterval(() => {
     if (scriptLoaded) {
+      console.log("scriptLoaded");
       if (window.location.pathname === "/formular") {
         setupForm();
       } else {
         setupNormal();
       }
+      scriptLoaded = false;
     }
-  }, 300);
+  }, 100);
 
   const setupNormal = () => {
     const selectedMietdauer = localStorage.getItem("selectedMietdauer");
