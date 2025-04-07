@@ -178,9 +178,9 @@ class FormTool {
         } else {
           ct.classList.remove("checked");
         }
-        // this.form?.querySelectorAll(`input[name="${input.name}"]`).forEach((checkbox) => {
-        //   checkbox.dispatchEvent(new Event("change"));
-        // });
+        this.form?.querySelectorAll(`input[name="${input.name}"]`).forEach((checkbox) => {
+          checkbox.dispatchEvent(new Event("change"));
+        });
       });
     });
 
