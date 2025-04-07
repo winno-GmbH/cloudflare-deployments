@@ -25,7 +25,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.58");
+    console.log("Form Submit v0.2.59");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -178,9 +178,9 @@ class FormTool {
         } else {
           ct.classList.remove("checked");
         }
-        this.form?.querySelectorAll(`input[name="${input.name}"]`).forEach((checkbox) => {
-          checkbox.dispatchEvent(new Event("change"));
-        });
+        // this.form?.querySelectorAll(`input[name="${input.name}"]`).forEach((checkbox) => {
+        //   checkbox.dispatchEvent(new Event("change"));
+        // });
       });
     });
 
