@@ -275,7 +275,7 @@ class AutoGroupCalculator {
     const { form, mietdauerRadioGroup, kilometerpaketRadioGroup, rbTemplate } = formElements;
 
     const vehicleData = selectedVehicle
-      ? this.pricingData.find((item) => item.sheetName === selectedVehicle)
+      ? this.pricingData.find((item) => item.sheetName.toLowerCase() === selectedVehicle.toLowerCase())
       : this.pricingData[0];
 
     // Additional contact page logic can be implemented here
@@ -403,7 +403,7 @@ class AutoGroupCalculator {
       const vehicleName = card.querySelector("h3").textContent.trim();
 
       // Find the matching vehicle data
-      const vehicleData = this.pricingData.find((item) => item.sheetName === vehicleName);
+      const vehicleData = this.pricingData.find((item) => item.sheetName.toLowerCase() === vehicleName.toLowerCase());
       if (!vehicleData) {
         console.log(`Vehicle data not found for: ${vehicleName}`);
         return;
