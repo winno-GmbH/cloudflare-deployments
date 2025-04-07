@@ -151,6 +151,8 @@ class AutoGroupCalculator {
     this.generateRadioButtons(mietdauerRadioGroup, rbTemplate, mietdauerOptions, "Mietdauer", updatePrice);
     this.generateRadioButtons(kilometerpaketRadioGroup, rbTemplate, kilometerOptions, "Kilometer", updatePrice);
 
+    this.setupCheckboxes(form);
+
     // Initial price update
     updatePrice();
     scriptLoaded = true;
@@ -178,6 +180,17 @@ class AutoGroupCalculator {
 
       window.location.href = "/formular";
     });
+  }
+
+  setupCheckboxes(form) {
+    const premiumAddon = localStorage.getItem("premiumAddon");
+    const parkingAddon = localStorage.getItem("parkingAddon");
+    if (premiumAddon === "true") {
+      form.querySelector('input[name="premium-versicherung"]').click();
+    }
+    if (parkingAddon === "true") {
+      form.querySelector('input[name="parkschaden-versicherung"]').click();
+    }
   }
 
   generateRadioButtons(container, template, options, name, onChangeCallback) {
@@ -296,6 +309,8 @@ class AutoGroupCalculator {
       "Kilometer",
       updateAllPrices
     );
+
+    this.setupCheckboxes(form);
     scriptLoaded = true;
   }
 
@@ -344,14 +359,7 @@ class AutoGroupCalculator {
       updateAllPrices
     );
 
-    const premiumAddon = localStorage.getItem("premiumAddon");
-    const parkingAddon = localStorage.getItem("parkingAddon");
-    if (premiumAddon === "true") {
-      form.querySelector('input[name="premium-versicherung"]').click();
-    }
-    if (parkingAddon === "true") {
-      form.querySelector('input[name="parkschaden-versicherung"]').click();
-    }
+    this.setupCheckboxes(form);
 
     // Initial price update
     updateAllPrices();
