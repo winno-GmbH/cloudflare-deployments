@@ -169,8 +169,14 @@ class AutoGroupCalculator {
       // Save selected values to localStorage
       const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
       const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
-      const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
-      const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
+      const premiumAddon = form
+        .querySelector('input[name="premium-versicherung"]')
+        .closest(".cmp--cb.cmp")
+        .classList.contains("checked");
+      const parkingAddon = form
+        .querySelector('input[name="parkschaden-versicherung"]')
+        .closest(".cmp--cb.cmp")
+        .classList.contains("checked");
 
       localStorage.setItem("selectedMietdauer", selectedMietdauer);
       localStorage.setItem("selectedKilometer", selectedKilometer);
@@ -249,8 +255,14 @@ class AutoGroupCalculator {
     // Get selected values
     const selectedMietdauer = form.querySelector('input[name="Mietdauer"]:checked')?.value;
     const selectedKilometer = form.querySelector('input[name="Kilometer"]:checked')?.value;
-    const premiumAddon = form.querySelector('input[name="premium-versicherung"]').checked;
-    const parkingAddon = form.querySelector('input[name="parkschaden-versicherung"]').checked;
+    const premiumAddon = form
+      .querySelector('input[name="premium-versicherung"]')
+      .closest(".cmp--cb.cmp")
+      .classList.contains("checked");
+    const parkingAddon = form
+      .querySelector('input[name="parkschaden-versicherung"]')
+      .closest(".cmp--cb.cmp")
+      .classList.contains("checked");
 
     // Find matching kilometer package
     const kilometerPackage = vehicleData.pricingData.find((item) => item.distance === selectedKilometer);
@@ -576,7 +588,7 @@ function setupInitValues() {
 
     const options = form.querySelectorAll(".cmp--tf-md-option.cmp");
     options.forEach((option) => {
-      if (option.textContent === selectedVehicle) {
+      if (option.textContent.toLowerCase() === selectedVehicle.toLowerCase()) {
         option.click();
       }
     });
