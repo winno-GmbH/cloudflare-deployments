@@ -528,10 +528,10 @@ function setupInitValues() {
     }
 
     if (premiumAddon === "true" && form.querySelector('input[name="premium-versicherung"]').checked === false) {
-      form.querySelector('input[name="premium-versicherung"]').click();
+      form.querySelector('input[name="premium-versicherung"]').closest(".cmp--cb.cmp").click();
     }
     if (parkingAddon === "true" && form.querySelector('input[name="parkschaden-versicherung"]').checked === false) {
-      form.querySelector('input[name="parkschaden-versicherung"]').click();
+      form.querySelector('input[name="parkschaden-versicherung"]').closest(".cmp--cb.cmp").click();
     }
 
     clearInterval(interval);
@@ -559,11 +559,11 @@ function setupInitValues() {
       .closest(".cmp--rb.cmp")
       .click();
 
-    if (premiumAddon === "true") {
-      form.querySelector('input[name="premium-versicherung"]').click();
+    if (premiumAddon === "true" && form.querySelector('input[name="premium-versicherung"]').checked === false) {
+      form.querySelector('input[name="premium-versicherung"]').closest(".cmp--cb.cmp").click();
     }
-    if (parkingAddon === "true") {
-      form.querySelector('input[name="parkschaden-versicherung"]').click();
+    if (parkingAddon === "true" && form.querySelector('input[name="parkschaden-versicherung"]').checked === false) {
+      form.querySelector('input[name="parkschaden-versicherung"]').closest(".cmp--cb.cmp").click();
     }
 
     const options = form.querySelectorAll(".cmp--tf-md-option.cmp");
