@@ -191,20 +191,24 @@ class AutoGroupCalculator {
   setupCheckboxes(form) {
     const premiumAddon = localStorage.getItem("premiumAddon");
     const parkingAddon = localStorage.getItem("parkingAddon");
+    let inputsToClick = [];
     if (premiumAddon === "true") {
       const input = form.querySelector('input[name="premium-versicherung"]');
       if (input) {
         input.closest(".cmp--cb.cmp").classList.add("checked");
-        input.click();
+        inputsToClick.push(input);
       }
     }
     if (parkingAddon === "true") {
       const input = form.querySelector('input[name="parkschaden-versicherung"]');
       if (input) {
         input.closest(".cmp--cb.cmp").classList.add("checked");
-        input.click();
+        inputsToClick.push(input);
       }
     }
+    inputsToClick.forEach((input) => {
+      input.click();
+    });
   }
 
   generateRadioButtons(container, template, options, name, onChangeCallback) {
