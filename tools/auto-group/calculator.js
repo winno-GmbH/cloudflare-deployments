@@ -151,7 +151,7 @@ class AutoGroupCalculator {
     this.generateRadioButtons(mietdauerRadioGroup, rbTemplate, mietdauerOptions, "Mietdauer", updatePrice);
     this.generateRadioButtons(kilometerpaketRadioGroup, rbTemplate, kilometerOptions, "Kilometer", updatePrice);
 
-    // this.setupCheckboxes(form);
+    this.setupCheckboxes(form);
 
     // Initial price update
     updatePrice();
@@ -186,10 +186,18 @@ class AutoGroupCalculator {
     const premiumAddon = localStorage.getItem("premiumAddon");
     const parkingAddon = localStorage.getItem("parkingAddon");
     if (premiumAddon === "true") {
-      form.querySelector('input[name="premium-versicherung"]').click();
+      const input = form.querySelector('input[name="premium-versicherung"]');
+      if (input) {
+        input.click();
+        input.closest(".cmp--cb.cmp").classList.add("checked");
+      }
     }
     if (parkingAddon === "true") {
-      form.querySelector('input[name="parkschaden-versicherung"]').click();
+      const input = form.querySelector('input[name="parkschaden-versicherung"]');
+      if (input) {
+        input.click();
+        input.closest(".cmp--cb.cmp").classList.add("checked");
+      }
     }
   }
 
@@ -310,7 +318,7 @@ class AutoGroupCalculator {
       updateAllPrices
     );
 
-    // this.setupCheckboxes(form);
+    this.setupCheckboxes(form);
     scriptLoaded = true;
   }
 
@@ -359,7 +367,7 @@ class AutoGroupCalculator {
       updateAllPrices
     );
 
-    // this.setupCheckboxes(form);
+    this.setupCheckboxes(form);
 
     // Initial price update
     updateAllPrices();
