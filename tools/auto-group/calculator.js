@@ -117,8 +117,9 @@ class AutoGroupCalculator {
   }
 
   handleVehicleDetailPage() {
-    const vehicleName = document.querySelector("h1").textContent;
-    const vehicleData = this.pricingData.find((item) => item.sheetName === vehicleName);
+    // vehicle name is the last part of the url
+    const vehicleName = this.currentPath.split("/").pop().replaceAll("-", " ");
+    const vehicleData = this.pricingData.find((item) => item.sheetName.toLowerCase() === vehicleName.toLowerCase());
 
     if (!vehicleData) {
       console.log("Vehicle data not found");
