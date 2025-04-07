@@ -464,12 +464,19 @@ function setupInitValues() {
   const interval = setInterval(() => {
     if (scriptLoaded) {
       console.log("scriptLoaded");
-      if (window.location.pathname === "/formular") {
-        setupForm();
-      } else {
-        setupNormal();
-      }
-      scriptLoaded = false;
+      // Then load the form tool script
+      const formToolScript = document.createElement("script");
+      formToolScript.src =
+        "https://cloudflare-test-7u4.pages.dev/tools/form-tool/formtool-test-v2.js?key=13feefdd-3656-4ee7-b775-a29b1a579dcd&form=kontakt-form&captcha-key=6LdiRLoqAAAAAGeJpfm5G9vEfnX1CmhS5FwGfU3Q";
+      formToolScript.onload = () => {
+        if (window.location.pathname === "/formular") {
+          setupForm();
+        } else {
+          setupNormal();
+        }
+        scriptLoaded = false;
+      };
+      document.body.appendChild(formToolScript);
     }
   }, 100);
 
