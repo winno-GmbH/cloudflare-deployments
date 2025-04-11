@@ -180,7 +180,8 @@ class AutoGroupCalculator {
 
       localStorage.setItem("selectedMietdauer", selectedMietdauer);
       localStorage.setItem("selectedKilometer", selectedKilometer);
-      localStorage.setItem("premiumAddon", premiumAddon);
+      // localStorage.setItem("premiumAddon", premiumAddon);
+      localStorage.setItem("premiumAddon", false);
       localStorage.setItem("parkingAddon", parkingAddon);
       localStorage.setItem("selectedVehicle", vehicleName);
 
@@ -290,7 +291,8 @@ class AutoGroupCalculator {
     // save to localstorage
     localStorage.setItem("selectedMietdauer", selectedMietdauer);
     localStorage.setItem("selectedKilometer", selectedKilometer);
-    localStorage.setItem("premiumAddon", premiumAddon);
+    // localStorage.setItem("premiumAddon", premiumAddon);
+    localStorage.setItem("premiumAddon", false);
     localStorage.setItem("parkingAddon", parkingAddon);
 
     // Update price display
@@ -439,7 +441,8 @@ class AutoGroupCalculator {
     // save to localstorage
     localStorage.setItem("selectedMietdauer", selectedMietdauer);
     localStorage.setItem("selectedKilometer", selectedKilometer);
-    localStorage.setItem("premiumAddon", premiumAddon);
+    localStorage.setItem("premiumAddon", false);
+    // localStorage.setItem("premiumAddon", premiumAddon);
     localStorage.setItem("parkingAddon", parkingAddon);
 
     // Get all car cards
