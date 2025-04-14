@@ -141,7 +141,6 @@ export class FormSubmission {
       });
     } else {
       formSteps.forEach((formStep) => {
-        console.log(formStep.id, formStep.getAttribute("condition-active"));
         if (!(formStep.id !== "" && formStep.getAttribute("condition-active") !== "true")) {
           const fields = convertFieldsToFormData(getFields(formStep as HTMLElement));
           categories.push({

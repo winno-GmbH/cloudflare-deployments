@@ -25,7 +25,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.68");
+    console.log("Form Submit v0.2.69");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -131,7 +131,6 @@ class FormTool {
       const input = rb.querySelector("input");
       if (!input) return;
       rb.addEventListener("click", () => {
-        console.log("clicked radio button, value: ", input.value);
         this.form?.querySelectorAll(`input[name="${input.name}"]`).forEach((rb) => {
           const parent = rb.closest(".cmp--rb.cmp");
           if (parent) {
