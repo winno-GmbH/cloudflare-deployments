@@ -46,11 +46,14 @@ export function getFields(parent: HTMLElement): FormField[] {
 export function convertFieldsToFormData(fields: FormField[]): FormField[] {
   const allFields: FormField[] = [];
 
+
   fields.forEach((field) => {
+    const label = field.type === "radio" || field.type === "checkbox" ? field.name : field.label;
+
     const req: FormField = {
       type: field.type,
       value: field.value,
-      label: field.label,
+      label: label,
       name: field.name,
       required: field.required,
       item: field.item,
