@@ -6,6 +6,8 @@ export function getFields(parent: HTMLElement): FormField[] {
     (el) => !el.closest('[condition-active="false"]')
   ) as (HTMLInputElement | HTMLTextAreaElement)[];
 
+  console.log(elements);
+
   elements.forEach((field) => {
     const type = field.getAttribute("type");
     const required = field.required;
