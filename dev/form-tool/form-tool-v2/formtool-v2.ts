@@ -25,7 +25,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.74");
+    console.log("Form Submit v0.2.75");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -95,11 +95,11 @@ class FormTool {
             parent.classList.add("filled");
           }
           if (validateTextInput({ type: input.type, required: input.required, value: input.value, name: input.name, label: input?.labels?.[0]?.textContent ?? "", item: input })) {
-            parent.classList.remove("error");
-            parent.classList.add("success");
+            parent.closest(".cmp--tf.cmp")?.classList.remove("error");
+            parent.closest(".cmp--tf.cmp")?.classList.add("success");
           } else {
-            parent.classList.add("error");
-            parent.classList.remove("success");
+            parent.closest(".cmp--tf.cmp")?.classList.add("error");
+            parent.closest(".cmp--tf.cmp")?.classList.remove("success");
           }
         });
       });
