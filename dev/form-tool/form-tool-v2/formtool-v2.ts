@@ -25,7 +25,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.73");
+    console.log("Form Submit v0.2.74");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -94,15 +94,12 @@ class FormTool {
           } else {
             parent.classList.add("filled");
           }
-          console.log(parent.querySelector(".cmp--tf-md.cmp"), tf.querySelector(".cmp--tf-md.cmp.hidden"));
-          if (!parent.querySelector(".cmp--tf-md.cmp") || tf.querySelector(".cmp--tf-md.cmp.hidden")) {
-            if (validateTextInput({ type: input.type, required: input.required, value: input.value, name: input.name, label: input?.labels?.[0]?.textContent ?? "", item: input })) {
-              parent.classList.remove("error");
-              parent.classList.add("success");
-            } else {
-              parent.classList.add("error");
-              parent.classList.remove("success");
-            }
+          if (validateTextInput({ type: input.type, required: input.required, value: input.value, name: input.name, label: input?.labels?.[0]?.textContent ?? "", item: input })) {
+            parent.classList.remove("error");
+            parent.classList.add("success");
+          } else {
+            parent.classList.add("error");
+            parent.classList.remove("success");
           }
         });
       });
