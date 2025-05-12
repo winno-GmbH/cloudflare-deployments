@@ -25,7 +25,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.72");
+    console.log("Form Submit v0.2.73");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -94,6 +94,7 @@ class FormTool {
           } else {
             parent.classList.add("filled");
           }
+          console.log(parent.querySelector(".cmp--tf-md.cmp"), tf.querySelector(".cmp--tf-md.cmp.hidden"));
           if (!parent.querySelector(".cmp--tf-md.cmp") || tf.querySelector(".cmp--tf-md.cmp.hidden")) {
             if (validateTextInput({ type: input.type, required: input.required, value: input.value, name: input.name, label: input?.labels?.[0]?.textContent ?? "", item: input })) {
               parent.classList.remove("error");

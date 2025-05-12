@@ -124,6 +124,8 @@ export class FormSubmission {
       success.classList.remove("hidden");
       success.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
     }
+
+    localStorage.removeItem("form-save-id");
   }
 
   public async handleSubmit(e: Event, sessionId: string): Promise<void> {
