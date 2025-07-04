@@ -240,14 +240,14 @@ class FormTool {
         this.setupOptions(input as HTMLElement, parent as HTMLElement, options);
       }
       parent.addEventListener("click", () => {
-        parent.querySelector(".el--tf-md-overlay.el")?.classList.remove("hidden");
-        parent.querySelector(".cmp--tf-md.cmp")?.classList.remove("hidden");
+        parent.parentElement?.querySelector(".el--tf-md-overlay.el")?.classList.remove("hidden");
+        parent.parentElement?.querySelector(".cmp--tf-md.cmp")?.classList.remove("hidden");
       });
 
       parent.querySelector(".el--tf-md-overlay.el")?.addEventListener("click", (e) => {
         e.stopPropagation();
-        parent.querySelector(".el--tf-md-overlay.el")?.classList.add("hidden");
-        parent.querySelector(".cmp--tf-md.cmp")?.classList.add("hidden");
+        parent.parentElement?.querySelector(".el--tf-md-overlay.el")?.classList.add("hidden");
+        parent.parentElement?.querySelector(".cmp--tf-md.cmp")?.classList.add("hidden");
         input.dispatchEvent(new Event("blur"));
       });
     });
