@@ -698,34 +698,21 @@ class FormTool {
     if (!dragDropElement || !input || !uploadsContainer) return;
 
     // Create error message element
-    const errorMessageElement = document.createElement('div');
-    errorMessageElement.className = 'cmp--fu-error-message';
-    errorMessageElement.style.color = 'red';
-    errorMessageElement.style.marginTop = '8px';
-    errorMessageElement.style.display = 'none';
-    parent.appendChild(errorMessageElement);
+    const errorMessageElement = parent.querySelector('.wr_p--fu-error-message.wr_p');
 
     // Create info message element
-    const infoMessageElement = document.createElement('div');
-    infoMessageElement.className = 'cmp--fu-info-message';
-    infoMessageElement.style.color = '#666';
-    infoMessageElement.style.marginTop = '8px';
-    infoMessageElement.style.fontSize = '14px';
-    infoMessageElement.textContent = 'Maximum 5 files (5MB each)';
-    parent.appendChild(infoMessageElement);
+    const infoMessageElement = parent.querySelector('.wr_p--fu-info-message.wr_p');
 
     // Create upload status element for visual feedback
-    const uploadStatusElement = document.createElement('div');
-    uploadStatusElement.className = 'cmp--fu-upload-status';
-    uploadStatusElement.style.marginTop = '8px';
-    uploadStatusElement.style.display = 'none';
-    parent.appendChild(uploadStatusElement);
+    const uploadStatusElement = parent.querySelector('.wr_p--fu-upload-status.wr_p');
+
+    if (!errorMessageElement || !infoMessageElement || !uploadStatusElement) return;
 
     const showError = (message: string) => {
       errorMessageElement.textContent = message;
-      errorMessageElement.style.display = 'block';
+      errorMessageElement.classList.remove('hidden');
       setTimeout(() => {
-        errorMessageElement.style.display = 'none';
+        errorMessageElement.classList.add('hidden');
       }, 5000); // Hide the error message after 5 seconds
     };
 
@@ -790,10 +777,10 @@ class FormTool {
       const remainingFiles = fileHandler.getMaxFileCount() - fileHandler.getFileCount();
       if (remainingFiles === 0) {
         infoMessageElement.textContent = 'Maximum number of files reached (5)';
-        infoMessageElement.style.color = '#ff9900';
+        infoMessageElement.classList.remove('hidden');
       } else {
         infoMessageElement.textContent = `Maximum 5 files (5MB each) - ${remainingFiles} remaining`;
-        infoMessageElement.style.color = '#666';
+        infoMessageElement.classList.remove('hidden');
       }
     };
 
@@ -862,7 +849,7 @@ class FormTool {
           }
         } else {
           dragDropElement.classList.remove('error');
-          errorMessageElement.style.display = 'none';
+          errorMessageElement.classList.add('hidden');
         }
       }
     });
@@ -931,7 +918,7 @@ class FormTool {
           }
         } else {
           dragDropElement.classList.remove('error');
-          errorMessageElement.style.display = 'none';
+          errorMessageElement.classList.add('hidden');
         }
       }
     });
