@@ -25,7 +25,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.76");
+    console.log("Form Submit v0.2.77");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -244,7 +244,7 @@ class FormTool {
         parent.parentElement?.querySelector(".cmp--tf-md.cmp")?.classList.remove("hidden");
       });
 
-      parent.querySelector(".el--tf-md-overlay.el")?.addEventListener("click", (e) => {
+      parent.parentElement?.querySelector(".el--tf-md-overlay.el")?.addEventListener("click", (e) => {
         e.stopPropagation();
         parent.parentElement?.querySelector(".el--tf-md-overlay.el")?.classList.add("hidden");
         parent.parentElement?.querySelector(".cmp--tf-md.cmp")?.classList.add("hidden");
