@@ -106,7 +106,7 @@ export function convertFormDataToFields(formData: { categories: FormCategory[] }
         const selectedItems = field.value.split(", ");
         selectedItems.forEach((item) => {
           const inputLabel = getElementByXpathWithIndex(`//label[text()="${item}"]`, parent as HTMLElement, 0);
-          const inputParent = inputLabel?.closest(".cmp--cb.cmp");
+          const inputParent = inputLabel?.closest(".cmp--cb.cmp,.cmp--ct.cmp");
           if (inputParent) {
             inputParent.dispatchEvent(new Event("click"));
           }
@@ -114,7 +114,7 @@ export function convertFormDataToFields(formData: { categories: FormCategory[] }
       } else if (field.type === "radio") {
         const parent = labelEl.closest(".cmp--form-item.cmp");
         const inputLabel = getElementByXpathWithIndex(`//label[text()="${field.value}"]`, parent as HTMLElement, 0);
-        const inputParent = inputLabel?.closest(".cmp--rb.cmp");
+        const inputParent = inputLabel?.closest(".cmp--rb.cmp,.cmp--rt.cmp");
         if (inputParent) {
           inputParent.dispatchEvent(new Event("click"));
         }

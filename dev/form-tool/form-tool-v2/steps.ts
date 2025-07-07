@@ -164,7 +164,7 @@ export class FormSteps {
 
     const categories: FormCategory[] = [];
     this.formStepPairs.forEach((formStep) => {
-      if (!(formStep.formStep.getAttribute("condition-active") !== "true")) {
+      if (formStep.formStep.getAttribute("condition-active") === "true") {
         const fields = convertFieldsToFormData(getFields(formStep.formStep));
         categories.push({
           name: formStep.name,

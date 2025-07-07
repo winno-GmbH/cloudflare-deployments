@@ -25,7 +25,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.79");
+    console.log("Form Submit v0.2.80");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -140,6 +140,25 @@ class FormTool {
           radioGroupBtn.dispatchEvent(new Event("change"));
         });
         rb.classList.add("checked");
+      });
+    });
+
+    // Radio tags (rt)
+    document.querySelectorAll(".cmp--rt.cmp").forEach((rt) => {
+      const input = rt.querySelector("input");
+      if (!input) return;
+      rt.addEventListener("click", () => {
+        this.form?.querySelectorAll(`input[name="${input.name}"]`).forEach((rt) => {
+          const parent = rt.closest(".cmp--rt.cmp");
+          if (parent) {
+            parent.classList.remove("checked");
+          }
+        });
+        input.checked = true;
+        this.form?.querySelectorAll(`input[name="${input.name}"]`).forEach((radioGroupBtn) => {
+          radioGroupBtn.dispatchEvent(new Event("change"));
+        });
+        rt.classList.add("checked");
       });
     });
 
