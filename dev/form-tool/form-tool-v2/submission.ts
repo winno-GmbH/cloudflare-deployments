@@ -1,7 +1,7 @@
 import { FormRequest, GoogleAdsData, MetaAdsData, FormCategory } from './types';
 import { getFields, convertFieldsToFormData } from './fields';
 import { validateFields } from './validation';
-import { getCookie } from './utils';
+import { getCookie, getCookieTimingInfo } from './utils';
 
 declare global {
   interface Window {
@@ -24,6 +24,16 @@ export class FormSubmission {
   }
 
   private getGoogleAdsData(): GoogleAdsData {
+    // Check cookie timing information
+    const timing = getCookieTimingInfo("campaignid");
+    const isXo = window.location.hostname.includes("xo-angels");
+    if (timing.value && timing.createdAt && isXo) {
+      const minutesSinceCreated = Math.floor((Date.now() - timing.createdAt.getTime()) / (1000 * 60));
+      if (minutesSinceCreated > 30) {
+        return {}
+      }
+    }
+
     return {
       keyword: getCookie("keyword") || undefined,
       campaign: getCookie("campaignid") || undefined,
