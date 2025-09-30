@@ -110,13 +110,22 @@
         }
         else if (field.tagName === 'A') {
           if (fieldName === 'url' || fieldName === 'link' || fieldName === 'href') {
-            field.href = value;
+            const linkMatch = value.match(/<a[^>]+href=["']([^"']+)["'][^>]*>.*?<\/a>/i);
+            if (linkMatch) {
+              field.href = linkMatch[1];
+            } else {
+              field.href = value;
+            }
           } else {
-            field.textContent = value;
+            field.innerHTML = value;
           }
         }
         else {
-          field.textContent = value;
+          if (value.includes('<a')) {
+            field.innerHTML = value;
+          } else {
+            field.textContent = value;
+          }
         }
       }
       
