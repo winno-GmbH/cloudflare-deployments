@@ -34,7 +34,14 @@
     for (let i = 1; i < parts.length; i++) {
       const [key, ...valueParts] = parts[i].split(':');
       if (key && valueParts.length > 0) {
-        attributes[key.trim()] = valueParts.join(':').trim();
+        let value = valueParts.join(':').trim();
+        
+        const linkMatch = value.match(/<a[^>]+href=["']([^"']+)["'][^>]*>.*?<\/a>/i);
+        if (linkMatch) {
+          value = linkMatch[1];
+        }
+        
+        attributes[key.trim()] = value;
       }
     }
     
@@ -42,6 +49,52 @@
   }
   
   function populateComponent(clone, attributes, propertyDefinitions) {
+    clone.querySelectorAll('[component-tag]').forEach(field => {
+      const tagFieldName = field.getAttribute('component-tag');
+      const newTag = attributes[tagFieldName];
+      
+      if (newTag) {
+        const newElement = document.createElement(newTag);
+        Array.from(field.attributes).forEach(attr => {
+          if (attr.name !== 'component-tag') {
+            newElement.setAttribute(attr.name, attr.value);
+          }
+        });
+        newElement.innerHTML = field.innerHTML;
+        field.parentNode.replaceChild(newElement, field);
+      } else {
+        field.removeAttribute('component-tag');
+      }
+    });
+    
+    clone.querySelectorAll('[component-url]').forEach(field => {
+      const urlFieldName = field.getAttribute('component-url');
+      const urlValue = attributes[urlFieldName];
+      
+      if (urlValue !== undefined) {
+        field.href = urlValue;
+      }
+      
+      field.removeAttribute('component-url');
+    });
+    
+    const allElements = clone.querySelectorAll('*');
+    allElements.forEach(field => {
+      Array.from(field.attributes).forEach(attr => {
+        if (attr.name.startsWith('component-attr-')) {
+          const attrName = attr.name.replace('component-attr-', '');
+          const fieldName = attr.value;
+          const value = attributes[fieldName];
+          
+          if (value !== undefined) {
+            field.setAttribute(attrName, value);
+          }
+          
+          field.removeAttribute(attr.name);
+        }
+      });
+    });
+    
     clone.querySelectorAll('[component-field]').forEach(field => {
       const fieldName = field.getAttribute('component-field');
       
