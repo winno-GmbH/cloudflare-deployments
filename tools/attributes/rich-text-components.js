@@ -35,12 +35,6 @@
       const [key, ...valueParts] = parts[i].split(':');
       if (key && valueParts.length > 0) {
         let value = valueParts.join(':').trim();
-        
-        const linkMatch = value.match(/<a[^>]+href=["']([^"']+)["'][^>]*>.*?<\/a>/i);
-        if (linkMatch) {
-          value = linkMatch[1];
-        }
-        
         attributes[key.trim()] = value;
       }
     }
@@ -72,7 +66,12 @@
       const urlValue = attributes[urlFieldName];
       
       if (urlValue !== undefined) {
-        field.href = urlValue;
+        const linkMatch = urlValue.match(/<a[^>]+href=["']([^"']+)["'][^>]*>.*?<\/a>/i);
+        if (linkMatch) {
+          field.href = linkMatch[1];
+        } else {
+          field.href = urlValue;
+        }
       }
       
       field.removeAttribute('component-url');
