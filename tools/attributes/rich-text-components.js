@@ -155,55 +155,20 @@
     const richTextElements = document.querySelectorAll('.w-richtext, .w-dyn-bind-empty, [class*="rich"]');
     
     richTextElements.forEach(element => {
-      const walker = document.createTreeWalker(
-        element,
-        NodeFilter.SHOW_TEXT,
-        null,
-        false
-      );
+      let html = element.innerHTML;
+      const regex = /\{\{[^}]*(?:<a[^>]*>[^<]*<\/a>)?[^}]*\}\}/g;
       
-      const nodesToReplace = [];
-      let node;
-      
-      while (node = walker.nextNode()) {
-        if (node.nodeValue && node.nodeValue.includes('{{')) {
-          nodesToReplace.push(node);
+      html = html.replace(regex, (match) => {
+        const component = createComponentFromString(match);
+        if (component) {
+          const temp = document.createElement('div');
+          temp.appendChild(component);
+          return temp.innerHTML;
         }
-      }
-      
-      nodesToReplace.forEach(textNode => {
-        const text = textNode.nodeValue;
-        const regex = /\{\{[^}]+\}\}/g;
-        const matches = text.match(regex);
-        
-        if (matches) {
-          const fragment = document.createDocumentFragment();
-          let lastIndex = 0;
-          
-          matches.forEach(match => {
-            const index = text.indexOf(match, lastIndex);
-            
-            if (index > lastIndex) {
-              fragment.appendChild(document.createTextNode(text.slice(lastIndex, index)));
-            }
-            
-            const component = createComponentFromString(match);
-            if (component) {
-              fragment.appendChild(component);
-            } else {
-              fragment.appendChild(document.createTextNode(match));
-            }
-            
-            lastIndex = index + match.length;
-          });
-          
-          if (lastIndex < text.length) {
-            fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
-          }
-          
-          textNode.parentNode.replaceChild(fragment, textNode);
-        }
+        return match;
       });
+      
+      element.innerHTML = html;
     });
   }
   
