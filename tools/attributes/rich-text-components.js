@@ -26,16 +26,20 @@
   }
   
   function parseComponentString(str) {
-    const content = str.slice(2, -2).trim();
-    const parts = content.split('|').map(p => p.trim());
+    let content = str.slice(2, -2);
+    content = content.replace(/<br\s*\/?>/gi, '');
+    content = content.trim().replace(/\s+/g, ' ');
+    
+    const parts = content.split('|').map(p => p.trim()).filter(p => p);
     const componentName = parts[0];
     
     const attributes = {};
     for (let i = 1; i < parts.length; i++) {
-      const [key, ...valueParts] = parts[i].split(':');
-      if (key && valueParts.length > 0) {
-        let value = valueParts.join(':').trim();
-        attributes[key.trim()] = value;
+      const colonIndex = parts[i].indexOf(':');
+      if (colonIndex > 0) {
+        const key = parts[i].substring(0, colonIndex).trim();
+        let value = parts[i].substring(colonIndex + 1).trim();
+        attributes[key] = value;
       }
     }
     
@@ -120,7 +124,7 @@
           }
         }
         else {
-          if (value.includes('<a')) {
+          if (/<[^>]+>/.test(value)) {
             field.innerHTML = value;
           } else {
             field.textContent = value;
@@ -164,7 +168,7 @@
     
     richTextElements.forEach(element => {
       let html = element.innerHTML;
-      const regex = /\{\{[^}]*(?:<a[^>]*>[^<]*<\/a>)?[^}]*\}\}/g;
+      const regex = /\{\{[\s\S]*?\}\}/g;
       
       html = html.replace(regex, (match) => {
         const component = createComponentFromString(match);
