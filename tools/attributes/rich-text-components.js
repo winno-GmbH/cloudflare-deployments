@@ -27,7 +27,8 @@
   
   function parseComponentString(str) {
     let content = str.slice(2, -2);
-    content = content.replace(/<br\s*\/?>/gi, '');
+
+    // removed the <br>-removal, we want to keep them
     content = content.trim().replace(/\s+/g, ' ');
     
     const parts = content.split('|').map(p => p.trim()).filter(p => p);
@@ -38,7 +39,8 @@
       const colonIndex = parts[i].indexOf(':');
       if (colonIndex > 0) {
         const key = parts[i].substring(0, colonIndex).trim();
-        let value = parts[i].substring(colonIndex + 1).trim();
+        let value = parts[i].substring(colonIndex + 1);
+        // Keep raw, including newlines
         attributes[key] = value;
       }
     }
@@ -120,14 +122,15 @@
               field.href = value;
             }
           } else {
-            field.innerHTML = value;
+            field.innerHTML = value.replace(/\n/g, '<br>');
           }
         }
         else {
           if (/<[^>]+>/.test(value)) {
             field.innerHTML = value;
           } else {
-            field.textContent = value;
+            // 🔑 NEW: replace linebreaks with <br>
+            field.innerHTML = value.replace(/\n/g, '<br>');
           }
         }
       }
