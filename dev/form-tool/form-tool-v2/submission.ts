@@ -9,6 +9,13 @@ declare global {
     dataLayer: any[];
     fbq: (action: string, event: string) => void;
   }
+
+  const grecaptcha: {
+    enterprise: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  };
 }
 
 export class FormSubmission {
@@ -139,6 +146,17 @@ export class FormSubmission {
   }
 
   public async handleSubmit(e: Event, sessionId: string): Promise<void> {
+    e.preventDefault();
+    if (this.captchaKey) {
+      grecaptcha.enterprise.ready(async () => {
+        const token = await grecaptcha.enterprise.execute(this.captchaKey!, { action: 'submit' });
+        const recaptchaResponse = document.getElementById('g-recaptcha-response');
+        if (recaptchaResponse) {
+          (recaptchaResponse as HTMLInputElement).value = token;
+        }
+      });
+    }
+
     const fields = getFields(this.form);
     const isValid = validateFields(fields, this.form);
     if (!isValid) return;
