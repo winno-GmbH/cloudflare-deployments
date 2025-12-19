@@ -1,7 +1,7 @@
-import { FormRequest, GoogleAdsData, MetaAdsData, FormCategory } from './types';
-import { getFields, convertFieldsToFormData } from './fields';
-import { validateFields } from './validation';
-import { getCookie, getCookieTimingInfo } from './utils';
+import { FormRequest, GoogleAdsData, MetaAdsData, FormCategory } from "./types";
+import { getFields, convertFieldsToFormData } from "./fields";
+import { validateFields } from "./validation";
+import { getCookie, getCookieTimingInfo } from "./utils";
 
 declare global {
   interface Window {
@@ -13,7 +13,10 @@ declare global {
   const grecaptcha: {
     enterprise: {
       ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+      execute: (
+        siteKey: string,
+        options: { action: string }
+      ) => Promise<string>;
     };
   };
 }
@@ -22,7 +25,8 @@ export class FormSubmission {
   private form: HTMLElement;
   private accessKey: string;
   private captchaKey: string | null;
-  private serverUrl: string = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
+  private serverUrl: string =
+    "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
   constructor(form: HTMLElement, accessKey: string, captchaKey: string | null) {
     this.form = form;
@@ -35,9 +39,11 @@ export class FormSubmission {
     const timing = getCookieTimingInfo("campaignid");
     const isXo = window.location.hostname.includes("xo-angels");
     if (timing.value && timing.createdAt && isXo) {
-      const minutesSinceCreated = Math.floor((Date.now() - timing.createdAt.getTime()) / (1000 * 60));
+      const minutesSinceCreated = Math.floor(
+        (Date.now() - timing.createdAt.getTime()) / (1000 * 60)
+      );
       if (minutesSinceCreated > 30) {
-        return {}
+        return {};
       }
     }
 
@@ -118,7 +124,9 @@ export class FormSubmission {
       });
     }
 
-    const buttonWrapper = this.form.querySelector(".wr_btn--form-control-submit.wr_btn");
+    const buttonWrapper = this.form.querySelector(
+      ".wr_btn--form-control-submit.wr_btn"
+    );
     if (buttonWrapper) {
       const targetLink = buttonWrapper.getAttribute("target-link");
       if (targetLink) {
@@ -139,7 +147,11 @@ export class FormSubmission {
     const success = this.form.querySelector(".cmp--form-success.cmp");
     if (success) {
       success.classList.remove("hidden");
-      success.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      success.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
     }
 
     localStorage.removeItem("form-save-id");
@@ -147,15 +159,6 @@ export class FormSubmission {
 
   public async handleSubmit(e: Event, sessionId: string): Promise<void> {
     e.preventDefault();
-    if (this.captchaKey) {
-      grecaptcha.enterprise.ready(async () => {
-        const token = await grecaptcha.enterprise.execute(this.captchaKey!, { action: 'submit' });
-        const recaptchaResponse = document.getElementById('g-recaptcha-response');
-        if (recaptchaResponse) {
-          (recaptchaResponse as HTMLInputElement).value = token;
-        }
-      });
-    }
 
     const fields = getFields(this.form);
     const isValid = validateFields(fields, this.form);
@@ -164,15 +167,24 @@ export class FormSubmission {
     const categories: FormCategory[] = [];
     const formSteps = this.form.querySelectorAll(".cmp--form.cmp");
     if (formSteps.length === 1) {
-      const fields = convertFieldsToFormData(getFields(formSteps[0] as HTMLElement));
+      const fields = convertFieldsToFormData(
+        getFields(formSteps[0] as HTMLElement)
+      );
       categories.push({
         name: formSteps[0].getAttribute("name") || "",
         form: fields,
       });
     } else {
       formSteps.forEach((formStep) => {
-        if (!(formStep.id !== "" && formStep.getAttribute("condition-active") !== "true")) {
-          const fields = convertFieldsToFormData(getFields(formStep as HTMLElement));
+        if (
+          !(
+            formStep.id !== "" &&
+            formStep.getAttribute("condition-active") !== "true"
+          )
+        ) {
+          const fields = convertFieldsToFormData(
+            getFields(formStep as HTMLElement)
+          );
           categories.push({
             name: formStep.getAttribute("name") || "",
             form: fields,
@@ -186,26 +198,53 @@ export class FormSubmission {
       // ignore
     }
 
+    let recaptchaToken: string | null = null;
+    if (
+      this.captchaKey &&
+      typeof grecaptcha !== "undefined" &&
+      grecaptcha.enterprise
+    ) {
+      try {
+        await new Promise<void>((resolve) => {
+          grecaptcha.enterprise.ready(async () => {
+            recaptchaToken = await grecaptcha.enterprise.execute(
+              this.captchaKey!,
+              {
+                action: "submit",
+              }
+            );
+            console.log("reCAPTCHA token generated successfully");
+            resolve();
+          });
+        });
+      } catch (error) {
+        console.error("reCAPTCHA error:", error);
+      }
+    }
+
     const request: FormRequest = {
       formData: {
         categories: categories,
       },
       test: this.accessKey,
-      token: this.captchaKey || undefined,
+      token: recaptchaToken || undefined,
       id: localStorage.getItem("form-save-id") || undefined,
       googleAds: this.getGoogleAdsData(),
       metaAds: this.getMetaAdsData(),
       sessionId: sessionId,
     };
 
-    const buttonWrapper = (e.target as HTMLElement).closest(".wr_btn--form-control-submit.wr_btn");
+    const buttonWrapper = (e.target as HTMLElement).closest(
+      ".wr_btn--form-control-submit.wr_btn"
+    );
     if (!buttonWrapper) return;
 
     buttonWrapper.classList.add("pending");
     buttonWrapper.setAttribute("disabled", "true");
-    const buttonText = buttonWrapper.getAttribute("pending-text") || "Loading...";
+    const buttonText =
+      buttonWrapper.getAttribute("pending-text") || "Loading...";
     (e.target as HTMLElement).textContent = buttonText;
 
     await this.submitForm(request);
   }
-} 
+}
