@@ -9,6 +9,7 @@ class FormTool {
   private accessKey: string;
   private formName: string;
   private captchaKey: string | null;
+  private turnstileKey: string | null;
   private form: HTMLElement | null;
   private formSteps: FormSteps | null = null;
   private formSubmission: FormSubmission | null = null;
@@ -22,10 +23,11 @@ class FormTool {
     this.accessKey = urlParams.get("key") ?? "fd821fc7-53b3-4f4c-b3b0-f4adf10491c7";
     this.formName = urlParams.get("form") ?? "Testformular";
     this.captchaKey = urlParams.get("captcha-key");
+    this.turnstileKey = urlParams.get("turnstile-key");
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.86");
+    console.log("Form Submit v0.2.87");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }
@@ -965,7 +967,7 @@ class FormTool {
       this.formSteps.addEventListeners();
     }
 
-    this.formSubmission = new FormSubmission(this.form, this.accessKey, this.captchaKey);
+    this.formSubmission = new FormSubmission(this.form, this.accessKey, this.captchaKey, this.turnstileKey);
     const submitButton = this.form.querySelector(".wr_btn--form-control-submit.wr_btn");
     if (submitButton) {
       submitButton.addEventListener("click", (e) => this.formSubmission?.handleSubmit(e, this.sessionId));

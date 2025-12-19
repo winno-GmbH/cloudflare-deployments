@@ -19,19 +19,41 @@ declare global {
       ) => Promise<string>;
     };
   };
+
+  const turnstile: {
+    render: (
+      container: string | HTMLElement,
+      options: {
+        sitekey: string;
+        callback?: (token: string) => void;
+        "error-callback"?: () => void;
+        theme?: "light" | "dark" | "auto";
+        size?: "normal" | "compact";
+      }
+    ) => string;
+    reset: (widgetId?: string) => void;
+    getResponse: (widgetId?: string) => string;
+  };
 }
 
 export class FormSubmission {
   private form: HTMLElement;
   private accessKey: string;
   private captchaKey: string | null;
+  private turnstileKey: string | null;
   private serverUrl: string =
     "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
-  constructor(form: HTMLElement, accessKey: string, captchaKey: string | null) {
+  constructor(
+    form: HTMLElement,
+    accessKey: string,
+    captchaKey: string | null,
+    turnstileKey: string | null = null
+  ) {
     this.form = form;
     this.accessKey = accessKey;
     this.captchaKey = captchaKey;
+    this.turnstileKey = turnstileKey;
   }
 
   private getGoogleAdsData(): GoogleAdsData {
@@ -157,6 +179,74 @@ export class FormSubmission {
     localStorage.removeItem("form-save-id");
   }
 
+  public renderTurnstile(): void {
+    if (!this.turnstileKey || typeof turnstile === "undefined") {
+      return;
+    }
+
+    const containers = document.querySelectorAll('.cf-turnstile');
+    containers.forEach(container => {
+      try {
+        turnstile.render(container as HTMLElement, {
+          sitekey: this.turnstileKey!,
+          theme: "auto",
+          size: "normal",
+        });
+      } catch (error) {
+        console.error("Error rendering Turnstile:", error);
+      }
+    });
+  }
+
+  private getTurnstileToken(): string | null {
+    if (typeof turnstile === "undefined") {
+      return null;
+    }
+
+    try {
+      return turnstile.getResponse();
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private async getCaptchaToken(): Promise<string | null> {
+    // Try Turnstile first
+    if (this.turnstileKey) {
+      const turnstileToken = this.getTurnstileToken();
+      if (turnstileToken) {
+        return turnstileToken;
+      }
+    }
+
+    // Fallback to reCAPTCHA if Turnstile fails or is not available
+    if (
+      this.captchaKey &&
+      typeof grecaptcha !== "undefined" &&
+      grecaptcha.enterprise
+    ) {
+      try {
+        return await new Promise<string>((resolve, reject) => {
+          grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await grecaptcha.enterprise.execute(
+                this.captchaKey!,
+                { action: "submit" }
+              );
+              resolve(token);
+            } catch (error) {
+              reject(error);
+            }
+          });
+        });
+      } catch (error) {
+        console.error("reCAPTCHA error:", error);
+      }
+    }
+
+    return null;
+  }
+
   public async handleSubmit(e: Event, sessionId: string): Promise<void> {
     e.preventDefault();
 
@@ -198,35 +288,15 @@ export class FormSubmission {
       // ignore
     }
 
-    let recaptchaToken: string | null = null;
-    if (
-      this.captchaKey &&
-      typeof grecaptcha !== "undefined" &&
-      grecaptcha.enterprise
-    ) {
-      try {
-        await new Promise<void>((resolve) => {
-          grecaptcha.enterprise.ready(async () => {
-            recaptchaToken = await grecaptcha.enterprise.execute(
-              this.captchaKey!,
-              {
-                action: "submit",
-              }
-            );
-            resolve();
-          });
-        });
-      } catch (error) {
-        console.error("reCAPTCHA error:", error);
-      }
-    }
+    // Get captcha token (Turnstile first, then reCAPTCHA fallback)
+    const captchaToken = await this.getCaptchaToken();
 
     const request: FormRequest = {
       formData: {
         categories: categories,
       },
       test: this.accessKey,
-      token: recaptchaToken || undefined,
+      token: captchaToken || undefined,
       id: localStorage.getItem("form-save-id") || undefined,
       googleAds: this.getGoogleAdsData(),
       metaAds: this.getMetaAdsData(),
