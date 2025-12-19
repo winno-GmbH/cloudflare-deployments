@@ -17,8 +17,6 @@ const accessKey = urlParams.get("key");
 const formName = urlParams.get("form");
 const captchaKey = urlParams.get("captcha-key");
 
-console.log("HELLO");
-
 // Script Version
 console.log("Form Submit v1.0.4");
 

@@ -1,12 +1,13 @@
-import { FormField, FormCategory } from './types';
+import { FormField, FormCategory } from "./types";
 
 export function getFields(parent: HTMLElement): FormField[] {
   const fields: FormField[] = [];
-  const elements = Array.from(parent.querySelectorAll("input, textarea")).filter(
-    (el) => !el.closest('[condition-active="false"]')
-  ) as (HTMLInputElement | HTMLTextAreaElement)[];
-
-  console.log(elements);
+  const elements = Array.from(
+    parent.querySelectorAll("input, textarea")
+  ).filter((el) => !el.closest('[condition-active="false"]')) as (
+    | HTMLInputElement
+    | HTMLTextAreaElement
+  )[];
 
   elements.forEach((field) => {
     const type = field.getAttribute("type");
@@ -14,7 +15,12 @@ export function getFields(parent: HTMLElement): FormField[] {
     const value = field.value;
     const customValidatorRegex = field.getAttribute("data-validator");
     const name = field.getAttribute("name") || "";
-    const label = (field.closest(".cmp--form-item.cmp")?.querySelector(".lbl") as HTMLElement)?.innerText || "";
+    const label =
+      (
+        field
+          .closest(".cmp--form-item.cmp")
+          ?.querySelector(".lbl") as HTMLElement
+      )?.innerText || "";
 
     if (type === "radio" || type === "checkbox") {
       fields.push({
@@ -22,7 +28,9 @@ export function getFields(parent: HTMLElement): FormField[] {
         required,
         name,
         item: field,
-        value: (field.closest(".cmp")?.querySelector(".lbl") as HTMLElement)?.innerText || "",
+        value:
+          (field.closest(".cmp")?.querySelector(".lbl") as HTMLElement)
+            ?.innerText || "",
         checked: (field as HTMLInputElement).checked,
         variable: field.getAttribute("data-variable") || undefined,
         customValidatorRegex: customValidatorRegex || undefined,
@@ -48,9 +56,11 @@ export function getFields(parent: HTMLElement): FormField[] {
 export function convertFieldsToFormData(fields: FormField[]): FormField[] {
   const allFields: FormField[] = [];
 
-
   fields.forEach((field) => {
-    const label = field.type === "radio" || field.type === "checkbox" ? field.name : field.label;
+    const label =
+      field.type === "radio" || field.type === "checkbox"
+        ? field.name
+        : field.label;
 
     const req: FormField = {
       type: field.type,
@@ -82,7 +92,10 @@ export function convertFieldsToFormData(fields: FormField[]): FormField[] {
   return allFields;
 }
 
-export function convertFormDataToFields(formData: { categories: FormCategory[] }, form: HTMLElement): string {
+export function convertFormDataToFields(
+  formData: { categories: FormCategory[] },
+  form: HTMLElement
+): string {
   let lastStepName = "";
 
   formData.categories.forEach((category) => {
@@ -90,7 +103,11 @@ export function convertFormDataToFields(formData: { categories: FormCategory[] }
     if (!formStepParent) return;
 
     category.form.forEach((field) => {
-      const labelEl = getElementByXpathWithIndex(`//label[text()="${field.label}"]`, formStepParent as HTMLElement, 0);
+      const labelEl = getElementByXpathWithIndex(
+        `//label[text()="${field.label}"]`,
+        formStepParent as HTMLElement,
+        0
+      );
       if (!labelEl || field.value === "") return;
       lastStepName = category.name;
 
@@ -105,7 +122,11 @@ export function convertFormDataToFields(formData: { categories: FormCategory[] }
         const parent = labelEl.closest(".cmp--form-item.cmp");
         const selectedItems = field.value.split(", ");
         selectedItems.forEach((item) => {
-          const inputLabel = getElementByXpathWithIndex(`//label[text()="${item}"]`, parent as HTMLElement, 0);
+          const inputLabel = getElementByXpathWithIndex(
+            `//label[text()="${item}"]`,
+            parent as HTMLElement,
+            0
+          );
           const inputParent = inputLabel?.closest(".cmp--cb.cmp,.cmp--ct.cmp");
           if (inputParent) {
             inputParent.dispatchEvent(new Event("click"));
@@ -113,7 +134,11 @@ export function convertFormDataToFields(formData: { categories: FormCategory[] }
         });
       } else if (field.type === "radio") {
         const parent = labelEl.closest(".cmp--form-item.cmp");
-        const inputLabel = getElementByXpathWithIndex(`//label[text()="${field.value}"]`, parent as HTMLElement, 0);
+        const inputLabel = getElementByXpathWithIndex(
+          `//label[text()="${field.value}"]`,
+          parent as HTMLElement,
+          0
+        );
         const inputParent = inputLabel?.closest(".cmp--rb.cmp,.cmp--rt.cmp");
         if (inputParent) {
           inputParent.dispatchEvent(new Event("click"));
@@ -132,12 +157,24 @@ export function convertFormDataToFields(formData: { categories: FormCategory[] }
   return lastStepName;
 }
 
-function getElementByXpathWithIndex(xpath: string, parent: HTMLElement, index: number): HTMLElement | null {
-  const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+function getElementByXpathWithIndex(
+  xpath: string,
+  parent: HTMLElement,
+  index: number
+): HTMLElement | null {
+  const xpathResult = document.evaluate(
+    xpath,
+    document,
+    null,
+    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+    null
+  );
   let elements: HTMLElement[] = [];
   for (let i = 0; i < xpathResult.snapshotLength; i++) {
     elements.push(xpathResult.snapshotItem(i) as HTMLElement);
   }
-  const descendantElements = elements.filter((element) => parent.contains(element));
+  const descendantElements = elements.filter((element) =>
+    parent.contains(element)
+  );
   return descendantElements[index] || null;
-} 
+}

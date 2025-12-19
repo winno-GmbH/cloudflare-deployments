@@ -16,11 +16,11 @@ export class FileHandler {
     input: HTMLInputElement,
     onFilesChanged: (files: FileList) => void,
     accessKey: string = "",
-    sessionId: string = "",
+    sessionId: string = ""
   ) {
     this.input = input;
     this.onFilesChanged = onFilesChanged;
-    this.allowedTypes = input.getAttribute('accept')?.split(',') || [];
+    this.allowedTypes = input.getAttribute("accept")?.split(",") || [];
     this.accessKey = accessKey;
     this.sessionId = sessionId;
 
@@ -45,7 +45,9 @@ export class FileHandler {
 
     // Check if adding these files would exceed the maximum allowed
     if (this.files.length + newFiles.length > this.maxFileCount) {
-      console.warn(`Cannot add ${newFiles.length} files. Maximum number of files allowed is ${this.maxFileCount}.`);
+      console.warn(
+        `Cannot add ${newFiles.length} files. Maximum number of files allowed is ${this.maxFileCount}.`
+      );
       return false;
     }
 
@@ -56,8 +58,12 @@ export class FileHandler {
       const file = newFiles[i];
 
       // Check file type if restrictions exist
-      if (this.allowedTypes.length > 0 &&
-        !this.allowedTypes.some(type => file.type.match(type.replace('*', '.*')))) {
+      if (
+        this.allowedTypes.length > 0 &&
+        !this.allowedTypes.some((type) =>
+          file.type.match(type.replace("*", ".*"))
+        )
+      ) {
         hasError = true;
         console.warn(`File "${file.name}" has an invalid file type.`);
         break;
@@ -66,7 +72,9 @@ export class FileHandler {
       // Check file size limit
       if (file.size > this.maxFileSize) {
         hasError = true;
-        console.warn(`File "${file.name}" exceeds the maximum file size of 5MB.`);
+        console.warn(
+          `File "${file.name}" exceeds the maximum file size of 5MB.`
+        );
         break;
       }
     }
@@ -76,11 +84,11 @@ export class FileHandler {
     }
 
     // Add the new files to our collection
-    Array.from(newFiles).forEach(file => {
+    Array.from(newFiles).forEach((file) => {
       this.files.push(file);
 
       // Add image files to upload queue
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith("image/")) {
         this.uploadQueue.push(file);
       }
     });
@@ -118,7 +126,7 @@ export class FileHandler {
     }
 
     // Only upload images
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       // Not an image, move to next file
       this.uploadInProgress = false;
       this.processUploadQueue();
@@ -137,7 +145,7 @@ export class FileHandler {
    */
   private async uploadImage(file: File): Promise<void> {
     if (!this.accessKey || !this.sessionId) {
-      console.warn('Cannot upload image: missing accessKey or sessionId');
+      console.warn("Cannot upload image: missing accessKey or sessionId");
       return;
     }
 
@@ -155,11 +163,13 @@ export class FileHandler {
         method: "POST",
         headers: myHeaders,
         body: formdata,
-        redirect: "follow" as RequestRedirect
+        redirect: "follow" as RequestRedirect,
       };
 
-      console.log(`Uploading image: ${file.name}`);
-      const response = await fetch(`${this.serverUrl}/api/forms/image-upload`, requestOptions);
+      const response = await fetch(
+        `${this.serverUrl}/api/forms/image-upload`,
+        requestOptions
+      );
 
       if (!response.ok) {
         throw new Error(`Upload failed with status: ${response.status}`);
@@ -171,12 +181,11 @@ export class FileHandler {
         // Store the image ID with the file signature as key
         const fileSignature = this.getFileSignature(file);
         this.fileIdMap.set(fileSignature, result.id);
-        console.log(`Upload successful for ${file.name} with ID: ${result.id}`);
       } else {
         console.warn(`Upload successful but no ID returned for ${file.name}`);
       }
     } catch (error) {
-      console.error('Image upload failed:', error);
+      console.error("Image upload failed:", error);
     }
   }
 
@@ -187,16 +196,17 @@ export class FileHandler {
     if (!imageId) return;
 
     try {
-      const response = await fetch(`${this.serverUrl}/api/forms/image-upload/${imageId}`, {
-        method: 'DELETE',
-        redirect: 'follow'
-      });
+      const response = await fetch(
+        `${this.serverUrl}/api/forms/image-upload/${imageId}`,
+        {
+          method: "DELETE",
+          redirect: "follow",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Delete failed with status: ${response.status}`);
       }
-
-      console.log(`Successfully deleted image with ID: ${imageId}`);
     } catch (error) {
       console.error(`Failed to delete image with ID: ${imageId}`, error);
     }
@@ -210,7 +220,7 @@ export class FileHandler {
       const fileToRemove = this.files[index];
 
       // Check if it's an image and we have an ID for it
-      if (fileToRemove.type.startsWith('image/')) {
+      if (fileToRemove.type.startsWith("image/")) {
         const fileSignature = this.getFileSignature(fileToRemove);
         const imageId = this.fileIdMap.get(fileSignature);
 
@@ -236,8 +246,8 @@ export class FileHandler {
    */
   public clearFiles(): void {
     // Delete all images from server
-    this.files.forEach(file => {
-      if (file.type.startsWith('image/')) {
+    this.files.forEach((file) => {
+      if (file.type.startsWith("image/")) {
         const fileSignature = this.getFileSignature(file);
         const imageId = this.fileIdMap.get(fileSignature);
 
@@ -274,7 +284,7 @@ export class FileHandler {
    */
   public getFilesAsList(): FileList {
     const dataTransfer = new DataTransfer();
-    this.files.forEach(file => {
+    this.files.forEach((file) => {
       dataTransfer.items.add(file);
     });
     return dataTransfer.files;
@@ -285,7 +295,7 @@ export class FileHandler {
    */
   private updateInputFiles(): void {
     const dataTransfer = new DataTransfer();
-    this.files.forEach(file => {
+    this.files.forEach((file) => {
       dataTransfer.items.add(file);
     });
     this.input.files = dataTransfer.files;
@@ -332,4 +342,4 @@ export class FileHandler {
   public isFileLimitReached(): boolean {
     return this.files.length >= this.maxFileCount;
   }
-} 
+}

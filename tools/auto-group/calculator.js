@@ -14,7 +14,6 @@ class AutoGroupCalculator {
       return;
     }
 
-    console.log("Calculator loaded");
     this.showLoader();
     this.fetchPricingData()
       .then(() => {
@@ -89,7 +88,6 @@ class AutoGroupCalculator {
   setupForm(formName, updatePriceCallback) {
     const form = document.querySelector(`[name="${formName}"]`);
     if (!form) {
-      console.log("Form not found");
       return null;
     }
 
@@ -98,7 +96,6 @@ class AutoGroupCalculator {
     const rbTemplate = form.querySelector(".cmp--rb.cmp");
 
     if (!mietdauerRadioGroup || !kilometerpaketRadioGroup || !rbTemplate) {
-      console.log("Form elements not found");
       return null;
     }
 
@@ -122,7 +119,6 @@ class AutoGroupCalculator {
     const vehicleData = this.pricingData.find((item) => item.sheetName.toLowerCase() === vehicleName.toLowerCase());
 
     if (!vehicleData) {
-      console.log("Vehicle data not found");
       return;
     }
 
@@ -161,7 +157,6 @@ class AutoGroupCalculator {
   setupAnfragenButton(form, vehicleName) {
     const anfragenButton = form.querySelector(".wr_btn--form.wr_btn:last-child");
     if (!anfragenButton) {
-      console.log("Anfragen button not found");
       return;
     }
 
@@ -245,10 +240,8 @@ class AutoGroupCalculator {
 
     // Click either the selected button or the first one
     if (selectedButton) {
-      console.log("clicked selected button, value: ", selectedButton);
       selectedButton.dispatchEvent(new Event("click"));
     } else if (firstButton) {
-      console.log("clicked first button, value: ", firstButton);
       firstButton.dispatchEvent(new Event("click"));
     }
   }
@@ -455,14 +448,12 @@ class AutoGroupCalculator {
       // Find the matching vehicle data
       const vehicleData = this.pricingData.find((item) => item.sheetName.toLowerCase() === vehicleName.toLowerCase());
       if (!vehicleData) {
-        console.log(`Vehicle data not found for: ${vehicleName}`);
         return;
       }
 
       // Get the price element
       const priceElement = card.querySelector(".car-price");
       if (!priceElement) {
-        console.log(`Price element not found for: ${vehicleName}`);
         return;
       }
 
@@ -514,7 +505,6 @@ calculator.init();
 function setupInitValues() {
   const interval = setInterval(() => {
     if (scriptLoaded) {
-      console.log("scriptLoaded");
       // Then load the form tool script
       const formToolScript = document.createElement("script");
       formToolScript.src =

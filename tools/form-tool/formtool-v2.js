@@ -88,7 +88,6 @@
           label: field.label,
           name: field.name,
         };
-        console.log(req);
         if (field.variable) {
           req.variable = field.variable;
         }

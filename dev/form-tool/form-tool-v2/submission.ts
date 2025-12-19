@@ -213,7 +213,6 @@ export class FormSubmission {
                 action: "submit",
               }
             );
-            console.log("reCAPTCHA token generated successfully");
             resolve();
           });
         });
