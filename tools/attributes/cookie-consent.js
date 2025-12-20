@@ -1,10 +1,3 @@
-/**
- * Cookie Consent Manager with Google Consent Mode v2
- * AUTO-BLOCKS inline scripts (no type="text/plain" needed!)
- * Version: 2.1.0
- * License: MIT
- */
-
 (function() {
   'use strict';
 
@@ -15,16 +8,22 @@
   // AUTO-BLOCK SCRIPTS (Finsweet-Style)
   // ============================================
   
-  const autoBlockScripts = () => {
-    // Find all inline scripts with data-cookie-consent
-    document.querySelectorAll('script[data-cookie-consent]').forEach(script => {
-      // Only block inline scripts (not external src)
-      if (!script.src && script.type !== 'text/plain' && !script.hasAttribute('data-cookie-blocked')) {
-        script.type = 'text/plain';
-        script.setAttribute('data-cookie-blocked', 'true');
-      }
-    });
-  };
+const autoBlockScripts = () => {
+  document.querySelectorAll('script[data-cookie-consent]').forEach(script => {
+    
+    // INLINE Scripts: type ist der Marker
+    if (!script.src && script.type !== 'text/plain') {
+      script.type = 'text/plain';
+    }
+    
+    // EXTERNAL Scripts: data-src ist der Marker
+    if (script.src && !script.hasAttribute('data-src')) {
+      script.setAttribute('data-src', script.src);
+      script.removeAttribute('src');
+    }
+    
+  });
+};
 
   // Block immediately (before any script execution)
   autoBlockScripts();
