@@ -27,7 +27,7 @@ class FormTool {
 
     this.sessionId = this.generateSessionId();
 
-    console.log("Form Submit v0.2.88");
+    console.log("Form Submit v0.2.89");
 
     this.form = document.querySelector(`[name="${this.formName}"]`);
   }

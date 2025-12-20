@@ -2,7 +2,6 @@
  * Cookie Consent Manager with Google Consent Mode v2
  * Version: 2.0.0
  * License: MIT
- * Author: Winno.ch
  */
 
 (function() {
@@ -195,9 +194,19 @@
       if (!this.consent) return;
       
       document.querySelectorAll('script[data-cookie-consent]').forEach(script => {
-        const category = script.getAttribute('data-cookie-consent');
+        const consentAttr = script.getAttribute('data-cookie-consent');
+        if (!consentAttr) return;
         
-        if (category === 'necessary' || this.consent[category]) {
+        // Multi-Category Support: "analytics" oder "analytics,marketing" oder "analytics, marketing"
+        const requiredCategories = consentAttr.split(',').map(cat => cat.trim());
+        
+        // OR logic: Load if ANY required category is granted
+        const hasConsent = requiredCategories.some(category => {
+          if (category === 'necessary') return true;
+          return this.consent && this.consent[category] === true;
+        });
+        
+        if (hasConsent) {
           this.executeScript(script);
         }
       });
