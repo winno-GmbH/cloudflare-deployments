@@ -1,6 +1,7 @@
 /**
  * Cookie Consent Manager with Google Consent Mode v2
- * Version: 2.0.0
+ * AUTO-BLOCKS inline scripts (no type="text/plain" needed!)
+ * Version: 2.1.0
  * License: MIT
  */
 
@@ -9,6 +10,47 @@
 
   const COOKIE_NAME = 'cookie_consent';
   const COOKIE_EXPIRY = 365;
+
+  // ============================================
+  // AUTO-BLOCK SCRIPTS (Finsweet-Style)
+  // ============================================
+  
+  const autoBlockScripts = () => {
+    // Find all inline scripts with data-cookie-consent
+    document.querySelectorAll('script[data-cookie-consent]').forEach(script => {
+      // Only block inline scripts (not external src)
+      if (!script.src && script.type !== 'text/plain' && !script.hasAttribute('data-cookie-blocked')) {
+        script.type = 'text/plain';
+        script.setAttribute('data-cookie-blocked', 'true');
+      }
+    });
+  };
+
+  // Block immediately (before any script execution)
+  autoBlockScripts();
+
+  // Watch for dynamically added scripts
+  const scriptObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.tagName === 'SCRIPT' && 
+            node.hasAttribute('data-cookie-consent') && 
+            !node.src && 
+            node.type !== 'text/plain') {
+          node.type = 'text/plain';
+          node.setAttribute('data-cookie-blocked', 'true');
+        }
+      });
+    });
+  });
+
+  // Start observing
+  if (document.documentElement) {
+    scriptObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+  }
 
   // ============================================
   // Google Consent Mode v2
@@ -197,7 +239,7 @@
         const consentAttr = script.getAttribute('data-cookie-consent');
         if (!consentAttr) return;
         
-        // Multi-Category Support: "analytics" oder "analytics,marketing" oder "analytics, marketing"
+        // Multi-Category Support
         const requiredCategories = consentAttr.split(',').map(cat => cat.trim());
         
         // OR logic: Load if ANY required category is granted
@@ -217,17 +259,27 @@
       
       const newScript = document.createElement('script');
       
+      // Copy all attributes except data-cookie-consent, type, and data-cookie-blocked
       Array.from(script.attributes).forEach(attr => {
-        if (attr.name !== 'data-cookie-consent') {
+        if (attr.name !== 'data-cookie-consent' && 
+            attr.name !== 'type' && 
+            attr.name !== 'data-cookie-blocked') {
           newScript.setAttribute(attr.name, attr.value);
         }
       });
       
+      // Copy innerHTML for inline scripts
       if (script.innerHTML) {
         newScript.innerHTML = script.innerHTML;
       }
       
+      // Set type to text/javascript (default, executable)
+      newScript.type = 'text/javascript';
+      
+      // Mark original as executed
       script.setAttribute('data-cookie-executed', 'true');
+      
+      // Insert and execute
       script.parentNode.insertBefore(newScript, script.nextSibling);
     },
     
