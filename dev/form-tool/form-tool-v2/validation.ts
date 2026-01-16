@@ -15,7 +15,7 @@ export function validateTextInput(field: FormField): boolean {
     }
     if (
       type === "tel" &&
-      !new RegExp("^\\+?(\\d{1,4})?[\\s.-]?(\\d{1,4})?[\\s.-]?\\d{1,4}[\\s.-]?\\d{1,4}[\\s.-]?\\d{1,9}$").test(
+      !new RegExp("^\\+?(\\d{1,4})?[\\s./-]?(\\d{1,4})?[\\s./-]?\\d{1,4}[\\s./-]?\\d{1,4}[\\s./-]?\\d{1,9}$").test(
         value
       )
     ) {
