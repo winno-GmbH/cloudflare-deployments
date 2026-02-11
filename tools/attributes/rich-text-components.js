@@ -2,17 +2,20 @@
   const templates = {};
 
   function injectBaseStyles() {
-    if (document.getElementById("rtc-component-style")) return;
+  if (document.getElementById("rtc-component-style")) return;
 
-    const style = document.createElement("style");
-    style.id = "rtc-component-style";
-    style.innerHTML = `
-      .rtc-component {
-        all: revert;
-      }
-    `;
-    document.head.appendChild(style);
-  }
+  const style = document.createElement("style");
+  style.id = "rtc-component-style";
+  style.innerHTML = `
+    .rtc-component {
+      all: revert;
+      display: block;
+      margin: 1.5em 0;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 
   function htmlToTextLines(html) {
     if (!html) return "";
