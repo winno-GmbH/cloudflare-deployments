@@ -1,53 +1,38 @@
 (function () {
-  /**
-   * Rich Text Components
-   * - Templates defined in DOM via [component-template]
-   * - Fields inside templates via [component-field] (+ optional [component-default])
-   * - Inline usage inside Rich Text via {{ ... }}
-   *
-   * This version fixes the most common cause of “component-field not replaced”:
-   * Webflow line-wrapping / <br> / &nbsp; creating multi-line values that were not parsed.
-   *
-   * Logging philosophy:
-   * - No noise. Only logs when something is wrong or suspicious.
-   * - You’ll see warnings when fields fall back to defaults because the attribute was missing.
-   */
-
+  const LOG_PREFIX = "[RTC]";
   const templates = {};
 
-  const LOG_PREFIX = "[RTC]";
-  const LOG_LEVEL = {
-    info: false, // keep off unless you really need it
-    warn: true,
-    error: true,
-  };
+  const warn = (...a) => console.warn(LOG_PREFIX, ...a);
+  const error = (...a) => console.error(LOG_PREFIX, ...a);
 
-  const logInfo = (...args) => LOG_LEVEL.info && console.log(LOG_PREFIX, ...args);
-  const logWarn = (...args) => LOG_LEVEL.warn && console.warn(LOG_PREFIX, ...args);
-  const logError = (...args) => LOG_LEVEL.error && console.error(LOG_PREFIX, ...args);
+  // --- Sanitization: make Webflow RichText HTML behave like plain text lines
+  function htmlToTextLines(html) {
+    if (!html) return "";
 
-  function decodeHtmlEntities(str) {
-    if (str == null) return "";
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = String(str);
-    return textarea.value;
-  }
+    let s = String(html);
 
-  function normalizeBlockInnerHtml(str) {
-    if (!str) return "";
-    let s = String(str);
+    // Normalize common Webflow paragraph boundaries into line breaks
+    s = s.replace(/<\/p>\s*<p[^>]*>/gi, "\n");
+    s = s.replace(/<p[^>]*>/gi, "");
+    s = s.replace(/<\/p>/gi, "\n");
 
-    // Convert Webflow <br> to newlines so multiline values can be parsed reliably
+    // Convert <br> to newline
     s = s.replace(/<br\s*\/?>/gi, "\n");
 
-    // Normalize non-breaking spaces
+    // Strip any other tags that might leak into the block
+    s = s.replace(/<[^>]+>/g, "");
+
+    // Entities
     s = s.replace(/&nbsp;/gi, " ");
 
-    // Decode entities like &lt;br&gt; if they appear in logs/content
-    s = decodeHtmlEntities(s);
+    // Decode remaining entities safely
+    const t = document.createElement("textarea");
+    t.innerHTML = s;
+    s = t.value;
 
-    // Clean up weird whitespace
+    // Normalize newlines
     s = s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
     return s;
   }
 
@@ -57,279 +42,234 @@
       const name = (el.getAttribute("component-template") || "").trim();
       if (!name) return;
 
-      const properties = {};
-      el.querySelectorAll("[component-field]").forEach((field) => {
-        const fieldName = (field.getAttribute("component-field") || "").trim();
-        const defaultValueAttr = field.getAttribute("component-default");
-        const defaultValue =
-          (defaultValueAttr != null ? defaultValueAttr : "") ||
-          field.textContent.trim() ||
-          field.src ||
-          "";
-        if (fieldName) {
-          properties[fieldName] = { element: field, defaultValue };
-        }
-      });
+      const fields = Array.from(el.querySelectorAll("[component-field]"))
+        .map((f) => (f.getAttribute("component-field") || "").trim())
+        .filter(Boolean);
 
       templates[name] = {
-        element: el.cloneNode(true),
-        properties,
+        el,
+        fields,
       };
-
-      // Remove original template from DOM
-      el.remove();
     });
-
-    // Only log if something looks wrong
-    if (Object.keys(templates).length === 0) {
-      logError("No templates found. Did you add [component-template] elements to the page?");
-    }
   }
 
-  /**
-   * Robust parser for blocks:
-   * Supports multiline values:
-   * |answer: first line
-   * continues here without |
-   * and here too
-   *
-   * Rules:
-   * - Block is {{ ... }}
-   * - Lines ideally start with |
-   * - If a line does NOT start with | and we’re in a value, it is appended to last key value.
-   */
-  function parseComponentString(componentStr) {
-    const rawInner = componentStr.slice(2, -2);
-    const inner = normalizeBlockInnerHtml(rawInner).trim();
+  // --- Block extraction: find {{ ... }} in already-sanitized text
+  function extractBlocks(text) {
+    const blocks = [];
+    const re = /\{\{([\s\S]*?)\}\}/g;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      blocks.push({
+        raw: m[0],
+        inner: (m[1] || "").trim(),
+      });
+    }
+    return blocks;
+  }
 
-    // Split into lines. Keep empty lines (we’ll handle them).
-    const lines = inner.split("\n");
+  // --- Parse a component “document”:
+  // Lines starting with | define either:
+  // - |key: value    (attribute)
+  // - |componentName (start of a nested component)
+  // Slot format:
+  // |items:
+  // |child-component
+  // |field: value
+  // |child-component
+  // |field: value
+  // |/items
+  function parseComponentDoc(innerText) {
+    const lines = innerText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length);
 
-    // Find first meaningful line as the component name
-    let componentName = "";
-    let i = 0;
+    // Remove leading pipes if user wrote them; treat both "rich-faq" and "|rich-faq"
+    const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
 
-    const cleanLine = (line) => String(line || "").trim();
+    // First meaningful line is the component name
+    const first = norm(lines[0] || "");
+    if (!first) return null;
 
+    const root = { name: first, attrs: {}, slots: {} };
+
+    let i = 1;
     while (i < lines.length) {
-      const l = cleanLine(lines[i]);
-      if (l) {
-        componentName = l.startsWith("|") ? l.slice(1).trim() : l;
+      let line = norm(lines[i]);
+
+      // Slot start: "items:"
+      const slotStart = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*$/);
+      if (slotStart) {
+        const slotName = slotStart[1];
+        const children = [];
         i++;
-        break;
+
+        // Read until "/items"
+        while (i < lines.length) {
+          const l2raw = norm(lines[i]);
+          if (l2raw === `/${slotName}`) break;
+
+          // Child component start: line with no ":" and not closing tag
+          if (!l2raw.includes(":") && !l2raw.startsWith("/")) {
+            const childName = l2raw;
+            const child = { name: childName, attrs: {}, slots: {} };
+            i++;
+
+            // Consume attributes until next child or slot end
+            while (i < lines.length) {
+              const look = norm(lines[i]);
+              if (look === `/${slotName}`) break;
+              if (!look.includes(":") && !look.startsWith("/")) break;
+
+              const kv = look.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
+              if (kv) {
+                child.attrs[kv[1]] = kv[2].trim();
+              }
+              i++;
+            }
+
+            children.push(child);
+            continue;
+          }
+
+          // If it's "key: value" inside slot (optional), treat as slot-level attr (rare)
+          // We ignore by default to avoid confusion.
+          i++;
+        }
+
+        root.slots[slotName] = children;
+        // consume closing "/items"
+        while (i < lines.length && norm(lines[i]) !== `/${slotName}`) i++;
+        i++; // skip close
+        continue;
+      }
+
+      // Root attribute: "key: value"
+      const kv = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
+      if (kv) {
+        root.attrs[kv[1]] = kv[2].trim();
+      } else {
+        // Only log if it's clearly problematic
+        warn("Unparsed line at root:", line);
       }
       i++;
     }
 
-    const attributes = {};
-    let lastKey = null;
-
-    for (; i < lines.length; i++) {
-      const original = lines[i];
-      const lineTrimmed = cleanLine(original);
-      if (!lineTrimmed) continue;
-
-      const isPipeLine = lineTrimmed.startsWith("|");
-      const content = isPipeLine ? lineTrimmed.slice(1).trim() : lineTrimmed;
-
-      // key: value
-      const colonIndex = content.indexOf(":");
-
-      if (colonIndex > 0) {
-        const key = content.substring(0, colonIndex).trim();
-        let value = content.substring(colonIndex + 1);
-
-        // Important: Webflow often inserts leading spaces, keep but normalize
-        value = value.replace(/^\s+/, "");
-        value = value.replace(/\s+$/, "");
-
-        attributes[key] = value;
-        lastKey = key;
-      } else {
-        // Continuation line: only meaningful if we already have a key
-        if (lastKey) {
-          attributes[lastKey] = (attributes[lastKey] || "") + "\n" + content;
-        } else {
-          // No key to attach to -> ignore, but it’s a signal something is off
-          logWarn("Found a continuation line without a key. Line:", content);
-        }
-      }
-    }
-
-    if (!componentName) {
-      return { componentName: "", attributes: {} };
-    }
-
-    return { componentName, attributes };
+    return root;
   }
 
-  function nl2br(s) {
-    return (s || "").replace(/\n/g, "<br>");
+  function fillFields(node, attrs) {
+    const fields = node.querySelectorAll("[component-field]");
+    fields.forEach((el) => {
+      const key = (el.getAttribute("component-field") || "").trim();
+      if (!key) return;
+      if (!(key in attrs)) return;
+
+      // Set text or rich content
+      el.innerHTML = attrs[key];
+    });
   }
 
-  function populateComponent(clone, attributes, propertyDefinitions, componentNameForLogs) {
-    // 1) dynamic tag replacement
-    clone.querySelectorAll("[component-tag]").forEach((field) => {
-      const tagFieldName = (field.getAttribute("component-tag") || "").trim();
-      const newTag = attributes[tagFieldName];
-      if (newTag) {
-        const newElement = document.createElement(String(newTag).trim());
-        Array.from(field.attributes).forEach((attr) => {
-          if (attr.name !== "component-tag") newElement.setAttribute(attr.name, attr.value);
-        });
-        newElement.innerHTML = field.innerHTML;
-        field.parentNode.replaceChild(newElement, field);
-      } else {
-        field.removeAttribute("component-tag");
-      }
-    });
+  function renderComponent(ast) {
+    const tpl = templates[ast.name];
+    if (!tpl) {
+      error(`No template registered for component "${ast.name}". Available:`, Object.keys(templates));
+      return document.createTextNode(""); // fail silently in DOM
+    }
 
-    // 2) url fields
-    clone.querySelectorAll("[component-url]").forEach((field) => {
-      const urlFieldName = (field.getAttribute("component-url") || "").trim();
-      const urlValue = attributes[urlFieldName];
-      if (urlValue !== undefined) {
-        const linkMatch = String(urlValue).match(/<a[^>]+href=["']([^"']+)["'][^>]*>.*?<\/a>/i);
-        field.href = linkMatch ? linkMatch[1] : String(urlValue).trim();
-      }
-      field.removeAttribute("component-url");
-    });
+    const clone = tpl.el.cloneNode(true);
+    clone.removeAttribute("component-template");
+    clone.setAttribute("component-generated", "true");
 
-    // 3) attribute mapping: component-attr-*
-    clone.querySelectorAll("*").forEach((field) => {
-      Array.from(field.attributes).forEach((attr) => {
-        if (attr.name.startsWith("component-attr-")) {
-          const attrName = attr.name.replace("component-attr-", "");
-          const fieldName = String(attr.value || "").trim();
-          const value = attributes[fieldName];
-          if (value !== undefined) field.setAttribute(attrName, value);
-          field.removeAttribute(attr.name);
-        }
+    // Fill root fields
+    fillFields(clone, ast.attrs);
+
+    // Fill slots
+    Object.entries(ast.slots || {}).forEach(([slotName, children]) => {
+      const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
+      if (!slotEl) {
+        warn(`Missing slot "${slotName}" on template "${ast.name}"`);
+        return;
+      }
+
+      slotEl.innerHTML = "";
+      children.forEach((childAst) => {
+        const childNode = renderComponent(childAst);
+        slotEl.appendChild(childNode);
       });
     });
 
-    // 4) main fields: component-field
-    const missingFields = [];
-    clone.querySelectorAll("[component-field]").forEach((field) => {
-      const fieldName = (field.getAttribute("component-field") || "").trim();
-
-      // Pull value from attributes; if not present, use template default
-      let value = attributes[fieldName];
-      const hasAttr = value !== undefined;
-
-      if (!hasAttr && propertyDefinitions[fieldName]) {
-        value = propertyDefinitions[fieldName].defaultValue;
+    // Debug: if template has fields but none matched attrs, warn once
+    const expected = tpl.fields || [];
+    if (expected.length) {
+      const matched = expected.filter((k) => k in ast.attrs).length;
+      if (matched === 0 && Object.keys(ast.attrs).length) {
+        warn(`Fields not matched for "${ast.name}". Expected fields:`, expected, "Got keys:", Object.keys(ast.attrs));
       }
-
-      // If still undefined -> nothing to set; record as missing
-      if (value === undefined) {
-        missingFields.push(fieldName);
-      } else {
-        // Normalize HTML entities and allow newlines
-        const normalizedValue = normalizeBlockInnerHtml(String(value)).trim();
-
-        if (field.tagName === "IMG") {
-          field.src = normalizedValue;
-          if (!field.alt) field.alt = normalizedValue;
-        } else if (field.tagName === "A") {
-          if (fieldName === "url" || fieldName === "link" || fieldName === "href") {
-            const linkMatch = normalizedValue.match(/<a[^>]+href=["']([^"']+)["'][^>]*>.*?<\/a>/i);
-            field.href = linkMatch ? linkMatch[1] : normalizedValue;
-          } else {
-            field.innerHTML = /<[^>]+>/.test(normalizedValue)
-              ? normalizedValue.replace(/\n/g, "<br>")
-              : nl2br(normalizedValue);
-          }
-        } else {
-          field.innerHTML = /<[^>]+>/.test(normalizedValue)
-            ? normalizedValue.replace(/\n/g, "<br>")
-            : nl2br(normalizedValue);
-        }
-      }
-
-      field.removeAttribute("component-field");
-      field.removeAttribute("component-default");
-    });
-
-    // 5) conditional show/hide
-    clone.querySelectorAll("[component-show]").forEach((field) => {
-      const showFieldName = (field.getAttribute("component-show") || "").trim();
-      const showValue = String(attributes[showFieldName] ?? "").trim().toLowerCase();
-      if (showValue === "false" || showValue === "hide" || showValue === "0" || showValue === "no") {
-        field.remove();
-      } else {
-        field.removeAttribute("component-show");
-      }
-    });
-
-    // Meaningful logs only: when fields were missing OR everything fell back to defaults
-    if (missingFields.length) {
-      logWarn(
-        `Component "${componentNameForLogs}" missing values for fields:`,
-        missingFields,
-        "Available keys:",
-        Object.keys(attributes)
-      );
     }
 
     return clone;
   }
 
-  function createComponentFromString(componentStr) {
-    const { componentName, attributes } = parseComponentString(componentStr);
+  function replaceInRichTextElements() {
+    const richEls = document.querySelectorAll(".w-richtext");
+    richEls.forEach((el) => {
+      // Work on HTML, sanitize to lines, but replace using DOM range
+      const originalHTML = el.innerHTML;
+      const textish = htmlToTextLines(originalHTML);
+      const blocks = extractBlocks(textish);
 
-    if (!componentName) {
-      logWarn("Found a {{...}} block but could not parse a component name. Block:", componentStr);
-      return null;
-    }
+      if (!blocks.length) return;
 
-    const template = templates[componentName];
-    if (!template) {
-      logWarn(`No template registered for component "${componentName}". Available:`, Object.keys(templates));
-      return null;
-    }
+      // For replacement, we re-scan el.innerHTML and replace the FIRST occurrence of each raw {{...}} by rendering
+      // Robust approach: rebuild by splitting on {{...}} in the sanitized text, then inject nodes.
+      // We will just replace el.innerHTML fully using sanitized blocks positions (stable enough for your use-case).
+      const parts = [];
+      let lastIndex = 0;
 
-    const clone = template.element.cloneNode(true);
-    clone.removeAttribute("component-template");
-    clone.setAttribute("component-generated", "true");
-
-    return populateComponent(clone, attributes, template.properties, componentName);
-  }
-
-  function replaceComponentStrings() {
-    const richTextElements = document.querySelectorAll(".w-richtext, .w-dyn-bind-empty, [class*='rich']");
-    if (!richTextElements.length) {
-      logWarn("No rich text elements found for replacement.");
-      return;
-    }
-
-    richTextElements.forEach((element) => {
-      const html = element.innerHTML || "";
-      const regex = /\{\{[\s\S]*?\}\}/g;
-      let replacedAny = false;
-
-      const newHtml = html.replace(regex, (match) => {
-        const component = createComponentFromString(match);
-        if (component) {
-          replacedAny = true;
-          const temp = document.createElement("div");
-          temp.appendChild(component);
-          return temp.innerHTML;
+      const re = /\{\{([\s\S]*?)\}\}/g;
+      let m;
+      while ((m = re.exec(textish)) !== null) {
+        const before = textish.slice(lastIndex, m.index);
+        if (before.trim().length) {
+          const p = document.createElement("p");
+          p.textContent = before.trim();
+          parts.push(p);
         }
-        return match; // leave untouched if cannot render
-      });
 
-      if (replacedAny) {
-        element.innerHTML = newHtml;
+        const inner = (m[1] || "").trim();
+        const ast = parseComponentDoc(inner);
+        if (!ast) {
+          warn("Could not parse block:", inner);
+          const p = document.createElement("p");
+          p.textContent = m[0];
+          parts.push(p);
+        } else {
+          parts.push(renderComponent(ast));
+        }
+
+        lastIndex = re.lastIndex;
       }
+
+      const after = textish.slice(lastIndex);
+      if (after.trim().length) {
+        const p = document.createElement("p");
+        p.textContent = after.trim();
+        parts.push(p);
+      }
+
+      // Replace content
+      el.innerHTML = "";
+      parts.forEach((n) => el.appendChild(n));
     });
   }
 
   function init() {
     loadTemplates();
-    replaceComponentStrings();
+    replaceInRichTextElements();
   }
 
+  // Run after Webflow is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
