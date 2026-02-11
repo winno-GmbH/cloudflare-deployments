@@ -344,50 +344,65 @@
 
   // ---------- Replace {{...}} blocks ----------
   function replaceComponentStrings() {
-    const richTextElements = document.querySelectorAll(".w-richtext, .w-dyn-bind-empty, [class*='rich']");
-    const regex = /\{\{[\s\S]*?\}\}/g;
+  const richTextElements = document.querySelectorAll(".w-richtext, .w-dyn-bind-empty, [class*='rich']");
+  const regex = /\{\{[\s\S]*?\}\}/g;
 
-    D.group(`replaceComponentStrings() elements: ${richTextElements.length}`);
+  console.group("[RTC] replaceComponentStrings()");
+  console.log("RichText elements found:", richTextElements.length);
 
-    richTextElements.forEach((element, idx) => {
-      const before = element.innerHTML;
-      const matches = before.match(regex) || [];
-      if (matches.length === 0) return;
+  richTextElements.forEach((element, index) => {
 
-      D.log(`RichText[${idx}] ${D.elSummary(element)} blocks:`, matches.length);
+    const before = element.innerHTML;
+    const hasBlock = regex.test(before);
+    regex.lastIndex = 0;
 
-      let html = before;
-      html = html.replace(regex, (match) => {
-        D.group("Found block", match);
+    if (!hasBlock) return;
 
-        const node = parseComponentBlock(match);
-        if (!node) {
-          D.warn("Block parse returned null");
-          D.groupEnd();
-          return match;
-        }
+    console.group(`[RTC] Processing RichText[${index}]`);
+    console.log("Element:", element);
+    console.log("Before HTML length:", before.length);
 
-        D.log("Parsed root node:", node);
+    // Check if recaptcha exists BEFORE
+    const recaptchaBefore = element.querySelector('.g-recaptcha, [data-sitekey]');
+    if (recaptchaBefore) {
+      console.warn("[RTC] reCAPTCHA placeholder FOUND before replace:", recaptchaBefore);
+    }
 
-        const rendered = renderNode(node, 0);
-        if (!rendered) {
-          D.warn("Render returned null for node:", node.name);
-          D.groupEnd();
-          return match;
-        }
+    let html = before.replace(regex, (match) => {
+      console.group("[RTC] Found block");
+      console.log(match);
 
-        const temp = document.createElement("div");
-        temp.appendChild(rendered);
+      const node = parseComponentBlock(match);
+      console.log("Parsed AST:", node);
 
-        D.groupEnd();
-        return temp.innerHTML;
-      });
+      const rendered = renderNode(node, 0);
+      console.log("Rendered node:", rendered);
 
-      element.innerHTML = html;
+      console.groupEnd();
+
+      if (!rendered) return match;
+
+      const temp = document.createElement("div");
+      temp.appendChild(rendered);
+      return temp.innerHTML;
     });
 
-    D.groupEnd();
-  }
+    console.log("After HTML length:", html.length);
+
+    element.innerHTML = html;
+
+    // Check if recaptcha exists AFTER
+    const recaptchaAfter = element.querySelector('.g-recaptcha, [data-sitekey]');
+    if (!recaptchaAfter && recaptchaBefore) {
+      console.error("[RTC] reCAPTCHA placeholder was REMOVED by innerHTML rewrite");
+    }
+
+    console.groupEnd();
+  });
+
+  console.groupEnd();
+}
+
 
   // ---------- Init ----------
   function init() {
