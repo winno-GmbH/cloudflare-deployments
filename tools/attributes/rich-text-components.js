@@ -2,24 +2,27 @@
   const templates = {};
 
   function injectBaseStyles() {
-  if (document.getElementById("rtc-component-style")) return;
+    if (document.getElementById("rtc-component-style")) return;
 
-  const style = document.createElement("style");
-  style.id = "rtc-component-style";
-  style.innerHTML = `
-    .rtc-component {
-      all: revert;
-      display: block;
-      margin: 1.5em 0;
-    }
-  `;
-  document.head.appendChild(style);
-}
+    const style = document.createElement("style");
+    style.id = "rtc-component-style";
+    style.textContent = `
+      .rtc-component {
+        all: revert;
+        display: block;
+        margin: 1.5em 0;
+      }
+      /* nested components should not add extra spacing */
+      .rtc-component .rtc-component {
+        margin: 0;
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
-
+  // Convert Webflow RichText HTML into "pipe-like" plain text lines
   function htmlToTextLines(html) {
     if (!html) return "";
-
     let s = String(html);
 
     s = s.replace(/<\/p>\s*<p[^>]*>/gi, "\n");
@@ -33,9 +36,7 @@
     t.innerHTML = s;
     s = t.value;
 
-    s = s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-
-    return s;
+    return s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
   }
 
   function loadTemplates() {
@@ -57,10 +58,7 @@
     const re = /\{\{([\s\S]*?)\}\}/g;
     let m;
     while ((m = re.exec(text)) !== null) {
-      blocks.push({
-        raw: m[0],
-        inner: (m[1] || "").trim(),
-      });
+      blocks.push({ raw: m[0], inner: (m[1] || "").trim() });
     }
     return blocks;
   }
@@ -69,7 +67,7 @@
     const lines = innerText
       .split("\n")
       .map((l) => l.trim())
-      .filter((l) => l.length);
+      .filter(Boolean);
 
     const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
 
@@ -80,8 +78,9 @@
 
     let i = 1;
     while (i < lines.length) {
-      let line = norm(lines[i]);
+      const line = norm(lines[i]);
 
+      // slot start: "items:"
       const slotStart = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*$/);
       if (slotStart) {
         const slotName = slotStart[1];
@@ -89,23 +88,22 @@
         i++;
 
         while (i < lines.length) {
-          const l2raw = norm(lines[i]);
-          if (l2raw === `/${slotName}`) break;
+          const l2 = norm(lines[i]);
+          if (l2 === `/${slotName}`) break;
 
-          if (!l2raw.includes(":") && !l2raw.startsWith("/")) {
-            const childName = l2raw;
-            const child = { name: childName, attrs: {}, slots: {} };
+          // child component start
+          if (!l2.includes(":") && !l2.startsWith("/")) {
+            const child = { name: l2, attrs: {}, slots: {} };
             i++;
 
+            // consume child attrs until next child or slot end
             while (i < lines.length) {
               const look = norm(lines[i]);
               if (look === `/${slotName}`) break;
               if (!look.includes(":") && !look.startsWith("/")) break;
 
               const kv = look.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
-              if (kv) {
-                child.attrs[kv[1]] = kv[2].trim();
-              }
+              if (kv) child.attrs[kv[1]] = kv[2].trim();
               i++;
             }
 
@@ -117,15 +115,16 @@
         }
 
         root.slots[slotName] = children;
+
+        // consume closing "/slotName"
         while (i < lines.length && norm(lines[i]) !== `/${slotName}`) i++;
-        i++;
+        i++; // skip close
         continue;
       }
 
+      // root attr: "key: value"
       const kv = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
-      if (kv) {
-        root.attrs[kv[1]] = kv[2].trim();
-      }
+      if (kv) root.attrs[kv[1]] = kv[2].trim();
 
       i++;
     }
@@ -134,13 +133,20 @@
   }
 
   function fillFields(node, attrs) {
-    const fields = node.querySelectorAll("[component-field]");
-    fields.forEach((el) => {
+    node.querySelectorAll("[component-field]").forEach((el) => {
       const key = (el.getAttribute("component-field") || "").trim();
       if (!key) return;
       if (!(key in attrs)) return;
       el.innerHTML = attrs[key];
     });
+  }
+
+  // IMPORTANT: don't nuke static template markup (e.g. headings)
+  // only remove previously generated children
+  function clearSlot(slotEl) {
+    slotEl
+      .querySelectorAll('[component-generated="true"]')
+      .forEach((n) => n.remove());
   }
 
   function renderComponent(ast) {
@@ -158,10 +164,10 @@
       const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
       if (!slotEl) return;
 
-      slotEl.innerHTML = "";
+      clearSlot(slotEl);
+
       children.forEach((childAst) => {
-        const childNode = renderComponent(childAst);
-        slotEl.appendChild(childNode);
+        slotEl.appendChild(renderComponent(childAst));
       });
     });
 
@@ -169,13 +175,9 @@
   }
 
   function replaceInRichTextElements() {
-    const richEls = document.querySelectorAll(".w-richtext");
-
-    richEls.forEach((el) => {
-      const originalHTML = el.innerHTML;
-      const textish = htmlToTextLines(originalHTML);
+    document.querySelectorAll(".w-richtext").forEach((el) => {
+      const textish = htmlToTextLines(el.innerHTML);
       const blocks = extractBlocks(textish);
-
       if (!blocks.length) return;
 
       const parts = [];
@@ -185,28 +187,20 @@
 
       while ((m = re.exec(textish)) !== null) {
         const before = textish.slice(lastIndex, m.index);
-        if (before.trim().length) {
+        if (before.trim()) {
           const p = document.createElement("p");
           p.textContent = before.trim();
           parts.push(p);
         }
 
-        const inner = (m[1] || "").trim();
-        const ast = parseComponentDoc(inner);
-
-        if (!ast) {
-          const p = document.createElement("p");
-          p.textContent = m[0];
-          parts.push(p);
-        } else {
-          parts.push(renderComponent(ast));
-        }
+        const ast = parseComponentDoc((m[1] || "").trim());
+        parts.push(ast ? renderComponent(ast) : document.createTextNode(m[0]));
 
         lastIndex = re.lastIndex;
       }
 
       const after = textish.slice(lastIndex);
-      if (after.trim().length) {
+      if (after.trim()) {
         const p = document.createElement("p");
         p.textContent = after.trim();
         parts.push(p);
