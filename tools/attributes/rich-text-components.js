@@ -12,7 +12,6 @@
         display: block;
         margin: 1.5em 0;
       }
-      /* nested components should not add extra spacing */
       .rtc-component .rtc-component {
         margin: 0;
       }
@@ -20,7 +19,6 @@
     document.head.appendChild(style);
   }
 
-  // Convert Webflow RichText HTML into "pipe-like" plain text lines
   function htmlToTextLines(html) {
     if (!html) return "";
     let s = String(html);
@@ -40,8 +38,7 @@
   }
 
   function loadTemplates() {
-    const els = document.querySelectorAll("[component-template]");
-    els.forEach((el) => {
+    document.querySelectorAll("[component-template]").forEach((el) => {
       const name = (el.getAttribute("component-template") || "").trim();
       if (!name) return;
 
@@ -80,7 +77,6 @@
     while (i < lines.length) {
       const line = norm(lines[i]);
 
-      // slot start: "items:"
       const slotStart = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*$/);
       if (slotStart) {
         const slotName = slotStart[1];
@@ -91,12 +87,10 @@
           const l2 = norm(lines[i]);
           if (l2 === `/${slotName}`) break;
 
-          // child component start
           if (!l2.includes(":") && !l2.startsWith("/")) {
             const child = { name: l2, attrs: {}, slots: {} };
             i++;
 
-            // consume child attrs until next child or slot end
             while (i < lines.length) {
               const look = norm(lines[i]);
               if (look === `/${slotName}`) break;
@@ -116,13 +110,11 @@
 
         root.slots[slotName] = children;
 
-        // consume closing "/slotName"
         while (i < lines.length && norm(lines[i]) !== `/${slotName}`) i++;
-        i++; // skip close
+        i++;
         continue;
       }
 
-      // root attr: "key: value"
       const kv = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
       if (kv) root.attrs[kv[1]] = kv[2].trim();
 
@@ -132,21 +124,41 @@
     return root;
   }
 
+  // UPDATED: supports IMG + ALT + default lazy loading
   function fillFields(node, attrs) {
     node.querySelectorAll("[component-field]").forEach((el) => {
       const key = (el.getAttribute("component-field") || "").trim();
       if (!key) return;
       if (!(key in attrs)) return;
-      el.innerHTML = attrs[key];
+
+      const val = attrs[key];
+
+      if (el.tagName === "IMG") {
+        // value for the image field is the URL
+        el.src = val;
+
+        // alt handling:
+        // - if you provide "|image-alt: ..." it will be used
+        // - else keep existing alt, or set to empty to be valid
+        const altKey = `${key}-alt`;
+        if (altKey in attrs) el.alt = attrs[altKey];
+        else if (!el.hasAttribute("alt")) el.alt = "";
+
+        // always lazy-load (as requested)
+        el.loading = "lazy";
+
+        // safe default to avoid layout shift if you use width/height in template
+        // (no-op if not present)
+        return;
+      }
+
+      // For non-img fields
+      el.innerHTML = val;
     });
   }
 
-  // IMPORTANT: don't nuke static template markup (e.g. headings)
-  // only remove previously generated children
   function clearSlot(slotEl) {
-    slotEl
-      .querySelectorAll('[component-generated="true"]')
-      .forEach((n) => n.remove());
+    slotEl.querySelectorAll('[component-generated="true"]').forEach((n) => n.remove());
   }
 
   function renderComponent(ast) {
@@ -165,10 +177,7 @@
       if (!slotEl) return;
 
       clearSlot(slotEl);
-
-      children.forEach((childAst) => {
-        slotEl.appendChild(renderComponent(childAst));
-      });
+      children.forEach((childAst) => slotEl.appendChild(renderComponent(childAst)));
     });
 
     return clone;
@@ -195,7 +204,6 @@
 
         const ast = parseComponentDoc((m[1] || "").trim());
         parts.push(ast ? renderComponent(ast) : document.createTextNode(m[0]));
-
         lastIndex = re.lastIndex;
       }
 
