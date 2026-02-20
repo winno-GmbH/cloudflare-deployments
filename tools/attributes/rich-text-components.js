@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V6 - Pipe Separator Fix");
+  console.log("Rich Component Script V7 - Multi-paragraph Support");
   
   const templates = {};
 
@@ -169,41 +169,11 @@
     return clone;
   }
 
-  // NEW: Convert pipe-separated format to newline format
   function convertPipeToNewline(text) {
     console.log("🔧 Converting pipe format to newline format");
-    console.log("   Input:", text.substring(0, 100) + "...");
-    
-    // Replace |word (pipe followed by word) with \n|word (newline + pipe + word)
+    // Replace |word with \n|word
     let converted = text.replace(/\|/g, "\n|");
-    
-    console.log("   Output:", converted.substring(0, 100) + "...");
     return converted;
-  }
-
-  function extractComponentBlocks(text) {
-    const blocks = [];
-    const regex = /\{\{([\s\S]*?)\}\}/g;
-    let match;
-    
-    while ((match = regex.exec(text)) !== null) {
-      let content = match[1].trim();
-      
-      // Check if content uses pipe separators instead of newlines
-      if (content.includes("|") && !content.includes("\n")) {
-        console.log("🔍 Detected pipe-separated format, converting...");
-        content = convertPipeToNewline(content);
-      }
-      
-      blocks.push({
-        fullMatch: match[0],
-        content: content,
-        startIndex: match.index,
-        endIndex: match.index + match[0].length
-      });
-    }
-    
-    return blocks;
   }
 
   function replaceInRichTextElements() {
@@ -222,71 +192,54 @@
         
         console.log(`  [${i}] Tag: ${child.tagName}, Text: "${text.substring(0, 50)}..."`);
         
-        // Check if this element contains {{ and }}
-        if (text.includes("{{") && text.includes("}}")) {
-          console.log(`  🎯 Found component block(s) in single element at index ${i}`);
+        // Check if element STARTS with {{
+        if (text.startsWith("{{")) {
+          console.log(`  🎯 Found element starting with {{ at index ${i}`);
           
-          const blocks = extractComponentBlocks(text);
-          console.log(`  📦 Extracted ${blocks.length} component block(s)`);
-          
-          if (blocks.length > 0) {
-            const fragment = document.createDocumentFragment();
-            
-            blocks.forEach((block, blockIdx) => {
-              console.log(`  🔄 Processing block ${blockIdx + 1}...`);
-              const ast = parseComponentDoc(block.content);
-              
-              if (ast) {
-                const componentNode = renderComponent(ast);
-                if (componentNode) {
-                  fragment.appendChild(componentNode);
-                  console.log(`  ✅ Block ${blockIdx + 1} rendered and added`);
-                }
-              }
-            });
-            
-            // Replace the element with the rendered components
-            child.parentNode.insertBefore(fragment, child);
-            child.remove();
-            console.log(`  🗑️ Removed original element`);
-            continue;
-          }
-        }
-        
-        // SCENARIO 2: Check for separate {{ element
-        if (text === "{{") {
-          console.log(`  🎯 Found {{ at index ${i} (separate elements)`);
           const componentElements = [child];
-          const componentLines = [];
+          let componentText = text.substring(2); // Remove {{
           let foundEnd = false;
           
-          let j = i + 1;
-          while (j < children.length) {
-            const nextChild = children[j];
-            const nextText = nextChild.textContent.trim();
-            
-            componentElements.push(nextChild);
-            
-            if (nextText === "}}") {
-              console.log(`  🎯 Found }} at index ${j}`);
-              foundEnd = true;
+          // Check if }} is in the same element
+          if (text.includes("}}")) {
+            console.log(`  ✅ Found }} in same element`);
+            componentText = text.substring(2, text.indexOf("}}"));
+            foundEnd = true;
+          } else {
+            // Collect following elements until we find }}
+            let j = i + 1;
+            while (j < children.length) {
+              const nextChild = children[j];
+              const nextText = nextChild.textContent.trim();
+              
+              componentElements.push(nextChild);
+              
+              if (nextText.includes("}}")) {
+                console.log(`  ✅ Found }} at index ${j}`);
+                componentText += "\n" + nextText.substring(0, nextText.indexOf("}}"));
+                foundEnd = true;
+                j++;
+                break;
+              }
+              
+              componentText += "\n" + nextText;
               j++;
-              break;
             }
-            
-            componentLines.push(nextText);
-            j++;
           }
           
-          console.log(`  📝 Collected ${componentLines.length} lines`);
-          
-          if (foundEnd && componentLines.length > 0) {
-            const componentText = componentLines.join("\n");
-            console.log(`  🔄 Parsing component text...`);
+          if (foundEnd) {
+            console.log(`  📝 Component text collected (${componentText.length} chars)`);
+            console.log(`  📝 Text preview: ${componentText.substring(0, 100)}...`);
+            
+            // Convert pipes to newlines if needed
+            if (componentText.includes("|") && !componentText.includes("\n|")) {
+              console.log(`  🔧 Converting pipe separators...`);
+              componentText = convertPipeToNewline(componentText);
+            }
+            
             const ast = parseComponentDoc(componentText);
             
             if (ast) {
-              console.log(`  🎨 Rendering component...`);
               const componentNode = renderComponent(ast);
               
               if (componentNode) {
@@ -296,15 +249,19 @@
                 console.log(`  🗑️ Removing ${componentElements.length} elements`);
                 componentElements.forEach(el => el.remove());
                 
+                // Continue from the inserted component
                 i = Array.from(richTextEl.children).indexOf(componentNode) + 1;
                 console.log(`  ⏭️ Continuing from index ${i}`);
                 continue;
+              } else {
+                console.log(`  ❌ Component node is null`);
               }
+            } else {
+              console.log(`  ❌ AST parsing failed`);
             }
+          } else {
+            console.log(`  ⚠️ Could not find closing }}`);
           }
-          
-          i = j;
-          continue;
         }
         
         i++;
