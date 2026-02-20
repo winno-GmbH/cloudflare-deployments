@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V16 - Double-Pipe Siblings");
+  console.log("Rich Component Script V17 - Named Slots with @");
   
   const templates = {};
 
@@ -42,15 +42,26 @@
       .map((l) => l.trim())
       .filter(Boolean);
 
-    // Parse line: returns { text, isSibling }
+    // Parse line: returns { text, isSibling, slot }
     const norm = (l) => {
+      // Check for @slot syntax: | @slot-name < component-name
+      const slotMatch = l.match(/^\|\|?\s*@([a-zA-Z0-9_-]+)\s*<\s*(.+)$/);
+      if (slotMatch) {
+        const isSibling = l.startsWith("||");
+        return { 
+          text: slotMatch[2].trim(), 
+          isSibling: isSibling,
+          slot: slotMatch[1].trim()
+        };
+      }
+      
       if (l.startsWith("||")) {
-        return { text: l.slice(2).trim(), isSibling: true };
+        return { text: l.slice(2).trim(), isSibling: true, slot: null };
       }
       if (l.startsWith("|")) {
-        return { text: l.slice(1).trim(), isSibling: false };
+        return { text: l.slice(1).trim(), isSibling: false, slot: null };
       }
-      return { text: l.trim(), isSibling: false };
+      return { text: l.trim(), isSibling: false, slot: null };
     };
 
     const firstParsed = norm(lines[0] || "");
@@ -86,28 +97,36 @@
           stack.pop();
           const parent = stack[stack.length - 1];
           
-          const sibling = { name: componentName, attrs: {}, children: [] };
+          const sibling = { name: componentName, attrs: {}, children: [], slot: parsed.slot };
           parent.children.push(sibling);
           stack.push(sibling);
           
-          console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling via ||)`);
+          if (parsed.slot) {
+            console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling via || → slot: ${parsed.slot})`);
+          } else {
+            console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling via ||)`);
+          }
         } else if (current.name === componentName) {
           // Same name = sibling - go back to parent and add new child
           stack.pop();
           const parent = stack[stack.length - 1];
           
-          const sibling = { name: componentName, attrs: {}, children: [] };
+          const sibling = { name: componentName, attrs: {}, children: [], slot: parsed.slot };
           parent.children.push(sibling);
           stack.push(sibling);
           
           console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling - same name)`);
         } else {
           // Different name = child of current
-          const child = { name: componentName, attrs: {}, children: [] };
+          const child = { name: componentName, attrs: {}, children: [], slot: parsed.slot };
           current.children.push(child);
           stack.push(child);
           
-          console.log(`  ${'  '.repeat(stack.length - 1)}👶 ${componentName} (child)`);
+          if (parsed.slot) {
+            console.log(`  ${'  '.repeat(stack.length - 1)}👶 ${componentName} (child → slot: ${parsed.slot})`);
+          } else {
+            console.log(`  ${'  '.repeat(stack.length - 1)}👶 ${componentName} (child)`);
+          }
         }
       }
     }
@@ -132,11 +151,8 @@
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
       
-      // Remove -visibility suffix if present
-      const cleanAttrName = attrName.replace(/-visibility$/, '');
-      
-      const value = attrs[cleanAttrName];
-      const hasValue = cleanAttrName in attrs && value && value.trim() !== '';
+      const value = attrs[attrName];
+      const hasValue = attrName in attrs && value && value.trim() !== '';
       
       console.log(`👁️ component-show="${attrName}" → ${hasValue ? 'KEEP' : 'REMOVE'}`);
       
@@ -180,7 +196,7 @@
   }
 
   function renderComponent(ast) {
-    console.log(`🎨 Rendering: ${ast.name}`);
+    console.log(`🎨 Rendering: ${ast.name}${ast.slot ? ` → slot: ${ast.slot}` : ''}`);
     
     const tpl = templates[ast.name];
     if (!tpl) {
@@ -200,37 +216,76 @@
     if (ast.children && ast.children.length > 0) {
       console.log(`  📦 ${ast.name} has ${ast.children.length} children`);
       
-      // Try to find a component-slot
-      let slotEl = clone.querySelector('[component-slot]');
+      // Group children by slot
+      const childrenBySlot = {};
+      const defaultChildren = [];
       
-      // If no slot found, use the first element that could be a container
-      if (!slotEl) {
-        // Find the first element that could be a container
-        // Usually the .lyt--* element
-        slotEl = clone.querySelector('[class*="lyt--"]');
-        
-        if (!slotEl) {
-          console.warn(`  ⚠️ No slot or container found in ${ast.name}, using clone itself`);
-          slotEl = clone;
+      ast.children.forEach((child) => {
+        if (child.slot) {
+          if (!childrenBySlot[child.slot]) {
+            childrenBySlot[child.slot] = [];
+          }
+          childrenBySlot[child.slot].push(child);
         } else {
-          console.log(`  📍 Using layout element as container`);
-        }
-      } else {
-        console.log(`  📍 Found component-slot`);
-      }
-      
-      // Clear existing content if it's a slot
-      if (slotEl.hasAttribute('component-slot')) {
-        slotEl.innerHTML = '';
-      }
-      
-      // Render and append children
-      ast.children.forEach((childAst) => {
-        const childNode = renderComponent(childAst);
-        if (childNode) {
-          slotEl.appendChild(childNode);
+          defaultChildren.push(child);
         }
       });
+      
+      // Render children with specific slots
+      Object.keys(childrenBySlot).forEach((slotName) => {
+        const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
+        if (slotEl) {
+          console.log(`  📍 Found named slot: ${slotName}`);
+          slotEl.innerHTML = '';
+          
+          childrenBySlot[slotName].forEach((childAst) => {
+            const childNode = renderComponent(childAst);
+            if (childNode) {
+              slotEl.appendChild(childNode);
+            }
+          });
+        } else {
+          console.warn(`  ⚠️ Named slot "${slotName}" not found in ${ast.name}`);
+        }
+      });
+      
+      // Render default children (no slot specified)
+      if (defaultChildren.length > 0) {
+        // Try to find a default component-slot (without specific name or named "items")
+        let slotEl = clone.querySelector('[component-slot="items"]');
+        
+        // If no "items" slot, try any component-slot
+        if (!slotEl) {
+          slotEl = clone.querySelector('[component-slot]');
+        }
+        
+        // If no slot found, use the first layout element
+        if (!slotEl) {
+          slotEl = clone.querySelector('[class*="lyt--"]');
+          
+          if (!slotEl) {
+            console.warn(`  ⚠️ No slot or container found in ${ast.name}, using clone itself`);
+            slotEl = clone;
+          } else {
+            console.log(`  📍 Using layout element as default container`);
+          }
+        } else {
+          console.log(`  📍 Found default component-slot`);
+        }
+        
+        // Clear existing content if it's a slot
+        if (slotEl.hasAttribute('component-slot')) {
+          slotEl.innerHTML = '';
+        }
+        
+        // Render and append default children
+        defaultChildren.forEach((childAst) => {
+          const childNode = renderComponent(childAst);
+          if (childNode) {
+            slotEl.appendChild(childNode);
+          }
+        });
+      }
     }
 
     return clone;
