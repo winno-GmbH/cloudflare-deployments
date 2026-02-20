@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V4 - Debug Mode");
+  console.log("Rich Component Script V5 - Multi-scenario Debug");
   
   const templates = {};
 
@@ -38,7 +38,7 @@
   }
 
   function parseComponentDoc(innerText) {
-    console.log("🔍 Parsing component doc:", innerText);
+    console.log("🔍 Parsing component doc:", innerText.substring(0, 100) + "...");
     
     const lines = innerText
       .split("\n")
@@ -169,6 +169,24 @@
     return clone;
   }
 
+  // NEW: Extract component blocks from text that might contain {{ }} inline
+  function extractComponentBlocks(text) {
+    const blocks = [];
+    const regex = /\{\{([\s\S]*?)\}\}/g;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+      blocks.push({
+        fullMatch: match[0],
+        content: match[1].trim(),
+        startIndex: match.index,
+        endIndex: match.index + match[0].length
+      });
+    }
+    
+    return blocks;
+  }
+
   function replaceInRichTextElements() {
     const richTextElements = document.querySelectorAll(".w-richtext");
     console.log(`🔍 Found ${richTextElements.length} .w-richtext elements`);
@@ -183,16 +201,46 @@
         const child = children[i];
         const text = child.textContent.trim();
         
-        console.log(`  [${i}] "${text.substring(0, 30)}..."`);
+        console.log(`  [${i}] Tag: ${child.tagName}, Text: "${text.substring(0, 50)}..."`);
         
-        // Found start of component block
+        // Check if this element contains {{ and }}
+        if (text.includes("{{") && text.includes("}}")) {
+          console.log(`  🎯 Found component block(s) in single element at index ${i}`);
+          
+          const blocks = extractComponentBlocks(text);
+          console.log(`  📦 Extracted ${blocks.length} component block(s)`);
+          
+          if (blocks.length > 0) {
+            const fragment = document.createDocumentFragment();
+            
+            blocks.forEach((block, blockIdx) => {
+              console.log(`  🔄 Processing block ${blockIdx + 1}:`, block.content.substring(0, 50) + "...");
+              const ast = parseComponentDoc(block.content);
+              
+              if (ast) {
+                const componentNode = renderComponent(ast);
+                if (componentNode) {
+                  fragment.appendChild(componentNode);
+                  console.log(`  ✅ Block ${blockIdx + 1} rendered and added`);
+                }
+              }
+            });
+            
+            // Replace the element with the rendered components
+            child.parentNode.insertBefore(fragment, child);
+            child.remove();
+            console.log(`  🗑️ Removed original element`);
+            continue;
+          }
+        }
+        
+        // SCENARIO 2: Check for separate {{ element
         if (text === "{{") {
-          console.log(`  🎯 Found {{ at index ${i}`);
+          console.log(`  🎯 Found {{ at index ${i} (separate elements)`);
           const componentElements = [child];
           const componentLines = [];
           let foundEnd = false;
           
-          // Collect all elements until we find }}
           let j = i + 1;
           while (j < children.length) {
             const nextChild = children[j];
@@ -207,16 +255,13 @@
               break;
             }
             
-            // Add line to component (skip {{ itself)
             componentLines.push(nextText);
             j++;
           }
           
-          console.log(`  📝 Collected ${componentLines.length} lines between {{ and }}`);
-          console.log(`  📝 Lines:`, componentLines);
+          console.log(`  📝 Collected ${componentLines.length} lines`);
           
           if (foundEnd && componentLines.length > 0) {
-            // Parse and render the component
             const componentText = componentLines.join("\n");
             console.log(`  🔄 Parsing component text...`);
             const ast = parseComponentDoc(componentText);
@@ -227,28 +272,18 @@
               
               if (componentNode) {
                 console.log(`  ✅ Inserting component into DOM`);
-                // Insert the component before the first element
                 richTextEl.insertBefore(componentNode, componentElements[0]);
                 
-                // Remove all component elements
-                console.log(`  🗑️ Removing ${componentElements.length} component elements`);
+                console.log(`  🗑️ Removing ${componentElements.length} elements`);
                 componentElements.forEach(el => el.remove());
                 
-                // Update children array since we modified the DOM
                 i = Array.from(richTextEl.children).indexOf(componentNode) + 1;
                 console.log(`  ⏭️ Continuing from index ${i}`);
                 continue;
-              } else {
-                console.log(`  ❌ Component node is null`);
               }
-            } else {
-              console.log(`  ❌ AST parsing failed`);
             }
-          } else {
-            console.log(`  ⚠️ Component block incomplete (foundEnd: ${foundEnd}, lines: ${componentLines.length})`);
           }
           
-          // If we couldn't parse, skip this element
           i = j;
           continue;
         }
