@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V11 - Fixed component-visibility & component-url");
+  console.log("Rich Component Script V11 - Fixed Order: Fields First, Then Visibility");
   
   const templates = {};
 
@@ -119,92 +119,33 @@
     return root;
   }
 
-  /**
-   * Extract URL from HTML or return as-is if already a URL
-   * Examples:
-   *   - "<a href='/kontakt'>link</a>" → "/kontakt"
-   *   - "/kontakt" → "/kontakt"
-   *   - "https://example.com" → "https://example.com"
-   */
   function extractURL(html) {
     if (!html) return '';
+    if (!html.includes('<')) return html;
     
-    // Already a plain URL
-    if (!html.includes('<')) {
-      return html;
-    }
-    
-    // Extract from <a href="...">
     const match = html.match(/href=["']([^"']+)["']/);
-    if (match) {
-      return match[1];
-    }
+    if (match) return match[1];
     
     return html;
   }
 
   /**
-   * Fill component fields with attribute values
-   * Handles three types of directives:
+   * Fill component fields - CRITICAL ORDER:
+   * 1. First set all component-field values (text content)
+   * 2. Then set all component-url values (links)
+   * 3. LAST remove elements with component-visibility="false"
    * 
-   * 1. component-visibility="attr-name"
-   *    Removes element from DOM if attrs[attr-name] is "false"
-   *    Example: component-visibility="heading-visibility" 
-   *             removes wrapper if heading-visibility: false in blog
-   * 
-   * 2. component-url="attr-name"
-   *    Sets href on anchor element from attrs[attr-name] value
-   *    Extracts URL from HTML if needed
-   *    Example: component-url="btn-link" sets href from btn-link attribute
-   * 
-   * 3. component-field="attr-name"
-   *    Sets innerHTML of element from attrs[attr-name] value
-   *    Example: component-field="heading" sets content from heading attribute
+   * This ensures text is set BEFORE elements are potentially removed
    */
   function fillFields(node, attrs) {
-    // 1. Handle component-visibility FIRST (remove elements before processing)
-    node.querySelectorAll("[component-visibility]").forEach((el) => {
-      const attrName = el.getAttribute("component-visibility").trim();
-      if (!attrName) return;
-      
-      const value = attrs[attrName];
-      console.log(`  👁️ Checking component-visibility="${attrName}" (value: "${value}")`);
-      
-      // Remove if explicitly false
-      if (value === 'false' || value === false) {
-        console.log(`  👻 Removing element (${attrName} = false)`);
-        el.remove();
-      } else {
-        console.log(`  ✅ Keeping element (${attrName} = ${value})`);
-      }
-    });
-
-    // 2. Handle component-url
-    node.querySelectorAll("[component-url]").forEach((el) => {
-      const attrName = el.getAttribute("component-url").trim();
-      if (!attrName) return;
-      if (!(attrName in attrs)) return;
-      
-      const value = attrs[attrName];
-      const url = extractURL(value);
-      
-      console.log(`  🔗 Setting URL: ${attrName} = "${value}" → "${url}"`);
-      
-      if (el.tagName === "A") {
-        el.href = url;
-      } else {
-        console.warn(`  ⚠️ component-url="${attrName}" on non-anchor element:`, el.tagName);
-      }
-    });
-
-    // 3. Handle component-field
+    console.log(`  📋 Filling fields for component, attrs:`, Object.keys(attrs));
+    
+    // 1. Handle component-field FIRST (set all text content)
     node.querySelectorAll("[component-field]").forEach((el) => {
       const attrName = el.getAttribute("component-field").trim();
       if (!attrName) return;
       
-      // Set field even if empty (to clear placeholder text)
       const val = attrName in attrs ? attrs[attrName] : "";
-      
       console.log(`  🎨 Setting field "${attrName}" = "${val.substring(0, 50)}..."`);
 
       if (el.tagName === "IMG") {
@@ -218,6 +159,41 @@
 
       el.innerHTML = val;
     });
+
+    // 2. Handle component-url (set links)
+    node.querySelectorAll("[component-url]").forEach((el) => {
+      const attrName = el.getAttribute("component-url").trim();
+      if (!attrName) return;
+      if (!(attrName in attrs)) return;
+      
+      const value = attrs[attrName];
+      const url = extractURL(value);
+      
+      console.log(`  🔗 Setting URL: ${attrName} = "${value}" → "${url}"`);
+      
+      if (el.tagName === "A") {
+        el.href = url;
+      } else {
+        console.warn(`  ⚠️ component-url="${attrName}" on non-anchor:`, el.tagName);
+      }
+    });
+
+    // 3. Handle component-visibility LAST (remove elements after content is set)
+    node.querySelectorAll("[component-visibility]").forEach((el) => {
+      const attrName = el.getAttribute("component-visibility").trim();
+      if (!attrName) return;
+      
+      const value = attrs[attrName];
+      console.log(`  👁️ Checking component-visibility="${attrName}" value="${value}"`);
+      
+      // Only remove if EXPLICITLY false
+      if (value === 'false' || value === false) {
+        console.log(`  👻 Removing element (${attrName} is false)`);
+        el.remove();
+      } else {
+        console.log(`  ✅ Keeping element (${attrName} = ${value || 'undefined'})`);
+      }
+    });
   }
 
   function clearSlot(slotEl) {
@@ -229,7 +205,7 @@
     const tpl = templates[ast.name];
     if (!tpl) {
       console.log(`❌ Template not found: ${ast.name}`);
-      console.log(`   Available templates:`, Object.keys(templates));
+      console.log(`   Available:`, Object.keys(templates));
       return null;
     }
 
@@ -253,9 +229,7 @@
   }
 
   function convertPipeToNewline(text) {
-    console.log("🔧 Converting pipe format to newline format");
-    let converted = text.replace(/\|/g, "\n|");
-    return converted;
+    return text.replace(/\|/g, "\n|");
   }
 
   function needsPipeConversion(text) {
@@ -286,17 +260,14 @@
         const child = children[i];
         const html = getFullHTML(child);
         
-        console.log(`  [${i}] Tag: ${child.tagName}, HTML: "${html.substring(0, 50)}..."`);
-        
         if (html.startsWith("{{")) {
-          console.log(`  🎯 Found element starting with {{ at index ${i}`);
+          console.log(`  🎯 Found {{ at index ${i}`);
           
           const componentElements = [child];
           let componentText = html.substring(2);
           let foundEnd = false;
           
           if (html.includes("}}")) {
-            console.log(`  ✅ Found }} in same element`);
             componentText = html.substring(2, html.indexOf("}}"));
             foundEnd = true;
           } else {
@@ -308,7 +279,6 @@
               componentElements.push(nextChild);
               
               if (nextHTML.includes("}}")) {
-                console.log(`  ✅ Found }} at index ${j}`);
                 componentText += "\n" + nextHTML.substring(0, nextHTML.indexOf("}}"));
                 foundEnd = true;
                 j++;
@@ -321,11 +291,9 @@
           }
           
           if (foundEnd) {
-            console.log(`  📝 Component text collected (${componentText.length} chars)`);
-            console.log(`  📝 Preview: ${componentText.substring(0, 200)}...`);
+            console.log(`  📝 Component text: ${componentText.length} chars`);
             
             if (needsPipeConversion(componentText)) {
-              console.log(`  🔧 Converting pipe format...`);
               componentText = convertPipeToNewline(componentText);
             }
             
@@ -335,13 +303,11 @@
               const componentNode = renderComponent(ast);
               
               if (componentNode) {
-                console.log(`  ✅ Inserting component into DOM`);
+                console.log(`  ✅ Inserting component`);
                 richTextEl.insertBefore(componentNode, componentElements[0]);
                 
-                console.log(`  🗑️ Removing ${componentElements.length} elements`);
                 componentElements.forEach(el => el.remove());
-                
-                console.log(`  🔄 Component inserted, continuing from index ${i}`);
+                console.log(`  🔄 Continuing from index ${i}`);
                 continue;
               }
             }
@@ -352,7 +318,7 @@
       }
     });
     
-    console.log("\n🏁 Replacement complete");
+    console.log("\n🏁 Complete");
   }
 
   function init() {
@@ -360,7 +326,7 @@
     injectBaseStyles();
     loadTemplates();
     replaceInRichTextElements();
-    console.log("✅ Initialization complete");
+    console.log("✅ Done");
   }
 
   if (document.readyState === "loading") {
