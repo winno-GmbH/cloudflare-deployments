@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V11 - Fixed Order: Fields First, Then Visibility");
+  console.log("Rich Component Script V12 - Fixed Order: Fields First, Then Visibility");
   
   const templates = {};
 
