@@ -143,41 +143,33 @@
     return clone;
   }
 
-  // NEW: Extract text from a single paragraph element
-  function getParagraphText(el) {
-    return el.textContent.trim();
-  }
-
-  // NEW: Check if element contains component syntax
-  function containsComponentSyntax(text) {
-    return text.includes("{{") && text.includes("}}");
-  }
-
-  // NEW: Process component blocks while preserving HTML
   function replaceInRichTextElements() {
     document.querySelectorAll(".w-richtext").forEach((richTextEl) => {
       const children = Array.from(richTextEl.children);
+      const nodesToRemove = [];
+      const replacements = [];
       
-      // Track if we're inside a component block
       let inComponentBlock = false;
       let componentLines = [];
-      let componentStartIndex = -1;
+      let blockStartIndex = -1;
+      let blockEndIndex = -1;
       
       for (let i = 0; i < children.length; i++) {
         const child = children[i];
-        const text = getParagraphText(child);
+        const text = child.textContent.trim();
         
-        // Check if this paragraph starts a component
+        // Start of component block
         if (!inComponentBlock && text === "{{") {
           inComponentBlock = true;
           componentLines = [];
-          componentStartIndex = i;
+          blockStartIndex = i;
           continue;
         }
         
-        // Check if this paragraph ends a component
+        // End of component block
         if (inComponentBlock && text === "}}") {
           inComponentBlock = false;
+          blockEndIndex = i;
           
           // Parse and render the component
           const componentText = componentLines.join("\n");
@@ -186,29 +178,39 @@
           if (ast) {
             const componentNode = renderComponent(ast);
             
-            // Replace all the component paragraphs with the rendered component
-            // Insert the component before the first paragraph
-            children[componentStartIndex].parentNode.insertBefore(
-              componentNode, 
-              children[componentStartIndex]
-            );
+            // Mark the range for removal and replacement
+            replacements.push({
+              startIndex: blockStartIndex,
+              endIndex: blockEndIndex,
+              node: componentNode,
+              insertBefore: children[blockStartIndex]
+            });
             
-            // Remove all the component paragraphs ({{ ... }})
-            for (let j = componentStartIndex; j <= i; j++) {
-              children[j].remove();
+            // Mark nodes for removal
+            for (let j = blockStartIndex; j <= blockEndIndex; j++) {
+              nodesToRemove.push(children[j]);
             }
           }
           
           componentLines = [];
-          componentStartIndex = -1;
+          blockStartIndex = -1;
+          blockEndIndex = -1;
           continue;
         }
         
-        // If we're inside a component block, collect the line
+        // Inside component block - collect lines
         if (inComponentBlock) {
           componentLines.push(text);
         }
       }
+      
+      // Apply replacements
+      replacements.forEach(({ node, insertBefore }) => {
+        insertBefore.parentNode.insertBefore(node, insertBefore);
+      });
+      
+      // Remove old nodes
+      nodesToRemove.forEach(node => node.remove());
     });
   }
 
