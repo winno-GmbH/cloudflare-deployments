@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V10 - With component-url & component-show");
+  console.log("Rich Component Script V10 - Fixed component-visibility & component-url");
   
   const templates = {};
 
@@ -130,7 +130,7 @@
     if (!html) return '';
     
     // Already a plain URL
-    if (html.startsWith('http://') || html.startsWith('https://') || html.startsWith('/')) {
+    if (!html.includes('<')) {
       return html;
     }
     
@@ -147,67 +147,69 @@
    * Fill component fields with attribute values
    * Handles three types of directives:
    * 
-   * 1. component-show="attr-name"
-   *    Removes element from DOM if attr-name is "false"
-   *    Example: component-show="btn-visibility" removes element if btn-visibility: false
+   * 1. component-visibility="attr-name"
+   *    Removes element from DOM if attrs[attr-name] is "false"
+   *    Example: component-visibility="heading-visibility" 
+   *             removes wrapper if heading-visibility: false in blog
    * 
    * 2. component-url="attr-name"
-   *    Sets href on anchor element from attr-name value
+   *    Sets href on anchor element from attrs[attr-name] value
    *    Extracts URL from HTML if needed
    *    Example: component-url="btn-link" sets href from btn-link attribute
    * 
    * 3. component-field="attr-name"
-   *    Sets innerHTML of element from attr-name value
+   *    Sets innerHTML of element from attrs[attr-name] value
    *    Example: component-field="heading" sets content from heading attribute
    */
   function fillFields(node, attrs) {
-    // 1. Handle component-show FIRST (remove elements before processing)
-    node.querySelectorAll("[component-show]").forEach((el) => {
-      const key = el.getAttribute("component-show").trim();
-      if (!key) return;
+    // 1. Handle component-visibility FIRST (remove elements before processing)
+    node.querySelectorAll("[component-visibility]").forEach((el) => {
+      const attrName = el.getAttribute("component-visibility").trim();
+      if (!attrName) return;
       
-      const showValue = attrs[key];
-      console.log(`  👁️ Checking component-show="${key}" (value: "${showValue}")`);
+      const value = attrs[attrName];
+      console.log(`  👁️ Checking component-visibility="${attrName}" (value: "${value}")`);
       
-      if (showValue === 'false' || showValue === false) {
-        console.log(`  👻 Removing element (${key} = false)`);
+      // Remove if explicitly false
+      if (value === 'false' || value === false) {
+        console.log(`  👻 Removing element (${attrName} = false)`);
         el.remove();
       } else {
-        console.log(`  ✅ Keeping element (${key} = ${showValue})`);
+        console.log(`  ✅ Keeping element (${attrName} = ${value})`);
       }
     });
 
     // 2. Handle component-url
     node.querySelectorAll("[component-url]").forEach((el) => {
-      const key = el.getAttribute("component-url").trim();
-      if (!key) return;
-      if (!(key in attrs)) return;
+      const attrName = el.getAttribute("component-url").trim();
+      if (!attrName) return;
+      if (!(attrName in attrs)) return;
       
-      const value = attrs[key];
+      const value = attrs[attrName];
       const url = extractURL(value);
       
-      console.log(`  🔗 Setting URL: ${key} = "${value}" → "${url}"`);
+      console.log(`  🔗 Setting URL: ${attrName} = "${value}" → "${url}"`);
       
       if (el.tagName === "A") {
         el.href = url;
       } else {
-        console.warn(`  ⚠️ component-url="${key}" on non-anchor element:`, el.tagName);
+        console.warn(`  ⚠️ component-url="${attrName}" on non-anchor element:`, el.tagName);
       }
     });
 
     // 3. Handle component-field
     node.querySelectorAll("[component-field]").forEach((el) => {
-      const key = el.getAttribute("component-field").trim();
-      if (!key) return;
+      const attrName = el.getAttribute("component-field").trim();
+      if (!attrName) return;
       
       // Set field even if empty (to clear placeholder text)
-      const val = key in attrs ? attrs[key] : "";
+      const val = attrName in attrs ? attrs[attrName] : "";
       
-      console.log(`  🎨 Setting field "${key}" = "${val.substring(0, 50)}..."`);
+      console.log(`  🎨 Setting field "${attrName}" = "${val.substring(0, 50)}..."`);
 
       if (el.tagName === "IMG") {
         if (val) el.src = val;
-        const altKey = `${key}-alt`;
+        const altKey = `${attrName}-alt`;
         if (altKey in attrs) el.alt = attrs[altKey];
         else if (!el.hasAttribute("alt")) el.alt = "";
         el.loading = "lazy";
