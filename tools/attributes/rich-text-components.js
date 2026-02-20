@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V12 - Debug Visibility Selection");
+  console.log("Rich Component Script V12 - Fixed: component-show");
   
   const templates = {};
 
@@ -114,13 +114,8 @@
   }
 
   function fillFields(node, attrs) {
-    console.log(`🔧 fillFields start - attrs:`, Object.keys(attrs));
-    
     // 1. Set text content
-    const fieldElements = node.querySelectorAll("[component-field]");
-    console.log(`  📝 Found ${fieldElements.length} [component-field] elements`);
-    
-    fieldElements.forEach((el) => {
+    node.querySelectorAll("[component-field]").forEach((el) => {
       const attrName = el.getAttribute("component-field").trim();
       if (!attrName) return;
       
@@ -139,10 +134,7 @@
     });
 
     // 2. Set URLs
-    const urlElements = node.querySelectorAll("[component-url]");
-    console.log(`  🔗 Found ${urlElements.length} [component-url] elements`);
-    
-    urlElements.forEach((el) => {
+    node.querySelectorAll("[component-url]").forEach((el) => {
       const attrName = el.getAttribute("component-url").trim();
       if (!attrName) return;
       if (!(attrName in attrs)) return;
@@ -155,35 +147,19 @@
       }
     });
 
-    // 3. Handle visibility
-    const visibilityElements = node.querySelectorAll("[component-visibility]");
-    console.log(`  👁️ Found ${visibilityElements.length} [component-visibility] elements`);
-    
-    if (visibilityElements.length > 0) {
-      visibilityElements.forEach((el, idx) => {
-        const attrName = el.getAttribute("component-visibility").trim();
-        console.log(`    [${idx}] component-visibility="${attrName}"`);
-        
-        if (!attrName) {
-          console.log(`      ⚠️ Empty attribute name`);
-          return;
-        }
-        
-        const value = attrs[attrName];
-        console.log(`      → attrs["${attrName}"] = "${value}"`);
-        
-        if (value === 'false' || value === false) {
-          console.log(`      ❌ REMOVING (value is false)`);
-          el.remove();
-        } else {
-          console.log(`      ✅ KEEPING (value is "${value}")`);
-        }
-      });
-    } else {
-      console.log(`    ⚠️ No [component-visibility] elements found in template`);
-    }
-    
-    console.log(`🔧 fillFields done`);
+    // 3. Handle component-show - ONLY remove if value is "false"
+    node.querySelectorAll("[component-show]").forEach((el) => {
+      const attrName = el.getAttribute("component-show").trim();
+      if (!attrName) return;
+      
+      const value = attrs[attrName];
+      
+      console.log(`👁️ component-show="${attrName}" → value="${value}" → ${value === 'false' ? 'REMOVE' : 'KEEP'}`);
+      
+      if (value === 'false' || value === false) {
+        el.remove();
+      }
+    });
   }
 
   function clearSlot(slotEl) {
