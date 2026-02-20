@@ -123,7 +123,7 @@
 
   function renderComponent(ast) {
     const tpl = templates[ast.name];
-    if (!tpl) return document.createTextNode("");
+    if (!tpl) return null;
 
     const clone = tpl.el.cloneNode(true);
     clone.removeAttribute("component-template");
@@ -146,71 +146,66 @@
   function replaceInRichTextElements() {
     document.querySelectorAll(".w-richtext").forEach((richTextEl) => {
       const children = Array.from(richTextEl.children);
-      const nodesToRemove = [];
-      const replacements = [];
       
-      let inComponentBlock = false;
-      let componentLines = [];
-      let blockStartIndex = -1;
-      let blockEndIndex = -1;
-      
-      for (let i = 0; i < children.length; i++) {
+      let i = 0;
+      while (i < children.length) {
         const child = children[i];
         const text = child.textContent.trim();
         
-        // Start of component block
-        if (!inComponentBlock && text === "{{") {
-          inComponentBlock = true;
-          componentLines = [];
-          blockStartIndex = i;
-          continue;
-        }
-        
-        // End of component block
-        if (inComponentBlock && text === "}}") {
-          inComponentBlock = false;
-          blockEndIndex = i;
+        // Found start of component block
+        if (text === "{{") {
+          const componentElements = [child];
+          const componentLines = [];
+          let foundEnd = false;
           
-          // Parse and render the component
-          const componentText = componentLines.join("\n");
-          const ast = parseComponentDoc(componentText);
+          // Collect all elements until we find }}
+          let j = i + 1;
+          while (j < children.length) {
+            const nextChild = children[j];
+            const nextText = nextChild.textContent.trim();
+            
+            componentElements.push(nextChild);
+            
+            if (nextText === "}}") {
+              foundEnd = true;
+              j++;
+              break;
+            }
+            
+            // Add line to component (skip {{ itself)
+            componentLines.push(nextText);
+            j++;
+          }
           
-          if (ast) {
-            const componentNode = renderComponent(ast);
+          if (foundEnd && componentLines.length > 0) {
+            // Parse and render the component
+            const componentText = componentLines.join("\n");
+            const ast = parseComponentDoc(componentText);
             
-            // Mark the range for removal and replacement
-            replacements.push({
-              startIndex: blockStartIndex,
-              endIndex: blockEndIndex,
-              node: componentNode,
-              insertBefore: children[blockStartIndex]
-            });
-            
-            // Mark nodes for removal
-            for (let j = blockStartIndex; j <= blockEndIndex; j++) {
-              nodesToRemove.push(children[j]);
+            if (ast) {
+              const componentNode = renderComponent(ast);
+              
+              if (componentNode) {
+                // Insert the component before the first element
+                richTextEl.insertBefore(componentNode, componentElements[0]);
+                
+                // Remove all component elements
+                componentElements.forEach(el => el.remove());
+                
+                // Update children array since we modified the DOM
+                i = Array.from(richTextEl.children).indexOf(componentNode) + 1;
+                continue;
+              }
             }
           }
           
-          componentLines = [];
-          blockStartIndex = -1;
-          blockEndIndex = -1;
+          // If we couldn't parse, skip this element
+          i = j;
           continue;
         }
         
-        // Inside component block - collect lines
-        if (inComponentBlock) {
-          componentLines.push(text);
-        }
+        i++;
       }
-      
-      // Apply replacements
-      replacements.forEach(({ node, insertBefore }) => {
-        insertBefore.parentNode.insertBefore(node, insertBefore);
-      });
-      
-      // Remove old nodes
-      nodesToRemove.forEach(node => node.remove());
     });
   }
 
