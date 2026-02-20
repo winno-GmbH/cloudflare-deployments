@@ -37,6 +37,11 @@
     // Convert <br> to newlines first
     innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
     
+    // Decode HTML entities (&lt; -> <, &gt; -> >, etc.)
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = innerText;
+    innerText = textarea.value;
+    
     const lines = innerText
       .split("\n")
       .map((l) => l.trim())
