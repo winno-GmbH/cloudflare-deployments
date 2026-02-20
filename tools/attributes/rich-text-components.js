@@ -2,6 +2,9 @@
   console.log("Rich Component Script V15 - Simplified Nesting");
   
   const templates = {};
+  
+  // Components die KEINE Children haben können (Leaf Components)
+  const leafComponents = ['icon'];
 
   function injectBaseStyles() {
     if (document.getElementById("rtc-component-style")) return;
@@ -32,22 +35,22 @@
   }
 
   function parseComponentDoc(innerText) {
-  console.log("🔍 Parsing component doc");
-  
-  // WICHTIG: Erst <br> zu \n konvertieren!
-  innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
-  
-  const lines = innerText
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+    console.log("🔍 Parsing component doc");
+    
+    // Convert <br> to newlines first
+    innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
+    
+    const lines = innerText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
 
-  const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
+    const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
 
-  const first = norm(lines[0] || "");
-  if (!first) return null;
+    const first = norm(lines[0] || "");
+    if (!first) return null;
 
-  console.log(`📝 Root component: ${first}`);
+    console.log(`📝 Root component: ${first}`);
     
     // Root AST node
     const root = { name: first, attrs: {}, children: [] };
@@ -74,7 +77,7 @@
         // Check if it's a sibling (same name as current)
         if (current.name === componentName) {
           // Same name = sibling - go back to parent and add new child
-          stack.pop(); // Remove current
+          stack.pop();
           const parent = stack[stack.length - 1];
           
           const sibling = { name: componentName, attrs: {}, children: [] };
@@ -82,6 +85,16 @@
           stack.push(sibling);
           
           console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling)`);
+        } else if (leafComponents.includes(current.name)) {
+          // Current is a leaf component - new component becomes sibling!
+          stack.pop();
+          const parent = stack[stack.length - 1];
+          
+          const sibling = { name: componentName, attrs: {}, children: [] };
+          parent.children.push(sibling);
+          stack.push(sibling);
+          
+          console.log(`  ${'  '.repeat(stack.length - 1)}👥 ${componentName} (sibling of leaf)`);
         } else {
           // Different name = child of current
           const child = { name: componentName, attrs: {}, children: [] };
@@ -113,8 +126,11 @@
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
       
-      const value = attrs[attrName];
-      const hasValue = attrName in attrs && value && value.trim() !== '';
+      // Remove -visibility suffix if present
+      const cleanAttrName = attrName.replace(/-visibility$/, '');
+      
+      const value = attrs[cleanAttrName];
+      const hasValue = cleanAttrName in attrs && value && value.trim() !== '';
       
       console.log(`👁️ component-show="${attrName}" → ${hasValue ? 'KEEP' : 'REMOVE'}`);
       
@@ -178,27 +194,37 @@
     if (ast.children && ast.children.length > 0) {
       console.log(`  📦 ${ast.name} has ${ast.children.length} children`);
       
-      // Find the slot for children
-      // Try to find a slot that matches the first child's name pattern
-      const firstChildName = ast.children[0].name;
+      // Try to find a component-slot
+      let slotEl = clone.querySelector('[component-slot]');
       
-      // Look for slot with matching pattern
-      // e.g., rich-item → look for slot in rich-list
-      const slotEl = clone.querySelector('[component-slot]');
-      
-      if (slotEl) {
-        console.log(`  📍 Found slot for children`);
-        slotEl.innerHTML = ''; // Clear slot
+      // If no slot found, use the first element that could be a container
+      if (!slotEl) {
+        // Find the first element that could be a container
+        // Usually the .lyt--* element
+        slotEl = clone.querySelector('[class*="lyt--"]');
         
-        ast.children.forEach((childAst) => {
-          const childNode = renderComponent(childAst);
-          if (childNode) {
-            slotEl.appendChild(childNode);
-          }
-        });
+        if (!slotEl) {
+          console.warn(`  ⚠️ No slot or container found in ${ast.name}, using clone itself`);
+          slotEl = clone;
+        } else {
+          console.log(`  📍 Using layout element as container`);
+        }
       } else {
-        console.warn(`  ⚠️ No slot found for children in ${ast.name}`);
+        console.log(`  📍 Found component-slot`);
       }
+      
+      // Clear existing content if it's a slot
+      if (slotEl.hasAttribute('component-slot')) {
+        slotEl.innerHTML = '';
+      }
+      
+      // Render and append children
+      ast.children.forEach((childAst) => {
+        const childNode = renderComponent(childAst);
+        if (childNode) {
+          slotEl.appendChild(childNode);
+        }
+      });
     }
 
     return clone;
@@ -219,10 +245,6 @@
     return false;
   }
 
-  function getFullHTML(element) {
-    return element.innerHTML.trim();
-  }
-
   function replaceInRichTextElements() {
     const richTextElements = document.querySelectorAll(".w-richtext");
     console.log(`🔍 Found ${richTextElements.length} .w-richtext elements`);
@@ -234,7 +256,10 @@
       while (i < richTextEl.children.length) {
         const children = Array.from(richTextEl.children);
         const child = children[i];
-        const html = getFullHTML(child);
+        
+        // Use innerHTML but convert <br> to newlines
+        let html = child.innerHTML.trim();
+        html = html.replace(/<br\s*\/?>/gi, '\n');
         
         if (html.startsWith("{{")) {
           const componentElements = [child];
@@ -248,7 +273,8 @@
             let j = i + 1;
             while (j < children.length) {
               const nextChild = children[j];
-              const nextHTML = getFullHTML(nextChild);
+              let nextHTML = nextChild.innerHTML.trim();
+              nextHTML = nextHTML.replace(/<br\s*\/?>/gi, '\n');
               
               componentElements.push(nextChild);
               
