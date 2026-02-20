@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V12 - Fixed: component-show");
+  console.log("Rich Component Script V13 - Auto Show/Hide");
   
   const templates = {};
 
@@ -26,11 +26,7 @@
       const name = (el.getAttribute("component-template") || "").trim();
       if (!name) return;
 
-      const fields = Array.from(el.querySelectorAll("[component-field]"))
-        .map((f) => (f.getAttribute("component-field") || "").trim())
-        .filter(Boolean);
-
-      templates[name] = { el, fields };
+      templates[name] = { el };
     });
     console.log("✅ Loaded templates:", Object.keys(templates));
   }
@@ -114,7 +110,22 @@
   }
 
   function fillFields(node, attrs) {
-    // 1. Set text content
+    // 1. Handle component-show FIRST - Remove if attribute doesn't exist or is empty
+    node.querySelectorAll("[component-show]").forEach((el) => {
+      const attrName = el.getAttribute("component-show").trim();
+      if (!attrName) return;
+      
+      const value = attrs[attrName];
+      const hasValue = attrName in attrs && value && value.trim() !== '';
+      
+      console.log(`👁️ component-show="${attrName}" → ${hasValue ? 'KEEP' : 'REMOVE'} (value="${value || 'undefined'}")`);
+      
+      if (!hasValue) {
+        el.remove();
+      }
+    });
+
+    // 2. Set text content
     node.querySelectorAll("[component-field]").forEach((el) => {
       const attrName = el.getAttribute("component-field").trim();
       if (!attrName) return;
@@ -133,7 +144,7 @@
       el.innerHTML = val;
     });
 
-    // 2. Set URLs
+    // 3. Set URLs
     node.querySelectorAll("[component-url]").forEach((el) => {
       const attrName = el.getAttribute("component-url").trim();
       if (!attrName) return;
@@ -144,20 +155,6 @@
       
       if (el.tagName === "A") {
         el.href = url;
-      }
-    });
-
-    // 3. Handle component-show - ONLY remove if value is "false"
-    node.querySelectorAll("[component-show]").forEach((el) => {
-      const attrName = el.getAttribute("component-show").trim();
-      if (!attrName) return;
-      
-      const value = attrs[attrName];
-      
-      console.log(`👁️ component-show="${attrName}" → value="${value}" → ${value === 'false' ? 'REMOVE' : 'KEEP'}`);
-      
-      if (value === 'false' || value === false) {
-        el.remove();
       }
     });
   }
