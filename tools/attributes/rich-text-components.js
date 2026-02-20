@@ -1,4 +1,6 @@
 (function () {
+  console.log("Rich Component Script V3");
+  
   const templates = {};
 
   function injectBaseStyles() {
