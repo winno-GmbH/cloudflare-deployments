@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V10 - Fixed DOM Refresh");
+  console.log("Rich Component Script V10 - With component-url & component-show");
   
   const templates = {};
 
@@ -85,8 +85,8 @@
 
               const kv = look.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
               if (kv) {
-                child.attrs[kv[1]] = kv[2].trim();
-                console.log(`    ⚙️ ${kv[1]}: ${kv[2].trim().substring(0, 50)}...`);
+                child.attrs[kv[1]] = kv[2] ? kv[2].trim() : "";
+                console.log(`    ⚙️ ${kv[1]}: ${kv[2] ? kv[2].trim().substring(0, 50) : "(empty)"}...`);
               }
               i++;
             }
@@ -108,8 +108,8 @@
 
       const kv = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
       if (kv) {
-        root.attrs[kv[1]] = kv[2].trim();
-        console.log(`⚙️ Root attr: ${kv[1]}: ${kv[2].trim().substring(0, 50)}...`);
+        root.attrs[kv[1]] = kv[2] ? kv[2].trim() : "";
+        console.log(`⚙️ Root attr: ${kv[1]}: "${kv[2] ? kv[2].trim().substring(0, 50) : "(empty)"}"`);
       }
 
       i++;
@@ -119,16 +119,94 @@
     return root;
   }
 
+  /**
+   * Extract URL from HTML or return as-is if already a URL
+   * Examples:
+   *   - "<a href='/kontakt'>link</a>" → "/kontakt"
+   *   - "/kontakt" → "/kontakt"
+   *   - "https://example.com" → "https://example.com"
+   */
+  function extractURL(html) {
+    if (!html) return '';
+    
+    // Already a plain URL
+    if (html.startsWith('http://') || html.startsWith('https://') || html.startsWith('/')) {
+      return html;
+    }
+    
+    // Extract from <a href="...">
+    const match = html.match(/href=["']([^"']+)["']/);
+    if (match) {
+      return match[1];
+    }
+    
+    return html;
+  }
+
+  /**
+   * Fill component fields with attribute values
+   * Handles three types of directives:
+   * 
+   * 1. component-show="attr-name"
+   *    Removes element from DOM if attr-name is "false"
+   *    Example: component-show="btn-visibility" removes element if btn-visibility: false
+   * 
+   * 2. component-url="attr-name"
+   *    Sets href on anchor element from attr-name value
+   *    Extracts URL from HTML if needed
+   *    Example: component-url="btn-link" sets href from btn-link attribute
+   * 
+   * 3. component-field="attr-name"
+   *    Sets innerHTML of element from attr-name value
+   *    Example: component-field="heading" sets content from heading attribute
+   */
   function fillFields(node, attrs) {
-    node.querySelectorAll("[component-field]").forEach((el) => {
-      const key = (el.getAttribute("component-field") || "").trim();
+    // 1. Handle component-show FIRST (remove elements before processing)
+    node.querySelectorAll("[component-show]").forEach((el) => {
+      const key = el.getAttribute("component-show").trim();
+      if (!key) return;
+      
+      const showValue = attrs[key];
+      console.log(`  👁️ Checking component-show="${key}" (value: "${showValue}")`);
+      
+      if (showValue === 'false' || showValue === false) {
+        console.log(`  👻 Removing element (${key} = false)`);
+        el.remove();
+      } else {
+        console.log(`  ✅ Keeping element (${key} = ${showValue})`);
+      }
+    });
+
+    // 2. Handle component-url
+    node.querySelectorAll("[component-url]").forEach((el) => {
+      const key = el.getAttribute("component-url").trim();
       if (!key) return;
       if (!(key in attrs)) return;
+      
+      const value = attrs[key];
+      const url = extractURL(value);
+      
+      console.log(`  🔗 Setting URL: ${key} = "${value}" → "${url}"`);
+      
+      if (el.tagName === "A") {
+        el.href = url;
+      } else {
+        console.warn(`  ⚠️ component-url="${key}" on non-anchor element:`, el.tagName);
+      }
+    });
 
-      const val = attrs[key];
+    // 3. Handle component-field
+    node.querySelectorAll("[component-field]").forEach((el) => {
+      const key = el.getAttribute("component-field").trim();
+      if (!key) return;
+      
+      // Set field even if empty (to clear placeholder text)
+      const val = key in attrs ? attrs[key] : "";
+      
+      console.log(`  🎨 Setting field "${key}" = "${val.substring(0, 50)}..."`);
 
       if (el.tagName === "IMG") {
-        el.src = val;
+        if (val) el.src = val;
         const altKey = `${key}-alt`;
         if (altKey in attrs) el.alt = attrs[altKey];
         else if (!el.hasAttribute("alt")) el.alt = "";
@@ -174,25 +252,23 @@
 
   function convertPipeToNewline(text) {
     console.log("🔧 Converting pipe format to newline format");
-    console.log("   Before:", text.substring(0, 150));
-    
     let converted = text.replace(/\|/g, "\n|");
-    
-    console.log("   After:", converted.substring(0, 150));
     return converted;
   }
 
   function needsPipeConversion(text) {
     const lines = text.split("\n");
-    
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed.startsWith("|") && (trimmed.match(/\|/g) || []).length > 1) {
         return true;
       }
     }
-    
     return false;
+  }
+
+  function getFullHTML(element) {
+    return element.innerHTML.trim();
   }
 
   function replaceInRichTextElements() {
@@ -204,47 +280,47 @@
       
       let i = 0;
       while (i < richTextEl.children.length) {
-        // ✅ FRESH children list on every iteration
         const children = Array.from(richTextEl.children);
         const child = children[i];
-        const text = child.textContent.trim();
+        const html = getFullHTML(child);
         
-        console.log(`  [${i}] Tag: ${child.tagName}, Text: "${text.substring(0, 50)}..."`);
+        console.log(`  [${i}] Tag: ${child.tagName}, HTML: "${html.substring(0, 50)}..."`);
         
-        if (text.startsWith("{{")) {
+        if (html.startsWith("{{")) {
           console.log(`  🎯 Found element starting with {{ at index ${i}`);
           
           const componentElements = [child];
-          let componentText = text.substring(2);
+          let componentText = html.substring(2);
           let foundEnd = false;
           
-          if (text.includes("}}")) {
+          if (html.includes("}}")) {
             console.log(`  ✅ Found }} in same element`);
-            componentText = text.substring(2, text.indexOf("}}"));
+            componentText = html.substring(2, html.indexOf("}}"));
             foundEnd = true;
           } else {
             let j = i + 1;
             while (j < children.length) {
               const nextChild = children[j];
-              const nextText = nextChild.textContent.trim();
+              const nextHTML = getFullHTML(nextChild);
               
               componentElements.push(nextChild);
               
-              if (nextText.includes("}}")) {
+              if (nextHTML.includes("}}")) {
                 console.log(`  ✅ Found }} at index ${j}`);
-                componentText += "\n" + nextText.substring(0, nextText.indexOf("}}"));
+                componentText += "\n" + nextHTML.substring(0, nextHTML.indexOf("}}"));
                 foundEnd = true;
                 j++;
                 break;
               }
               
-              componentText += "\n" + nextText;
+              componentText += "\n" + nextHTML;
               j++;
             }
           }
           
           if (foundEnd) {
             console.log(`  📝 Component text collected (${componentText.length} chars)`);
+            console.log(`  📝 Preview: ${componentText.substring(0, 200)}...`);
             
             if (needsPipeConversion(componentText)) {
               console.log(`  🔧 Converting pipe format...`);
@@ -263,8 +339,7 @@
                 console.log(`  🗑️ Removing ${componentElements.length} elements`);
                 componentElements.forEach(el => el.remove());
                 
-                console.log(`  🔄 Component inserted, continuing from same index ${i}`);
-                // Don't increment i - the next element is now at position i
+                console.log(`  🔄 Component inserted, continuing from index ${i}`);
                 continue;
               }
             }
