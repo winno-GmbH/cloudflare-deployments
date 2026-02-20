@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V14 - Simplified Nesting");
+  console.log("Rich Component Script V15 - Simplified Nesting");
   
   const templates = {};
 
