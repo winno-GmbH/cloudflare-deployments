@@ -19,24 +19,6 @@
     document.head.appendChild(style);
   }
 
-  function htmlToTextLines(html) {
-    if (!html) return "";
-    let s = String(html);
-
-    s = s.replace(/<\/p>\s*<p[^>]*>/gi, "\n");
-    s = s.replace(/<p[^>]*>/gi, "");
-    s = s.replace(/<\/p>/gi, "\n");
-    s = s.replace(/<br\s*\/?>/gi, "\n");
-    s = s.replace(/<[^>]+>/g, "");
-    s = s.replace(/&nbsp;/gi, " ");
-
-    const t = document.createElement("textarea");
-    t.innerHTML = s;
-    s = t.value;
-
-    return s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  }
-
   function loadTemplates() {
     document.querySelectorAll("[component-template]").forEach((el) => {
       const name = (el.getAttribute("component-template") || "").trim();
@@ -48,16 +30,6 @@
 
       templates[name] = { el, fields };
     });
-  }
-
-  function extractBlocks(text) {
-    const blocks = [];
-    const re = /\{\{([\s\S]*?)\}\}/g;
-    let m;
-    while ((m = re.exec(text)) !== null) {
-      blocks.push({ raw: m[0], inner: (m[1] || "").trim() });
-    }
-    return blocks;
   }
 
   function parseComponentDoc(innerText) {
@@ -124,7 +96,6 @@
     return root;
   }
 
-  // UPDATED: supports IMG + ALT + default lazy loading
   function fillFields(node, attrs) {
     node.querySelectorAll("[component-field]").forEach((el) => {
       const key = (el.getAttribute("component-field") || "").trim();
@@ -134,25 +105,14 @@
       const val = attrs[key];
 
       if (el.tagName === "IMG") {
-        // value for the image field is the URL
         el.src = val;
-
-        // alt handling:
-        // - if you provide "|image-alt: ..." it will be used
-        // - else keep existing alt, or set to empty to be valid
         const altKey = `${key}-alt`;
         if (altKey in attrs) el.alt = attrs[altKey];
         else if (!el.hasAttribute("alt")) el.alt = "";
-
-        // always lazy-load (as requested)
         el.loading = "lazy";
-
-        // safe default to avoid layout shift if you use width/height in template
-        // (no-op if not present)
         return;
       }
 
-      // For non-img fields
       el.innerHTML = val;
     });
   }
@@ -183,39 +143,72 @@
     return clone;
   }
 
+  // NEW: Extract text from a single paragraph element
+  function getParagraphText(el) {
+    return el.textContent.trim();
+  }
+
+  // NEW: Check if element contains component syntax
+  function containsComponentSyntax(text) {
+    return text.includes("{{") && text.includes("}}");
+  }
+
+  // NEW: Process component blocks while preserving HTML
   function replaceInRichTextElements() {
-    document.querySelectorAll(".w-richtext").forEach((el) => {
-      const textish = htmlToTextLines(el.innerHTML);
-      const blocks = extractBlocks(textish);
-      if (!blocks.length) return;
-
-      const parts = [];
-      let lastIndex = 0;
-      const re = /\{\{([\s\S]*?)\}\}/g;
-      let m;
-
-      while ((m = re.exec(textish)) !== null) {
-        const before = textish.slice(lastIndex, m.index);
-        if (before.trim()) {
-          const p = document.createElement("p");
-          p.textContent = before.trim();
-          parts.push(p);
+    document.querySelectorAll(".w-richtext").forEach((richTextEl) => {
+      const children = Array.from(richTextEl.children);
+      
+      // Track if we're inside a component block
+      let inComponentBlock = false;
+      let componentLines = [];
+      let componentStartIndex = -1;
+      
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        const text = getParagraphText(child);
+        
+        // Check if this paragraph starts a component
+        if (!inComponentBlock && text === "{{") {
+          inComponentBlock = true;
+          componentLines = [];
+          componentStartIndex = i;
+          continue;
         }
-
-        const ast = parseComponentDoc((m[1] || "").trim());
-        parts.push(ast ? renderComponent(ast) : document.createTextNode(m[0]));
-        lastIndex = re.lastIndex;
+        
+        // Check if this paragraph ends a component
+        if (inComponentBlock && text === "}}") {
+          inComponentBlock = false;
+          
+          // Parse and render the component
+          const componentText = componentLines.join("\n");
+          const ast = parseComponentDoc(componentText);
+          
+          if (ast) {
+            const componentNode = renderComponent(ast);
+            
+            // Replace all the component paragraphs with the rendered component
+            // Insert the component before the first paragraph
+            children[componentStartIndex].parentNode.insertBefore(
+              componentNode, 
+              children[componentStartIndex]
+            );
+            
+            // Remove all the component paragraphs ({{ ... }})
+            for (let j = componentStartIndex; j <= i; j++) {
+              children[j].remove();
+            }
+          }
+          
+          componentLines = [];
+          componentStartIndex = -1;
+          continue;
+        }
+        
+        // If we're inside a component block, collect the line
+        if (inComponentBlock) {
+          componentLines.push(text);
+        }
       }
-
-      const after = textish.slice(lastIndex);
-      if (after.trim()) {
-        const p = document.createElement("p");
-        p.textContent = after.trim();
-        parts.push(p);
-      }
-
-      el.innerHTML = "";
-      parts.forEach((n) => el.appendChild(n));
     });
   }
 
