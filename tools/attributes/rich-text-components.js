@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V7 - Multi-paragraph Support");
+  console.log("Rich Component Script V8 - Fixed Pipe Detection");
   
   const templates = {};
 
@@ -44,6 +44,8 @@
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean);
+
+    console.log(`📝 Total lines: ${lines.length}`, lines.slice(0, 5));
 
     const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
 
@@ -147,6 +149,7 @@
     const tpl = templates[ast.name];
     if (!tpl) {
       console.log(`❌ Template not found: ${ast.name}`);
+      console.log(`   Available templates:`, Object.keys(templates));
       return null;
     }
 
@@ -171,9 +174,30 @@
 
   function convertPipeToNewline(text) {
     console.log("🔧 Converting pipe format to newline format");
-    // Replace |word with \n|word
+    console.log("   Before:", text.substring(0, 150));
+    
+    // Replace ALL pipes with newline + pipe
+    // But be careful with the first character
     let converted = text.replace(/\|/g, "\n|");
+    
+    console.log("   After:", converted.substring(0, 150));
     return converted;
+  }
+
+  function needsPipeConversion(text) {
+    // Check if there are pipes that are NOT preceded by a newline
+    // This indicates inline pipe format like: |comp|attr:value|attr:value
+    const lines = text.split("\n");
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      // If line starts with | and contains more |, it needs conversion
+      if (trimmed.startsWith("|") && (trimmed.match(/\|/g) || []).length > 1) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   function replaceInRichTextElements() {
@@ -231,10 +255,11 @@
             console.log(`  📝 Component text collected (${componentText.length} chars)`);
             console.log(`  📝 Text preview: ${componentText.substring(0, 100)}...`);
             
-            // Convert pipes to newlines if needed
-            if (componentText.includes("|") && !componentText.includes("\n|")) {
-              console.log(`  🔧 Converting pipe separators...`);
+            // Check if we need pipe conversion
+            if (needsPipeConversion(componentText)) {
+              console.log(`  🔧 Needs pipe conversion - converting...`);
               componentText = convertPipeToNewline(componentText);
+              console.log(`  ✅ Converted: ${componentText.substring(0, 100)}...`);
             }
             
             const ast = parseComponentDoc(componentText);
