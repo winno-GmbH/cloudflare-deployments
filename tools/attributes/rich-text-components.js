@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V3");
+  console.log("Rich Component Script V4 - Debug Mode");
   
   const templates = {};
 
@@ -19,6 +19,7 @@
       }
     `;
     document.head.appendChild(style);
+    console.log("✅ Base styles injected");
   }
 
   function loadTemplates() {
@@ -31,10 +32,14 @@
         .filter(Boolean);
 
       templates[name] = { el, fields };
+      console.log(`✅ Loaded template: ${name}`, fields);
     });
+    console.log("📋 Total templates loaded:", Object.keys(templates));
   }
 
   function parseComponentDoc(innerText) {
+    console.log("🔍 Parsing component doc:", innerText);
+    
     const lines = innerText
       .split("\n")
       .map((l) => l.trim())
@@ -43,8 +48,12 @@
     const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
 
     const first = norm(lines[0] || "");
-    if (!first) return null;
+    if (!first) {
+      console.log("❌ No first line found");
+      return null;
+    }
 
+    console.log("📝 Component name:", first);
     const root = { name: first, attrs: {}, slots: {} };
 
     let i = 1;
@@ -54,6 +63,7 @@
       const slotStart = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*$/);
       if (slotStart) {
         const slotName = slotStart[1];
+        console.log(`🎰 Found slot: ${slotName}`);
         const children = [];
         i++;
 
@@ -63,6 +73,7 @@
 
           if (!l2.includes(":") && !l2.startsWith("/")) {
             const child = { name: l2, attrs: {}, slots: {} };
+            console.log(`  👶 Child component: ${l2}`);
             i++;
 
             while (i < lines.length) {
@@ -71,7 +82,10 @@
               if (!look.includes(":") && !look.startsWith("/")) break;
 
               const kv = look.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
-              if (kv) child.attrs[kv[1]] = kv[2].trim();
+              if (kv) {
+                child.attrs[kv[1]] = kv[2].trim();
+                console.log(`    ⚙️ ${kv[1]}: ${kv[2].trim().substring(0, 50)}...`);
+              }
               i++;
             }
 
@@ -83,6 +97,7 @@
         }
 
         root.slots[slotName] = children;
+        console.log(`✅ Slot ${slotName} has ${children.length} children`);
 
         while (i < lines.length && norm(lines[i]) !== `/${slotName}`) i++;
         i++;
@@ -90,11 +105,15 @@
       }
 
       const kv = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
-      if (kv) root.attrs[kv[1]] = kv[2].trim();
+      if (kv) {
+        root.attrs[kv[1]] = kv[2].trim();
+        console.log(`⚙️ Root attr: ${kv[1]}: ${kv[2].trim().substring(0, 50)}...`);
+      }
 
       i++;
     }
 
+    console.log("✅ Parsed AST:", root);
     return root;
   }
 
@@ -124,8 +143,12 @@
   }
 
   function renderComponent(ast) {
+    console.log(`🎨 Rendering component: ${ast.name}`);
     const tpl = templates[ast.name];
-    if (!tpl) return null;
+    if (!tpl) {
+      console.log(`❌ Template not found: ${ast.name}`);
+      return null;
+    }
 
     const clone = tpl.el.cloneNode(true);
     clone.removeAttribute("component-template");
@@ -142,20 +165,29 @@
       children.forEach((childAst) => slotEl.appendChild(renderComponent(childAst)));
     });
 
+    console.log(`✅ Component rendered: ${ast.name}`);
     return clone;
   }
 
   function replaceInRichTextElements() {
-    document.querySelectorAll(".w-richtext").forEach((richTextEl) => {
+    const richTextElements = document.querySelectorAll(".w-richtext");
+    console.log(`🔍 Found ${richTextElements.length} .w-richtext elements`);
+    
+    richTextElements.forEach((richTextEl, idx) => {
+      console.log(`\n📄 Processing richtext element ${idx + 1}`);
       const children = Array.from(richTextEl.children);
+      console.log(`  👶 Has ${children.length} children`);
       
       let i = 0;
       while (i < children.length) {
         const child = children[i];
         const text = child.textContent.trim();
         
+        console.log(`  [${i}] "${text.substring(0, 30)}..."`);
+        
         // Found start of component block
         if (text === "{{") {
+          console.log(`  🎯 Found {{ at index ${i}`);
           const componentElements = [child];
           const componentLines = [];
           let foundEnd = false;
@@ -169,6 +201,7 @@
             componentElements.push(nextChild);
             
             if (nextText === "}}") {
+              console.log(`  🎯 Found }} at index ${j}`);
               foundEnd = true;
               j++;
               break;
@@ -179,26 +212,40 @@
             j++;
           }
           
+          console.log(`  📝 Collected ${componentLines.length} lines between {{ and }}`);
+          console.log(`  📝 Lines:`, componentLines);
+          
           if (foundEnd && componentLines.length > 0) {
             // Parse and render the component
             const componentText = componentLines.join("\n");
+            console.log(`  🔄 Parsing component text...`);
             const ast = parseComponentDoc(componentText);
             
             if (ast) {
+              console.log(`  🎨 Rendering component...`);
               const componentNode = renderComponent(ast);
               
               if (componentNode) {
+                console.log(`  ✅ Inserting component into DOM`);
                 // Insert the component before the first element
                 richTextEl.insertBefore(componentNode, componentElements[0]);
                 
                 // Remove all component elements
+                console.log(`  🗑️ Removing ${componentElements.length} component elements`);
                 componentElements.forEach(el => el.remove());
                 
                 // Update children array since we modified the DOM
                 i = Array.from(richTextEl.children).indexOf(componentNode) + 1;
+                console.log(`  ⏭️ Continuing from index ${i}`);
                 continue;
+              } else {
+                console.log(`  ❌ Component node is null`);
               }
+            } else {
+              console.log(`  ❌ AST parsing failed`);
             }
+          } else {
+            console.log(`  ⚠️ Component block incomplete (foundEnd: ${foundEnd}, lines: ${componentLines.length})`);
           }
           
           // If we couldn't parse, skip this element
@@ -209,12 +256,16 @@
         i++;
       }
     });
+    
+    console.log("\n🏁 Replacement complete");
   }
 
   function init() {
+    console.log("🚀 Initializing...");
     injectBaseStyles();
     loadTemplates();
     replaceInRichTextElements();
+    console.log("✅ Initialization complete");
   }
 
   if (document.readyState === "loading") {
