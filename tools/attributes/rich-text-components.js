@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V10 - Fixed component-visibility & component-url");
+  console.log("Rich Component Script V11 - Fixed component-visibility & component-url");
   
   const templates = {};
 
