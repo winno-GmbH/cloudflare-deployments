@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V9 - Fixed DOM Refresh");
+  console.log("Rich Component Script V10 - Fixed DOM Refresh");
   
   const templates = {};
 
