@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V13 - Auto Show/Hide");
+  console.log("Rich Component Script V14 - Simplified Nesting");
   
   const templates = {};
 
@@ -32,6 +32,8 @@
   }
 
   function parseComponentDoc(innerText) {
+    console.log("🔍 Parsing component doc");
+    
     const lines = innerText
       .split("\n")
       .map((l) => l.trim())
@@ -42,60 +44,53 @@
     const first = norm(lines[0] || "");
     if (!first) return null;
 
-    const root = { name: first, attrs: {}, slots: {} };
-
-    let i = 1;
-    while (i < lines.length) {
+    console.log(`📝 Root component: ${first}`);
+    
+    // Root AST node
+    const root = { name: first, attrs: {}, children: [] };
+    
+    // Stack to track nesting: [root, child1, child2, ...]
+    const stack = [root];
+    
+    for (let i = 1; i < lines.length; i++) {
       const line = norm(lines[i]);
-
-      const slotStart = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*$/);
-      if (slotStart) {
-        const slotName = slotStart[1];
-        const children = [];
-        i++;
-
-        while (i < lines.length) {
-          const l2 = norm(lines[i]);
-          if (l2 === `/${slotName}`) break;
-
-          if (!l2.includes(":") && !l2.startsWith("/")) {
-            const child = { name: l2, attrs: {}, slots: {} };
-            i++;
-
-            while (i < lines.length) {
-              const look = norm(lines[i]);
-              if (look === `/${slotName}`) break;
-              if (!look.includes(":") && !look.startsWith("/")) break;
-
-              const kv = look.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
-              if (kv) {
-                child.attrs[kv[1]] = kv[2] ? kv[2].trim() : "";
-              }
-              i++;
-            }
-
-            children.push(child);
-            continue;
-          }
-
-          i++;
+      
+      // Check if it's an attribute (contains :)
+      const attrMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
+      
+      if (attrMatch) {
+        // It's an attribute - add to current component
+        const current = stack[stack.length - 1];
+        current.attrs[attrMatch[1]] = attrMatch[2] ? attrMatch[2].trim() : "";
+        console.log(`  ${'  '.repeat(stack.length - 1)}⚙️ ${attrMatch[1]}: ${attrMatch[2] ? attrMatch[2].trim().substring(0, 30) : "(empty)"}`);
+      } else {
+        // It's a nested component name
+        const componentName = line;
+        const current = stack[stack.length - 1];
+        
+        // Check if it's a sibling (same name as current)
+        if (current.name === componentName) {
+          // Same name = sibling - go back to parent and add new child
+          stack.pop(); // Remove current
+          const parent = stack[stack.length - 1];
+          
+          const sibling = { name: componentName, attrs: {}, children: [] };
+          parent.children.push(sibling);
+          stack.push(sibling);
+          
+          console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling)`);
+        } else {
+          // Different name = child of current
+          const child = { name: componentName, attrs: {}, children: [] };
+          current.children.push(child);
+          stack.push(child);
+          
+          console.log(`  ${'  '.repeat(stack.length - 1)}👶 ${componentName} (child)`);
         }
-
-        root.slots[slotName] = children;
-
-        while (i < lines.length && norm(lines[i]) !== `/${slotName}`) i++;
-        i++;
-        continue;
       }
-
-      const kv = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
-      if (kv) {
-        root.attrs[kv[1]] = kv[2] ? kv[2].trim() : "";
-      }
-
-      i++;
     }
 
+    console.log("✅ Parsed AST:", root);
     return root;
   }
 
@@ -110,7 +105,7 @@
   }
 
   function fillFields(node, attrs) {
-    // 1. Handle component-show FIRST - Remove if attribute doesn't exist or is empty
+    // 1. Handle component-show - Remove if attribute doesn't exist or is empty
     node.querySelectorAll("[component-show]").forEach((el) => {
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
@@ -118,7 +113,7 @@
       const value = attrs[attrName];
       const hasValue = attrName in attrs && value && value.trim() !== '';
       
-      console.log(`👁️ component-show="${attrName}" → ${hasValue ? 'KEEP' : 'REMOVE'} (value="${value || 'undefined'}")`);
+      console.log(`👁️ component-show="${attrName}" → ${hasValue ? 'KEEP' : 'REMOVE'}`);
       
       if (!hasValue) {
         el.remove();
@@ -159,11 +154,9 @@
     });
   }
 
-  function clearSlot(slotEl) {
-    slotEl.querySelectorAll('[component-generated="true"]').forEach((n) => n.remove());
-  }
-
   function renderComponent(ast) {
+    console.log(`🎨 Rendering: ${ast.name}`);
+    
     const tpl = templates[ast.name];
     if (!tpl) {
       console.error(`❌ Template not found: ${ast.name}`);
@@ -175,15 +168,35 @@
     clone.setAttribute("component-generated", "true");
     clone.classList.add("rtc-component");
 
+    // Fill fields with this component's attributes
     fillFields(clone, ast.attrs);
 
-    Object.entries(ast.slots || {}).forEach(([slotName, children]) => {
-      const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
-      if (!slotEl) return;
-
-      clearSlot(slotEl);
-      children.forEach((childAst) => slotEl.appendChild(renderComponent(childAst)));
-    });
+    // Render children
+    if (ast.children && ast.children.length > 0) {
+      console.log(`  📦 ${ast.name} has ${ast.children.length} children`);
+      
+      // Find the slot for children
+      // Try to find a slot that matches the first child's name pattern
+      const firstChildName = ast.children[0].name;
+      
+      // Look for slot with matching pattern
+      // e.g., rich-item → look for slot in rich-list
+      const slotEl = clone.querySelector('[component-slot]');
+      
+      if (slotEl) {
+        console.log(`  📍 Found slot for children`);
+        slotEl.innerHTML = ''; // Clear slot
+        
+        ast.children.forEach((childAst) => {
+          const childNode = renderComponent(childAst);
+          if (childNode) {
+            slotEl.appendChild(childNode);
+          }
+        });
+      } else {
+        console.warn(`  ⚠️ No slot found for children in ${ast.name}`);
+      }
+    }
 
     return clone;
   }
@@ -256,7 +269,6 @@
             const ast = parseComponentDoc(componentText);
             
             if (ast) {
-              console.log(`✅ Rendering: ${ast.name}`);
               const componentNode = renderComponent(ast);
               
               if (componentNode) {
