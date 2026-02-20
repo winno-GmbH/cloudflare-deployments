@@ -32,19 +32,22 @@
   }
 
   function parseComponentDoc(innerText) {
-    console.log("🔍 Parsing component doc");
-    
-    const lines = innerText
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
+  console.log("🔍 Parsing component doc");
+  
+  // WICHTIG: Erst <br> zu \n konvertieren!
+  innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
+  
+  const lines = innerText
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
 
-    const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
+  const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
 
-    const first = norm(lines[0] || "");
-    if (!first) return null;
+  const first = norm(lines[0] || "");
+  if (!first) return null;
 
-    console.log(`📝 Root component: ${first}`);
+  console.log(`📝 Root component: ${first}`);
     
     // Root AST node
     const root = { name: first, attrs: {}, children: [] };
