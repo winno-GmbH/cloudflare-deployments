@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V5 - Multi-scenario Debug");
+  console.log("Rich Component Script V6 - Pipe Separator Fix");
   
   const templates = {};
 
@@ -169,16 +169,35 @@
     return clone;
   }
 
-  // NEW: Extract component blocks from text that might contain {{ }} inline
+  // NEW: Convert pipe-separated format to newline format
+  function convertPipeToNewline(text) {
+    console.log("🔧 Converting pipe format to newline format");
+    console.log("   Input:", text.substring(0, 100) + "...");
+    
+    // Replace |word (pipe followed by word) with \n|word (newline + pipe + word)
+    let converted = text.replace(/\|/g, "\n|");
+    
+    console.log("   Output:", converted.substring(0, 100) + "...");
+    return converted;
+  }
+
   function extractComponentBlocks(text) {
     const blocks = [];
     const regex = /\{\{([\s\S]*?)\}\}/g;
     let match;
     
     while ((match = regex.exec(text)) !== null) {
+      let content = match[1].trim();
+      
+      // Check if content uses pipe separators instead of newlines
+      if (content.includes("|") && !content.includes("\n")) {
+        console.log("🔍 Detected pipe-separated format, converting...");
+        content = convertPipeToNewline(content);
+      }
+      
       blocks.push({
         fullMatch: match[0],
-        content: match[1].trim(),
+        content: content,
         startIndex: match.index,
         endIndex: match.index + match[0].length
       });
@@ -214,7 +233,7 @@
             const fragment = document.createDocumentFragment();
             
             blocks.forEach((block, blockIdx) => {
-              console.log(`  🔄 Processing block ${blockIdx + 1}:`, block.content.substring(0, 50) + "...");
+              console.log(`  🔄 Processing block ${blockIdx + 1}...`);
               const ast = parseComponentDoc(block.content);
               
               if (ast) {
