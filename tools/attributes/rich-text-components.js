@@ -1,10 +1,7 @@
 (function () {
-  console.log("Rich Component Script V15 - Simplified Nesting");
+  console.log("Rich Component Script V16 - Double-Pipe Siblings");
   
   const templates = {};
-  
-  // Components die KEINE Children haben können (Leaf Components)
-  const leafComponents = ['icon'];
 
   function injectBaseStyles() {
     if (document.getElementById("rtc-component-style")) return;
@@ -45,21 +42,31 @@
       .map((l) => l.trim())
       .filter(Boolean);
 
-    const norm = (l) => (l.startsWith("|") ? l.slice(1).trim() : l);
+    // Parse line: returns { text, isSibling }
+    const norm = (l) => {
+      if (l.startsWith("||")) {
+        return { text: l.slice(2).trim(), isSibling: true };
+      }
+      if (l.startsWith("|")) {
+        return { text: l.slice(1).trim(), isSibling: false };
+      }
+      return { text: l.trim(), isSibling: false };
+    };
 
-    const first = norm(lines[0] || "");
-    if (!first) return null;
+    const firstParsed = norm(lines[0] || "");
+    if (!firstParsed.text) return null;
 
-    console.log(`📝 Root component: ${first}`);
+    console.log(`📝 Root component: ${firstParsed.text}`);
     
     // Root AST node
-    const root = { name: first, attrs: {}, children: [] };
+    const root = { name: firstParsed.text, attrs: {}, children: [] };
     
     // Stack to track nesting: [root, child1, child2, ...]
     const stack = [root];
     
     for (let i = 1; i < lines.length; i++) {
-      const line = norm(lines[i]);
+      const parsed = norm(lines[i]);
+      const line = parsed.text;
       
       // Check if it's an attribute (contains :)
       const attrMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
@@ -74,8 +81,17 @@
         const componentName = line;
         const current = stack[stack.length - 1];
         
-        // Check if it's a sibling (same name as current)
-        if (current.name === componentName) {
+        if (parsed.isSibling) {
+          // || = Sibling - go back to parent and add new child
+          stack.pop();
+          const parent = stack[stack.length - 1];
+          
+          const sibling = { name: componentName, attrs: {}, children: [] };
+          parent.children.push(sibling);
+          stack.push(sibling);
+          
+          console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling via ||)`);
+        } else if (current.name === componentName) {
           // Same name = sibling - go back to parent and add new child
           stack.pop();
           const parent = stack[stack.length - 1];
@@ -84,17 +100,7 @@
           parent.children.push(sibling);
           stack.push(sibling);
           
-          console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling)`);
-        } else if (leafComponents.includes(current.name)) {
-          // Current is a leaf component - new component becomes sibling!
-          stack.pop();
-          const parent = stack[stack.length - 1];
-          
-          const sibling = { name: componentName, attrs: {}, children: [] };
-          parent.children.push(sibling);
-          stack.push(sibling);
-          
-          console.log(`  ${'  '.repeat(stack.length - 1)}👥 ${componentName} (sibling of leaf)`);
+          console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling - same name)`);
         } else {
           // Different name = child of current
           const child = { name: componentName, attrs: {}, children: [] };
