@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V20 - Inline Slot Syntax");
+  console.log("Rich Component Script V19-DEBUG - Inline Slot Syntax");
   
   const templates = {};
 
@@ -355,22 +355,29 @@
     console.log(`🔍 Found ${richTextElements.length} .w-richtext elements`);
     
     richTextElements.forEach((richTextEl, idx) => {
+      console.log(`\n📄 Processing element ${idx + 1}`);
       
       let i = 0;
       while (i < richTextEl.children.length) {
         const children = Array.from(richTextEl.children);
         const child = children[i];
         
+        console.log(`  🔍 Child ${i}: innerHTML length = ${child.innerHTML.length}`);
+        
         // Use innerHTML but convert <br> to newlines
         let html = child.innerHTML.trim();
         html = html.replace(/<br\s*\/?>/gi, '\n');
         
+        console.log(`  🔍 HTML starts with: ${html.substring(0, 50)}`);
+        
         if (html.startsWith("{{")) {
+          console.log(`  ✅ Found component start!`);
           const componentElements = [child];
           let componentText = html.substring(2);
           let foundEnd = false;
           
           if (html.includes("}}")) {
+            console.log(`  ✅ Found complete component in one element`);
             componentText = html.substring(2, html.indexOf("}}"));
             foundEnd = true;
           } else {
@@ -395,14 +402,21 @@
           }
           
           if (foundEnd) {
+            console.log(`  🎯 Component text:`, componentText.substring(0, 100));
+            
             if (needsPipeConversion(componentText)) {
               componentText = convertPipeToNewline(componentText);
+              console.log(`  🔄 Converted pipes to newlines`);
             }
             
+            console.log(`  📝 Parsing component...`);
             const ast = parseComponentDoc(componentText);
+            console.log(`  📊 AST:`, ast);
             
             if (ast) {
+              console.log(`  🎨 Rendering component: ${ast.name}`);
               const componentNode = renderComponent(ast);
+              console.log(`  ✅ Component rendered:`, componentNode);
               
               if (componentNode) {
                 richTextEl.insertBefore(componentNode, componentElements[0]);
@@ -421,7 +435,7 @@
   }
 
   function init() {
-    console.log("Rich Component Script V19 - Inline Slot Syntax");
+    console.log("Rich Component Script V19-DEBUG - Inline Slot Syntax");
     console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
     loadTemplates();
