@@ -256,13 +256,6 @@
     clone.removeAttribute("component-template");
     clone.setAttribute("component-generated", "true");
     clone.classList.add("rtc-component");
-    
-    // Debug: Show all slots in this template
-    const allSlots = clone.querySelectorAll('[component-slot]');
-    if (allSlots.length > 0) {
-        Array.from(allSlots).map(s => s.getAttribute('component-slot'))
-      );
-    }
 
     // Fill fields with this component's attributes
     fillFields(clone, ast.attrs);
