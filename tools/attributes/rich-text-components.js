@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG-FIX - HTML Entity Decode Fix");
+  console.log("Rich Component Script V19-DEBUG-V2 - No Pipe Before @");
   
   const templates = {};
 
@@ -43,8 +43,8 @@
       const isSibling = l.startsWith("||");
       const withoutPipes = isSibling ? l.slice(2).trim() : (l.startsWith("|") ? l.slice(1).trim() : l.trim());
       
-      // Pattern: component-name [|@slot1 < child1] [|@slot2 < child2] ...
-      const inlinePattern = /^([a-zA-Z0-9_-]+)((?:\s+\|@[a-zA-Z0-9_-]+\s*<\s*[a-zA-Z0-9_-]+)*)$/;
+      // Pattern: component-name [@slot1 < child1] [@slot2 < child2] ...
+      const inlinePattern = /^([a-zA-Z0-9_-]+)((?:\s+@[a-zA-Z0-9_-]+\s*<\s*[a-zA-Z0-9_-]+)*)$/;
       const match = withoutPipes.match(inlinePattern);
       
       if (match) {
@@ -54,7 +54,7 @@
         // Extract all slots
         const slots = [];
         if (slotsString) {
-          const slotPattern = /\|@([a-zA-Z0-9_-]+)\s*<\s*([a-zA-Z0-9_-]+)/g;
+          const slotPattern = /@([a-zA-Z0-9_-]+)\s*<\s*([a-zA-Z0-9_-]+)/g;
           let slotMatch;
           while ((slotMatch = slotPattern.exec(slotsString)) !== null) {
             slots.push({
