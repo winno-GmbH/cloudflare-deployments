@@ -99,6 +99,13 @@
       
       console.log(`📍 Line ${i}: "${lines[i]}" → parsed: "${line}", isSibling: ${parsed.isSibling}, slot: ${parsed.slot}`);
       
+      // Check for empty single pipe (broken || syntax from CMS: | on one line, @content on next)
+      if (lines[i] === '|' && !line) {
+        console.log(`🔵 Found empty | line, next will be sibling!`);
+        nextIsSibling = true;
+        continue;
+      }
+      
       // Check if empty but has sibling marker
       if ((!line || line.trim() === '') && parsed.isSibling) {
         console.log(`🔵 Setting nextIsSibling flag!`);
