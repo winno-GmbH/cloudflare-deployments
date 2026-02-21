@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG-V6 - Template Debug");
+  console.log("Rich Component Script V19-DEBUG-V7 - Fixed componentName Bug");
   
   const templates = {};
 
@@ -97,10 +97,11 @@
     
     for (let i = 1; i < lines.length; i++) {
       const parsed = norm(lines[i]);
-      const line = parsed.text;
+      const line = parsed.componentName;
       
+      console.log(`  🔄 Line ${i}: "${lines[i]}" → componentName: "${line}", slots: ${parsed.slots.length}, isSibling: ${parsed.isSibling}`);
       
-      // Check for empty single pipe (broken || syntax from CMS: | on one line, @content on next)
+      // Check for empty single pipe (broken || syntax from CMS)
       if (lines[i] === '|' && !line) {
         nextIsSibling = true;
         continue;
@@ -124,6 +125,7 @@
         // It's an attribute - add to current component
         const current = stack[stack.length - 1];
         current.attrs[attrMatch[1]] = attrMatch[2] ? attrMatch[2].trim() : "";
+        console.log(`    ➕ Attribute: ${attrMatch[1]} = ${attrMatch[2] ? attrMatch[2].substring(0, 30) : ''}`);
       } else {
         // It's a nested component name
         
@@ -437,7 +439,7 @@
     
     console.log("✅ Done");
   }
-
+    console.log("Rich Component Script V19-DEBUG-V7 - Fixed componentName Bug");
   function init() {
     console.log("Rich Component Script V19-DEBUG-V6 - Template Debug");
     console.log("🚀 Initializing Rich Components");
