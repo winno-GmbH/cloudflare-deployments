@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG-V3 - Multi-Element Debug");
+  console.log("Rich Component Script V19-DEBUG-V4 - Full Text Log");
   
   const templates = {};
 
@@ -398,17 +398,17 @@
           }
           
           if (foundEnd) {
-            console.log(`  🎯 Component text (raw):`, componentText.substring(0, 100));
+            console.log(`  🎯 Component text (raw):`, componentText);
             
             // Decode HTML entities FIRST (before pipe conversion)
             const textarea = document.createElement('textarea');
             textarea.innerHTML = componentText;
             componentText = textarea.value;
-            console.log(`  🔓 Decoded HTML entities:`, componentText.substring(0, 100));
+            console.log(`  🔓 Decoded HTML entities:`, componentText);
             
             if (needsPipeConversion(componentText)) {
               componentText = convertPipeToNewline(componentText);
-              console.log(`  🔄 Converted pipes to newlines`);
+              console.log(`  🔄 Converted pipes to newlines:`, componentText);
             }
             
             console.log(`  📝 Parsing component...`);
@@ -437,7 +437,7 @@
   }
 
   function init() {
-    console.log("Rich Component Script V19-DEBUG-V3 - Multi-Element Debug");
+    console.log("Rich Component Script V19-DEBUG-V4 - Full Text Log");
     console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
     loadTemplates();
