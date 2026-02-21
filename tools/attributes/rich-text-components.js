@@ -1,4 +1,6 @@
 (function () {
+  console.log("Rich Component Script V19 - Inline Slot Syntax");
+  
   const templates = {};
 
   function injectBaseStyles() {
@@ -30,7 +32,6 @@
   }
 
   function parseComponentDoc(innerText) {
-    console.log("🔍 Parsing component doc");
     
     // Convert <br> to newlines first
     innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
@@ -45,45 +46,55 @@
       .map((l) => l.trim())
       .filter(Boolean);
 
-    // Parse line: returns { text, isSibling, slot }
+    // Parse line: returns { componentName, slots: [{slotName, childName}], isSibling }
     const norm = (l) => {
-      // Check for @slot syntax: || @slot-name < component-name OR | @slot-name < component-name
-      const slotMatch = l.match(/^(\|\|?)\s*@([a-zA-Z0-9_-]+)\s*<\s*(.+)$/);
-      if (slotMatch) {
-        const isSibling = slotMatch[1] === "||";
-        return { 
-          text: slotMatch[3].trim(), 
-          isSibling: isSibling,
-          slot: slotMatch[2].trim()
-        };
+      // Check for sibling marker
+      const isSibling = l.startsWith("||");
+      const withoutPipes = isSibling ? l.slice(2).trim() : (l.startsWith("|") ? l.slice(1).trim() : l.trim());
+      
+      // Pattern: component-name [|@slot1 < child1] [|@slot2 < child2] ...
+      const inlinePattern = /^([a-zA-Z0-9_-]+)((?:\s+\|@[a-zA-Z0-9_-]+\s*<\s*[a-zA-Z0-9_-]+)*)$/;
+      const match = withoutPipes.match(inlinePattern);
+      
+      if (match) {
+        const componentName = match[1];
+        const slotsString = match[2];
+        
+        // Extract all slots
+        const slots = [];
+        if (slotsString) {
+          const slotPattern = /\|@([a-zA-Z0-9_-]+)\s*<\s*([a-zA-Z0-9_-]+)/g;
+          let slotMatch;
+          while ((slotMatch = slotPattern.exec(slotsString)) !== null) {
+            slots.push({
+              slotName: slotMatch[1],
+              childName: slotMatch[2]
+            });
+          }
+        }
+        
+        return { componentName, slots, isSibling };
       }
       
-      // Check for @slot WITHOUT leading pipes (from broken ||<br> lines)
-      const slotMatchNoPipe = l.match(/^@([a-zA-Z0-9_-]+)\s*<\s*(.+)$/);
-      if (slotMatchNoPipe) {
-        return { 
-          text: slotMatchNoPipe[2].trim(), 
-          isSibling: false, 
-          slot: slotMatchNoPipe[1].trim() 
-        };
-      }
-      
-      if (l.startsWith("||")) {
-        return { text: l.slice(2).trim(), isSibling: true, slot: null };
-      }
-      if (l.startsWith("|")) {
-        return { text: l.slice(1).trim(), isSibling: false, slot: null };
-      }
-      return { text: l.trim(), isSibling: false, slot: null };
+      // Just component name
+      return { componentName: withoutPipes, slots: [], isSibling };
     };
 
     const firstParsed = norm(lines[0] || "");
-    if (!firstParsed.text) return null;
+    if (!firstParsed.componentName) return null;
 
-    console.log(`📝 Root component: ${firstParsed.text}`);
-    
     // Root AST node
-    const root = { name: firstParsed.text, attrs: {}, children: [] };
+    const root = { name: firstParsed.componentName, attrs: {}, children: [] };
+    
+    // Add inline slot children to root
+    firstParsed.slots.forEach(slot => {
+      root.children.push({
+        name: slot.childName,
+        attrs: {},
+        children: [],
+        slot: slot.slotName
+      });
+    });
     
     // Stack to track nesting: [root, child1, child2, ...]
     const stack = [root];
@@ -95,18 +106,15 @@
       const parsed = norm(lines[i]);
       const line = parsed.text;
       
-      console.log(`📍 Line ${i}: "${lines[i]}" → parsed: "${line}", isSibling: ${parsed.isSibling}, slot: ${parsed.slot}`);
       
       // Check for empty single pipe (broken || syntax from CMS: | on one line, @content on next)
       if (lines[i] === '|' && !line) {
-        console.log(`🔵 Found empty | line, next will be sibling!`);
         nextIsSibling = true;
         continue;
       }
       
       // Check if empty but has sibling marker
       if ((!line || line.trim() === '') && parsed.isSibling) {
-        console.log(`🔵 Setting nextIsSibling flag!`);
         nextIsSibling = true;
         continue;
       }
@@ -123,13 +131,11 @@
         // It's an attribute - add to current component
         const current = stack[stack.length - 1];
         current.attrs[attrMatch[1]] = attrMatch[2] ? attrMatch[2].trim() : "";
-        console.log(`  ${'  '.repeat(stack.length - 1)}⚙️ ${attrMatch[1]}: ${attrMatch[2] ? attrMatch[2].trim().substring(0, 30) : "(empty)"}`);
       } else {
         // It's a nested component name
         
         // Apply the nextIsSibling flag for components
         if (nextIsSibling) {
-          console.log(`🟢 Applying nextIsSibling to: ${line}, was isSibling: ${parsed.isSibling}, slot: ${parsed.slot}`);
           parsed.isSibling = true;
           nextIsSibling = false;
         }
@@ -138,46 +144,44 @@
         const current = stack[stack.length - 1];
         
         if (parsed.isSibling) {
-          // || = Sibling - go back to parent and add new child
+          // Pop once and add as sibling
           stack.pop();
           const parent = stack[stack.length - 1];
           
-          const sibling = { name: componentName, attrs: {}, children: [], slot: parsed.slot };
-          parent.children.push(sibling);
-          stack.push(sibling);
+          const newNode = { name: componentName, attrs: {}, children: [], slot: null };
+          parent.children.push(newNode);
           
-          if (parsed.slot) {
-            console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling via || → slot: ${parsed.slot})`);
-          } else {
-            console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling via ||)`);
-          }
-        } else if (current.name === componentName) {
-          // Same name = sibling - go back to parent and add new child
-          stack.pop();
-          const parent = stack[stack.length - 1];
+          // Add inline slot children
+          parsed.slots.forEach(slot => {
+            newNode.children.push({
+              name: slot.childName,
+              attrs: {},
+              children: [],
+              slot: slot.slotName
+            });
+          });
           
-          const sibling = { name: componentName, attrs: {}, children: [], slot: parsed.slot };
-          parent.children.push(sibling);
-          stack.push(sibling);
-          
-          console.log(`  ${'  '.repeat(stack.length - 1)}🔄 ${componentName} (sibling - same name)`);
+          stack.push(newNode);
         } else {
-          // Different name = child of current
-          const child = { name: componentName, attrs: {}, children: [], slot: parsed.slot };
-          current.children.push(child);
-          stack.push(child);
+          // Add as child
+          const newNode = { name: componentName, attrs: {}, children: [], slot: null };
+          current.children.push(newNode);
           
-          if (parsed.slot) {
-            console.log(`  ${'  '.repeat(stack.length - 1)}👶 ${componentName} (child → slot: ${parsed.slot})`);
-          } else {
-            console.log(`  ${'  '.repeat(stack.length - 1)}👶 ${componentName} (child)`);
-          }
+          // Add inline slot children
+          parsed.slots.forEach(slot => {
+            newNode.children.push({
+              name: slot.childName,
+              attrs: {},
+              children: [],
+              slot: slot.slotName
+            });
+          });
+          
+          stack.push(newNode);
         }
       }
     }
 
-    console.log("🔍 FULL AST:", JSON.stringify(root, null, 2));
-    console.log("✅ Parsed AST:", root);
     return root;
   }
 
@@ -200,7 +204,6 @@
       const value = attrs[attrName];
       const hasValue = attrName in attrs && value && value.trim() !== '';
       
-      console.log(`👁️ component-show="${attrName}" → ${hasValue ? 'KEEP' : 'REMOVE'}`);
       
       if (!hasValue) {
         el.remove();
@@ -242,7 +245,6 @@
   }
 
   function renderComponent(ast) {
-    console.log(`🎨 Rendering: ${ast.name}${ast.slot ? ` → slot: ${ast.slot}` : ''}`);
     
     const tpl = templates[ast.name];
     if (!tpl) {
@@ -258,7 +260,6 @@
     // Debug: Show all slots in this template
     const allSlots = clone.querySelectorAll('[component-slot]');
     if (allSlots.length > 0) {
-      console.log(`  🔍 Template "${ast.name}" has slots:`, 
         Array.from(allSlots).map(s => s.getAttribute('component-slot'))
       );
     }
@@ -268,7 +269,6 @@
 
     // Render children
     if (ast.children && ast.children.length > 0) {
-      console.log(`  📦 ${ast.name} has ${ast.children.length} children`);
       
       // Group children by slot
       const childrenBySlot = {};
@@ -289,7 +289,6 @@
       Object.keys(childrenBySlot).forEach((slotName) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         if (slotEl) {
-          console.log(`  📍 Found named slot: ${slotName}`);
           slotEl.innerHTML = '';
           
           childrenBySlot[slotName].forEach((childAst) => {
@@ -321,10 +320,8 @@
             console.warn(`  ⚠️ No slot or container found in ${ast.name}, using clone itself`);
             slotEl = clone;
           } else {
-            console.log(`  📍 Using layout element as default container`);
           }
         } else {
-          console.log(`  📍 Found default component-slot`);
         }
         
         // Clear existing content if it's a slot
@@ -365,7 +362,6 @@
     console.log(`🔍 Found ${richTextElements.length} .w-richtext elements`);
     
     richTextElements.forEach((richTextEl, idx) => {
-      console.log(`\n📄 Processing element ${idx + 1}`);
       
       let i = 0;
       while (i < richTextEl.children.length) {
@@ -427,10 +423,13 @@
         i++;
       }
     });
+    
+    console.log("✅ Done");
   }
 
   function init() {
-    console.log("Rich Component Script V19 - Slot Debug");
+    console.log("Rich Component Script V19 - Inline Slot Syntax");
+    console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
     loadTemplates();
     replaceInRichTextElements();
