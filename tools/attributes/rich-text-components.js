@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V17 - Named Slots with @");
+  console.log("Rich Component Script V1 - Named Slots with @");
   
   const templates = {};
 
