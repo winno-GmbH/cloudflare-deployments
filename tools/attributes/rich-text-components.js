@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG-V5 - Disabled Pipe Conversion");
+  console.log("Rich Component Script V19-DEBUG-V6 - Template Debug");
   
   const templates = {};
 
@@ -36,6 +36,7 @@
     innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
     
     const lines = innerText.split('\n').map(l => l.trim()).filter(l => l);
+    console.log(`  📋 Parsed ${lines.length} lines:`, lines.slice(0, 5));
 
     // Parse line: returns { componentName, slots: [{slotName, childName}], isSibling }
     const norm = (l) => {
@@ -72,6 +73,7 @@
     };
 
     const firstParsed = norm(lines[0] || "");
+    console.log(`  🏁 First line: "${lines[0]}" → parsed:`, firstParsed);
     if (!firstParsed.componentName) return null;
 
     // Root AST node
@@ -236,6 +238,9 @@
   }
 
   function renderComponent(ast) {
+    console.log(`  🎨 Rendering: "${ast.name}" (type: ${typeof ast.name})`);
+    console.log(`  🔑 Available templates:`, Object.keys(templates));
+    console.log(`  ❓ Template exists?:`, ast.name in templates);
     
     const tpl = templates[ast.name];
     if (!tpl) {
@@ -437,7 +442,7 @@
     console.log("Rich Component Script V19-DEBUG-V4 - Full Text Log");
     console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
-    console.log("Rich Component Script V19-DEBUG-V5 - Disabled Pipe Conversion");
+    console.log("Rich Component Script V19-DEBUG-V6 - Template Debug");
     replaceInRichTextElements();
   }
 
