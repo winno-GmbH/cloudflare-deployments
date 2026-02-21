@@ -1,6 +1,4 @@
 (function () {
-  console.log("Rich Component Script V17 - Named Slots with @");
-  
   const templates = {};
 
   function injectBaseStyles() {
@@ -429,13 +427,10 @@
         i++;
       }
     });
-    
-    console.log("✅ Done");
   }
 
   function init() {
-    console.log("Rich Component Script V18 - Slot Debug");
-    console.log("🚀 Initializing Rich Components");
+    console.log("Rich Component Script V19 - Slot Debug");
     injectBaseStyles();
     loadTemplates();
     replaceInRichTextElements();
