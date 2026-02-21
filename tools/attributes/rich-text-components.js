@@ -80,9 +80,29 @@
     // Stack to track nesting: [root, child1, child2, ...]
     const stack = [root];
     
+    // Flag to mark next component as sibling (for empty || lines)
+    let nextIsSibling = false;
+    
     for (let i = 1; i < lines.length; i++) {
       const parsed = norm(lines[i]);
       const line = parsed.text;
+      
+      // Check if empty but has sibling marker
+      if ((!line || line.trim() === '') && parsed.isSibling) {
+        nextIsSibling = true;
+        continue;
+      }
+      
+      // Skip other empty lines
+      if (!line || line.trim() === '') {
+        continue;
+      }
+      
+      // Apply the nextIsSibling flag
+      if (nextIsSibling) {
+        parsed.isSibling = true;
+        nextIsSibling = false;
+      }
       
       // Check if it's an attribute (contains :)
       const attrMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
@@ -95,12 +115,6 @@
       } else {
         // It's a nested component name
         const componentName = line;
-        
-        // Skip empty component names
-        if (!componentName || componentName.trim() === '') {
-          continue;
-        }
-        
         const current = stack[stack.length - 1];
         
         if (parsed.isSibling) {
