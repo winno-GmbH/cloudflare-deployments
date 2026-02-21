@@ -255,6 +255,14 @@
     clone.removeAttribute("component-template");
     clone.setAttribute("component-generated", "true");
     clone.classList.add("rtc-component");
+    
+    // Debug: Show all slots in this template
+    const allSlots = clone.querySelectorAll('[component-slot]');
+    if (allSlots.length > 0) {
+      console.log(`  🔍 Template "${ast.name}" has slots:`, 
+        Array.from(allSlots).map(s => s.getAttribute('component-slot'))
+      );
+    }
 
     // Fill fields with this component's attributes
     fillFields(clone, ast.attrs);
@@ -425,6 +433,7 @@
   }
 
   function init() {
+    console.log("Rich Component Script V18 - Slot Debug");
     console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
     loadTemplates();
