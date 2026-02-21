@@ -167,6 +167,8 @@
     }
 
     console.log("✅ Parsed AST:", root);
+    console.log("🔍 FULL AST:", JSON.stringify(root, null, 2));
+
     return root;
   }
 
