@@ -95,6 +95,12 @@
       } else {
         // It's a nested component name
         const componentName = line;
+        
+        // Skip empty component names
+        if (!componentName || componentName.trim() === '') {
+          continue;
+        }
+        
         const current = stack[stack.length - 1];
         
         if (parsed.isSibling) {
