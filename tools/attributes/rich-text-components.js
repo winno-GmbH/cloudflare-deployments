@@ -60,6 +60,16 @@
         };
       }
       
+      // Check for @slot WITHOUT leading pipes (from broken ||<br> lines)
+      const slotMatchNoPipe = l.match(/^@([a-zA-Z0-9_-]+)\s*<\s*(.+)$/);
+      if (slotMatchNoPipe) {
+        return { 
+          text: slotMatchNoPipe[2].trim(), 
+          isSibling: false, 
+          slot: slotMatchNoPipe[1].trim() 
+        };
+      }
+      
       if (l.startsWith("||")) {
         return { text: l.slice(2).trim(), isSibling: true, slot: null };
       }
