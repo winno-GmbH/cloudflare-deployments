@@ -97,6 +97,8 @@
       const parsed = norm(lines[i]);
       const line = parsed.text;
       
+      console.log(`📍 Line ${i}: "${lines[i]}" → parsed: "${line}", isSibling: ${parsed.isSibling}, slot: ${parsed.slot}`);
+      
       // Check if empty but has sibling marker
       if ((!line || line.trim() === '') && parsed.isSibling) {
         console.log(`🔵 Setting nextIsSibling flag!`);
