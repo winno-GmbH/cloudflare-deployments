@@ -439,10 +439,10 @@
   }
 
   function init() {
-    console.log("Rich Component Script V19-DEBUG-V4 - Full Text Log");
+    console.log("Rich Component Script V19-DEBUG-V6 - Template Debug");
     console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
-    console.log("Rich Component Script V19-DEBUG-V6 - Template Debug");
+    loadTemplates();
     replaceInRichTextElements();
   }
 
