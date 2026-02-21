@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG-V2 - No Pipe Before @");
+  console.log("Rich Component Script V19-DEBUG-V3 - Multi-Element Debug");
   
   const templates = {};
 
@@ -372,17 +372,21 @@
             componentText = html.substring(2, html.indexOf("}}"));
             foundEnd = true;
           } else {
+            console.log(`  🔄 Multi-element component, searching for }}...`);
             let j = i + 1;
             while (j < children.length) {
               const nextChild = children[j];
               let nextHTML = nextChild.innerHTML.trim();
               nextHTML = nextHTML.replace(/<br\s*\/?>/gi, '\n');
               
+              console.log(`    📦 Child ${j}: "${nextHTML.substring(0, 50)}" (has }}?: ${nextHTML.includes("}}")})`);
+              
               componentElements.push(nextChild);
               
               if (nextHTML.includes("}}")) {
                 componentText += "\n" + nextHTML.substring(0, nextHTML.indexOf("}}"));
                 foundEnd = true;
+                console.log(`    ✅ Found }} at child ${j}, stopping`);
                 j++;
                 break;
               }
@@ -390,6 +394,7 @@
               componentText += "\n" + nextHTML;
               j++;
             }
+            console.log(`  🏁 Multi-element extraction done, foundEnd: ${foundEnd}`);
           }
           
           if (foundEnd) {
@@ -432,7 +437,7 @@
   }
 
   function init() {
-    console.log("Rich Component Script V19-DEBUG - Inline Slot Syntax");
+    console.log("Rich Component Script V19-DEBUG-V3 - Multi-Element Debug");
     console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
     loadTemplates();
