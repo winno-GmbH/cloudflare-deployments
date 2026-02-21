@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V2");
+  console.log("Rich Component Script V17 - Named Slots with @");
   
   const templates = {};
 
@@ -99,6 +99,7 @@
       
       // Check if empty but has sibling marker
       if ((!line || line.trim() === '') && parsed.isSibling) {
+        console.log(`🔵 Setting nextIsSibling flag!`);
         nextIsSibling = true;
         continue;
       }
@@ -121,6 +122,7 @@
         
         // Apply the nextIsSibling flag for components
         if (nextIsSibling) {
+          console.log(`🟢 Applying nextIsSibling to: ${line}, was isSibling: ${parsed.isSibling}, slot: ${parsed.slot}`);
           parsed.isSibling = true;
           nextIsSibling = false;
         }
@@ -168,8 +170,6 @@
     }
 
     console.log("✅ Parsed AST:", root);
-    console.log("🔍 FULL AST:", JSON.stringify(root, null, 2));
-
     return root;
   }
 
