@@ -178,6 +178,7 @@
       }
     }
 
+    console.log("🔍 FULL AST:", JSON.stringify(root, null, 2));
     console.log("✅ Parsed AST:", root);
     return root;
   }
