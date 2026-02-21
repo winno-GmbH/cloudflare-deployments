@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19 - Inline Slot Syntax");
+  console.log("Rich Component Script V20 - Inline Slot Syntax");
   
   const templates = {};
 
