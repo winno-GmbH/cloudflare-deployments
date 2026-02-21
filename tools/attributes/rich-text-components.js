@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG-V4 - Full Text Log");
+  console.log("Rich Component Script V19-DEBUG-V5 - Disabled Pipe Conversion");
   
   const templates = {};
 
@@ -327,17 +327,14 @@
   }
 
   function convertPipeToNewline(text) {
-    return text.replace(/\|/g, "\n|");
+    // Only convert || at the start of a line to newline + |
+    // This preserves || as sibling marker while splitting combined lines
+    return text.replace(/^(\|\|)/gm, "\n|");
   }
 
   function needsPipeConversion(text) {
-    const lines = text.split("\n");
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("|") && (trimmed.match(/\|/g) || []).length > 1) {
-        return true;
-      }
-    }
+    // With inline slot syntax (@icon < icon), we don't need pipe conversion anymore
+    // because there are no pipes in the middle of lines that need splitting
     return false;
   }
 
@@ -440,7 +437,7 @@
     console.log("Rich Component Script V19-DEBUG-V4 - Full Text Log");
     console.log("🚀 Initializing Rich Components");
     injectBaseStyles();
-    loadTemplates();
+    console.log("Rich Component Script V19-DEBUG-V5 - Disabled Pipe Conversion");
     replaceInRichTextElements();
   }
 
