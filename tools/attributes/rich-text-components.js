@@ -49,14 +49,14 @@
 
     // Parse line: returns { text, isSibling, slot }
     const norm = (l) => {
-      // Check for @slot syntax: | @slot-name < component-name
-      const slotMatch = l.match(/^\|\|?\s*@([a-zA-Z0-9_-]+)\s*<\s*(.+)$/);
+      // Check for @slot syntax: || @slot-name < component-name OR | @slot-name < component-name
+      const slotMatch = l.match(/^(\|\|?)\s*@([a-zA-Z0-9_-]+)\s*<\s*(.+)$/);
       if (slotMatch) {
-        const isSibling = l.startsWith("||");
+        const isSibling = slotMatch[1] === "||";
         return { 
-          text: slotMatch[2].trim(), 
+          text: slotMatch[3].trim(), 
           isSibling: isSibling,
-          slot: slotMatch[1].trim()
+          slot: slotMatch[2].trim()
         };
       }
       
