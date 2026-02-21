@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V1 - Named Slots with @");
+  console.log("Rich Component Script V2");
   
   const templates = {};
 
@@ -108,12 +108,6 @@
         continue;
       }
       
-      // Apply the nextIsSibling flag
-      if (nextIsSibling) {
-        parsed.isSibling = true;
-        nextIsSibling = false;
-      }
-      
       // Check if it's an attribute (contains :)
       const attrMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
       
@@ -124,6 +118,13 @@
         console.log(`  ${'  '.repeat(stack.length - 1)}⚙️ ${attrMatch[1]}: ${attrMatch[2] ? attrMatch[2].trim().substring(0, 30) : "(empty)"}`);
       } else {
         // It's a nested component name
+        
+        // Apply the nextIsSibling flag for components
+        if (nextIsSibling) {
+          parsed.isSibling = true;
+          nextIsSibling = false;
+        }
+        
         const componentName = line;
         const current = stack[stack.length - 1];
         
@@ -167,8 +168,6 @@
     }
 
     console.log("✅ Parsed AST:", root);
-    console.log("🔍 FULL AST:", JSON.stringify(root, null, 2));
-
     return root;
   }
 
