@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG - Inline Slot Syntax");
+  console.log("Rich Component Script V19-DEBUG-FIX - HTML Entity Decode Fix");
   
   const templates = {};
 
@@ -32,19 +32,10 @@
   }
 
   function parseComponentDoc(innerText) {
-    
-    // Convert <br> to newlines first
+    // Replace <br> with newlines
     innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
     
-    // Decode HTML entities (&lt; -> <, &gt; -> >, etc.)
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = innerText;
-    innerText = textarea.value;
-    
-    const lines = innerText
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
+    const lines = innerText.split('\n').map(l => l.trim()).filter(l => l);
 
     // Parse line: returns { componentName, slots: [{slotName, childName}], isSibling }
     const norm = (l) => {
@@ -402,7 +393,13 @@
           }
           
           if (foundEnd) {
-            console.log(`  🎯 Component text:`, componentText.substring(0, 100));
+            console.log(`  🎯 Component text (raw):`, componentText.substring(0, 100));
+            
+            // Decode HTML entities FIRST (before pipe conversion)
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = componentText;
+            componentText = textarea.value;
+            console.log(`  🔓 Decoded HTML entities:`, componentText.substring(0, 100));
             
             if (needsPipeConversion(componentText)) {
               componentText = convertPipeToNewline(componentText);
