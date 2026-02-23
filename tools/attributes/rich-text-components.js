@@ -38,12 +38,17 @@
       const isClose = l.startsWith("|/");
       if (isClose) {
         const componentName = l.slice(2).trim();
-        return { componentName, slots: [], isClose: true };
+        return { componentName, slotName: null, isClose: true };
       }
       
       const withoutPipe = l.startsWith("|") ? l.slice(1).trim() : l.trim();
       
-      return { componentName: withoutPipe, slots: [], isClose: false };
+      const slotMatch = withoutPipe.match(/^([a-zA-Z0-9_-]+)\s+@([a-zA-Z0-9_-]+)$/);
+      if (slotMatch) {
+        return { componentName: slotMatch[1], slotName: slotMatch[2], isClose: false };
+      }
+      
+      return { componentName: withoutPipe, slotName: null, isClose: false };
     };
 
     const firstParsed = norm(lines[0] || "");
@@ -96,7 +101,7 @@
           name: componentName, 
           attrs: {}, 
           children: [], 
-          slot: null,
+          slot: parsed.slotName || null,
           slotTarget: currentSlotTarget
         };
         current.children.push(newNode);
@@ -123,7 +128,6 @@
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
       
-      // NEVER remove elements with component-slot - they are structural
       if (el.hasAttribute('component-slot')) {
         return;
       }
@@ -188,17 +192,6 @@
       const childrenBySlot = {};
       const defaultChildren = [];
       
-      // AUTO-SLOT DETECTION: If child name matches a slot name in template, auto-assign it
-      ast.children.forEach((child) => {
-        if (!child.slot && !child.slotTarget) {
-          // Check if a slot with this child's name exists in the template
-          const matchingSlot = clone.querySelector(`[component-slot="${child.name}"]`);
-          if (matchingSlot) {
-            child.slot = child.name;
-          }
-        }
-      });
-      
       ast.children.forEach((child) => {
         const targetSlot = child.slot || child.slotTarget;
         if (targetSlot) {
@@ -206,14 +199,11 @@
             childrenBySlot[targetSlot] = [];
           }
           childrenBySlot[targetSlot].push(child);
-          if (child.name === 'icon') {
-          }
         } else {
           defaultChildren.push(child);
         }
       });
       
-      // Sort slots by depth (deepest first) to handle nested slots correctly
       const slotEntries = Object.entries(childrenBySlot);
       slotEntries.sort((a, b) => {
         const [slotNameA] = a;
@@ -223,11 +213,9 @@
         
         if (!slotElA || !slotElB) return 0;
         
-        // Count parent elements to determine depth
         const depthA = getElementDepth(slotElA);
         const depthB = getElementDepth(slotElB);
         
-        // Deeper elements first (higher depth = more nested)
         return depthB - depthA;
       });
       
@@ -246,8 +234,6 @@
         if (slotName === 'icon') {
         }
         if (slotEl) {
-          // Don't clear innerHTML - just append children
-          // This preserves nested slots
           
           children.forEach((childAst) => {
             const childNode = renderComponent(childAst);
