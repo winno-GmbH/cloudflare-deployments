@@ -195,7 +195,6 @@
           const matchingSlot = clone.querySelector(`[component-slot="${child.name}"]`);
           if (matchingSlot) {
             child.slot = child.name;
-            console.log(`🎯 AUTO-SLOT: "${child.name}" auto-assigned to slot="${child.name}" in ${ast.name}`);
           }
         }
       });
@@ -208,7 +207,6 @@
           }
           childrenBySlot[targetSlot].push(child);
           if (child.name === 'icon') {
-            console.log(`🎯 ICON DEBUG: Found icon child with slot: "${targetSlot}" for parent: "${ast.name}"`);
           }
         } else {
           defaultChildren.push(child);
@@ -246,8 +244,6 @@
       slotEntries.forEach(([slotName, children]) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         if (slotName === 'icon') {
-          console.log(`🎯 ICON DEBUG: Looking for slot with component-slot="icon" in ${ast.name}`);
-          console.log(`🎯 ICON DEBUG: Slot element found:`, !!slotEl);
         }
         if (slotEl) {
           // Don't clear innerHTML - just append children
@@ -258,13 +254,11 @@
             if (childNode) {
               slotEl.appendChild(childNode);
               if (childAst.name === 'icon') {
-                console.log(`🎯 ICON DEBUG: Successfully rendered icon and appended to slot`);
               }
             }
           });
         } else {
           if (slotName === 'icon') {
-            console.log(`🎯 ICON DEBUG: ❌ Slot element NOT found for icon in ${ast.name}!`);
           }
         }
       });
