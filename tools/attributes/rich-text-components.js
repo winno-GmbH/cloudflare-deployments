@@ -1,5 +1,5 @@
 (function () {
-  console.log("Rich Component Script V19-DEBUG-V7 - Fixed componentName Bug");
+  console.log("Rich Component Script V20 - Slot Target Support");
   
   const templates = {};
 
@@ -95,6 +95,9 @@
     // Flag to mark next component as sibling (for empty || lines)
     let nextIsSibling = false;
     
+    // Current slot target context (for @slot-name markers)
+    let currentSlotTarget = null;
+    
     for (let i = 1; i < lines.length; i++) {
       const parsed = norm(lines[i]);
       const line = parsed.componentName;
@@ -115,6 +118,13 @@
       
       // Skip other empty lines
       if (!line || line.trim() === '') {
+        continue;
+      }
+      
+      // Check if it's a slot marker (@slot-name)
+      if (line.startsWith('@')) {
+        currentSlotTarget = line.substring(1).trim(); // Remove @ and trim
+        console.log(`    🎯 Slot target set: "${currentSlotTarget}"`);
         continue;
       }
       
@@ -143,7 +153,13 @@
           stack.pop();
           const parent = stack[stack.length - 1];
           
-          const newNode = { name: componentName, attrs: {}, children: [], slot: null };
+          const newNode = { 
+            name: componentName, 
+            attrs: {}, 
+            children: [], 
+            slot: null,
+            slotTarget: currentSlotTarget
+          };
           parent.children.push(newNode);
           
           // Add inline slot children
@@ -159,7 +175,13 @@
           stack.push(newNode);
         } else {
           // Add as child
-          const newNode = { name: componentName, attrs: {}, children: [], slot: null };
+          const newNode = { 
+            name: componentName, 
+            attrs: {}, 
+            children: [], 
+            slot: null,
+            slotTarget: currentSlotTarget
+          };
           current.children.push(newNode);
           
           // Add inline slot children
@@ -261,16 +283,17 @@
     // Render children
     if (ast.children && ast.children.length > 0) {
       
-      // Group children by slot
+      // Group children by slot or slotTarget
       const childrenBySlot = {};
       const defaultChildren = [];
       
       ast.children.forEach((child) => {
-        if (child.slot) {
-          if (!childrenBySlot[child.slot]) {
-            childrenBySlot[child.slot] = [];
+        const targetSlot = child.slot || child.slotTarget;
+        if (targetSlot) {
+          if (!childrenBySlot[targetSlot]) {
+            childrenBySlot[targetSlot] = [];
           }
-          childrenBySlot[child.slot].push(child);
+          childrenBySlot[targetSlot].push(child);
         } else {
           defaultChildren.push(child);
         }
