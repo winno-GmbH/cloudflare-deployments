@@ -241,16 +241,45 @@
         }
       });
       
-      Object.keys(childrenBySlot).forEach((slotName) => {
+      // Sort slots by depth (deepest first) to handle nested slots correctly
+      const slotEntries = Object.entries(childrenBySlot);
+      slotEntries.sort((a, b) => {
+        const [slotNameA] = a;
+        const [slotNameB] = b;
+        const slotElA = clone.querySelector(`[component-slot="${slotNameA}"]`);
+        const slotElB = clone.querySelector(`[component-slot="${slotNameB}"]`);
+        
+        if (!slotElA || !slotElB) return 0;
+        
+        // Count parent elements to determine depth
+        const depthA = getElementDepth(slotElA);
+        const depthB = getElementDepth(slotElB);
+        
+        // Deeper elements first (higher depth = more nested)
+        return depthB - depthA;
+      });
+      
+      function getElementDepth(el) {
+        let depth = 0;
+        let current = el.parentElement;
+        while (current && current !== clone) {
+          depth++;
+          current = current.parentElement;
+        }
+        return depth;
+      }
+      
+      slotEntries.forEach(([slotName, children]) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         if (slotName === 'icon') {
           console.log(`🎯 ICON DEBUG: Looking for slot with component-slot="icon" in ${ast.name}`);
           console.log(`🎯 ICON DEBUG: Slot element found:`, !!slotEl);
         }
         if (slotEl) {
-          slotEl.innerHTML = '';
+          // Don't clear innerHTML - just append children
+          // This preserves nested slots
           
-          childrenBySlot[slotName].forEach((childAst) => {
+          children.forEach((childAst) => {
             const childNode = renderComponent(childAst);
             if (childNode) {
               slotEl.appendChild(childNode);
