@@ -45,7 +45,12 @@
       
       const slotMatch = withoutPipe.match(/^([a-zA-Z0-9_-]+)\s+@([a-zA-Z0-9_-]+)$/);
       if (slotMatch) {
+        console.log(`✅ PARSE SLOT: "${withoutPipe}" → component="${slotMatch[1]}", slot="${slotMatch[2]}"`);
         return { componentName: slotMatch[1], slotName: slotMatch[2], isClose: false };
+      }
+      
+      if (withoutPipe.includes('icon')) {
+        console.log(`❌ NO SLOT MATCH: "${withoutPipe}" (expected format: "component @slot")`);
       }
       
       return { componentName: withoutPipe, slotName: null, isClose: false };
@@ -262,13 +267,7 @@
           
           if (!slotEl) {
             slotEl = clone;
-          } else {
           }
-        } else {
-        }
-        
-        if (slotEl.hasAttribute('component-slot')) {
-          slotEl.innerHTML = '';
         }
         
         defaultChildren.forEach((childAst) => {
