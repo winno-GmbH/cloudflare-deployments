@@ -129,6 +129,7 @@
       if (!attrName) return;
       
       if (el.hasAttribute('component-slot')) {
+        console.log(`🛡️ PROTECTED: component-slot="${el.getAttribute('component-slot')}" NOT removed (has component-show="${attrName}")`);
         return;
       }
       
@@ -137,7 +138,10 @@
       
       
       if (!hasValue) {
+        console.log(`❌ REMOVING: element with component-show="${attrName}" (no value in attrs)`);
         el.remove();
+      } else {
+        console.log(`✅ KEEPING: element with component-show="${attrName}" (has value: "${value}")`);
       }
     });
 
@@ -231,21 +235,18 @@
       
       slotEntries.forEach(([slotName, children]) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
-        if (slotName === 'icon') {
-        }
+        console.log(`🎯 SLOT RENDER: Looking for slot="${slotName}" in ${ast.name}, found: ${!!slotEl}`);
         if (slotEl) {
           
           children.forEach((childAst) => {
             const childNode = renderComponent(childAst);
             if (childNode) {
               slotEl.appendChild(childNode);
-              if (childAst.name === 'icon') {
-              }
+              console.log(`✅ APPENDED: ${childAst.name} to slot="${slotName}" in ${ast.name}`);
             }
           });
         } else {
-          if (slotName === 'icon') {
-          }
+          console.log(`❌ SLOT NOT FOUND: slot="${slotName}" missing in ${ast.name} template!`);
         }
       });
       
