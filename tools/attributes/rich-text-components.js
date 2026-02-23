@@ -43,29 +43,6 @@
       
       const withoutPipe = l.startsWith("|") ? l.slice(1).trim() : l.trim();
       
-      const inlinePattern = /^([a-zA-Z0-9_-]+)((?:\s+@[a-zA-Z0-9_-]+\s*<\s*[a-zA-Z0-9_-]+)*)$/;
-      const match = withoutPipe.match(inlinePattern);
-      
-      if (match) {
-        const componentName = match[1];
-        const slotsString = match[2];
-        
-        const slots = [];
-        if (slotsString) {
-          const slotPattern = /@([a-zA-Z0-9_-]+)\s*<\s*([a-zA-Z0-9_-]+)/g;
-          let slotMatch;
-          while ((slotMatch = slotPattern.exec(slotsString)) !== null) {
-            slots.push({
-              slotName: slotMatch[1],
-              childName: slotMatch[2]
-            });
-            console.log(`🎯 ICON DEBUG: Parsed inline slot - slotName: "${slotMatch[1]}", childName: "${slotMatch[2]}"`);
-          }
-        }
-        
-        return { componentName, slots, isClose: false };
-      }
-      
       return { componentName: withoutPipe, slots: [], isClose: false };
     };
 
@@ -73,15 +50,6 @@
     if (!firstParsed.componentName) return null;
 
     const root = { name: firstParsed.componentName, attrs: {}, children: [] };
-    
-    firstParsed.slots.forEach(slot => {
-      root.children.push({
-        name: slot.childName,
-        attrs: {},
-        children: [],
-        slot: slot.slotName
-      });
-    });
     
     const stack = [root];
     
@@ -132,17 +100,6 @@
           slotTarget: currentSlotTarget
         };
         current.children.push(newNode);
-        
-        parsed.slots.forEach(slot => {
-          const iconChild = {
-            name: slot.childName,
-            attrs: {},
-            children: [],
-            slot: slot.slotName
-          };
-          newNode.children.push(iconChild);
-          console.log(`🎯 ICON DEBUG: Added inline slot child - name: "${slot.childName}", slot: "${slot.slotName}" to parent: "${componentName}"`);
-        });
         
         stack.push(newNode);
       }
@@ -230,6 +187,18 @@
       
       const childrenBySlot = {};
       const defaultChildren = [];
+      
+      // AUTO-SLOT DETECTION: If child name matches a slot name in template, auto-assign it
+      ast.children.forEach((child) => {
+        if (!child.slot && !child.slotTarget) {
+          // Check if a slot with this child's name exists in the template
+          const matchingSlot = clone.querySelector(`[component-slot="${child.name}"]`);
+          if (matchingSlot) {
+            child.slot = child.name;
+            console.log(`🎯 AUTO-SLOT: "${child.name}" auto-assigned to slot="${child.name}" in ${ast.name}`);
+          }
+        }
+      });
       
       ast.children.forEach((child) => {
         const targetSlot = child.slot || child.slotTarget;
