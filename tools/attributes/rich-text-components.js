@@ -128,14 +128,25 @@
     return html;
   }
 
-  function fillFields(node, attrs) {
+  function fillFields(node, attrs, children) {
+    const usedSlots = new Set();
+    children.forEach(child => {
+      if (child.slot) usedSlots.add(child.slot);
+      if (child.slotTarget) usedSlots.add(child.slotTarget);
+    });
+    
     node.querySelectorAll("[component-show]").forEach((el) => {
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
       
       if (el.hasAttribute('component-slot')) {
-        console.log(`🛡️ PROTECTED: component-slot="${el.getAttribute('component-slot')}" NOT removed (has component-show="${attrName}")`);
-        return;
+        const slotName = el.getAttribute('component-slot');
+        if (usedSlots.has(slotName)) {
+          console.log(`🛡️ PROTECTED: component-slot="${slotName}" NOT removed (slot is used)`);
+          return;
+        } else {
+          console.log(`🗑️ REMOVING UNUSED SLOT: component-slot="${slotName}" (not used in children)`);
+        }
       }
       
       const value = attrs[attrName];
@@ -194,7 +205,7 @@
     clone.setAttribute("component-generated", "true");
     clone.classList.add("rtc-component");
 
-    fillFields(clone, ast.attrs);
+    fillFields(clone, ast.attrs, ast.children || []);
 
     if (ast.children && ast.children.length > 0) {
       
