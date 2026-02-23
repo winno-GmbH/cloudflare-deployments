@@ -166,6 +166,11 @@
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
       
+      // NEVER remove elements with component-slot - they are structural
+      if (el.hasAttribute('component-slot')) {
+        return;
+      }
+      
       const value = attrs[attrName];
       const hasValue = attrName in attrs && value && value.trim() !== '';
       
