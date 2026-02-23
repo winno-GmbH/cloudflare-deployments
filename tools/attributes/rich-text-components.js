@@ -139,25 +139,25 @@
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
       
+      const hasAttr = attrName in attrs && attrs[attrName] && attrs[attrName].trim() !== '';
+      
       if (el.hasAttribute('component-slot')) {
         const slotName = el.getAttribute('component-slot');
-        if (usedSlots.has(slotName)) {
-          console.log(`🛡️ PROTECTED: component-slot="${slotName}" NOT removed (slot is used)`);
+        const slotUsed = usedSlots.has(slotName);
+        
+        if (hasAttr || slotUsed) {
+          console.log(`🛡️ PROTECTED: component-slot="${slotName}" (hasAttr: ${hasAttr}, slotUsed: ${slotUsed})`);
           return;
         } else {
-          console.log(`🗑️ REMOVING UNUSED SLOT: component-slot="${slotName}" (not used in children)`);
+          console.log(`🗑️ REMOVING SLOT: component-slot="${slotName}" (no attr AND no slot usage)`);
         }
       }
       
-      const value = attrs[attrName];
-      const hasValue = attrName in attrs && value && value.trim() !== '';
-      
-      
-      if (!hasValue) {
+      if (!hasAttr) {
         console.log(`❌ REMOVING: element with component-show="${attrName}" (no value in attrs)`);
         el.remove();
       } else {
-        console.log(`✅ KEEPING: element with component-show="${attrName}" (has value: "${value}")`);
+        console.log(`✅ KEEPING: element with component-show="${attrName}" (has value: "${attrs[attrName]}")`);
       }
     });
 
