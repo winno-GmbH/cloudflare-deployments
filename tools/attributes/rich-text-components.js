@@ -59,6 +59,7 @@
               slotName: slotMatch[1],
               childName: slotMatch[2]
             });
+            console.log(`🎯 ICON DEBUG: Parsed inline slot - slotName: "${slotMatch[1]}", childName: "${slotMatch[2]}"`);
           }
         }
         
@@ -133,12 +134,14 @@
         current.children.push(newNode);
         
         parsed.slots.forEach(slot => {
-          newNode.children.push({
+          const iconChild = {
             name: slot.childName,
             attrs: {},
             children: [],
             slot: slot.slotName
-          });
+          };
+          newNode.children.push(iconChild);
+          console.log(`🎯 ICON DEBUG: Added inline slot child - name: "${slot.childName}", slot: "${slot.slotName}" to parent: "${componentName}"`);
         });
         
         stack.push(newNode);
@@ -230,6 +233,9 @@
             childrenBySlot[targetSlot] = [];
           }
           childrenBySlot[targetSlot].push(child);
+          if (child.name === 'icon') {
+            console.log(`🎯 ICON DEBUG: Found icon child with slot: "${targetSlot}" for parent: "${ast.name}"`);
+          }
         } else {
           defaultChildren.push(child);
         }
@@ -237,6 +243,10 @@
       
       Object.keys(childrenBySlot).forEach((slotName) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
+        if (slotName === 'icon') {
+          console.log(`🎯 ICON DEBUG: Looking for slot with component-slot="icon" in ${ast.name}`);
+          console.log(`🎯 ICON DEBUG: Slot element found:`, !!slotEl);
+        }
         if (slotEl) {
           slotEl.innerHTML = '';
           
@@ -244,9 +254,15 @@
             const childNode = renderComponent(childAst);
             if (childNode) {
               slotEl.appendChild(childNode);
+              if (childAst.name === 'icon') {
+                console.log(`🎯 ICON DEBUG: Successfully rendered icon and appended to slot`);
+              }
             }
           });
         } else {
+          if (slotName === 'icon') {
+            console.log(`🎯 ICON DEBUG: ❌ Slot element NOT found for icon in ${ast.name}!`);
+          }
         }
       });
       
