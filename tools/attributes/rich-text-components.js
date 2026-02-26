@@ -93,6 +93,21 @@
         continue;
       }
       
+      const headingMatch = line.match(/^(H[1-6])-(XXL|XL|L|M|S|XS|XXS)\s*->\s*heading\s*:\s*([\s\S]*)$/i);
+      
+      if (headingMatch) {
+        const current = stack[stack.length - 1];
+        const tag = headingMatch[1].toLowerCase();
+        const size = headingMatch[2].toLowerCase();
+        const text = headingMatch[3] ? headingMatch[3].trim() : "";
+        
+        current.attrs['heading'] = text;
+        current.attrs['heading-tag'] = tag;
+        current.attrs['heading-size'] = size;
+        console.log(`📏 HEADING PARSED: tag=${tag}, size=${size}, text="${text}"`);
+        continue;
+      }
+      
       const attrMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
       
       if (attrMatch) {
@@ -173,6 +188,28 @@
         if (altKey in attrs) el.alt = attrs[altKey];
         else if (!el.hasAttribute("alt")) el.alt = "";
         el.loading = "lazy";
+        return;
+      }
+      
+      if (attrName === "heading" && ("heading-tag" in attrs || "heading-size" in attrs)) {
+        const tag = attrs["heading-tag"] || el.tagName.toLowerCase();
+        const size = attrs["heading-size"];
+        
+        const newEl = document.createElement(tag);
+        newEl.innerHTML = val;
+        
+        Array.from(el.attributes).forEach(attr => {
+          if (attr.name !== 'component-field') {
+            newEl.setAttribute(attr.name, attr.value);
+          }
+        });
+        
+        if (size) {
+          newEl.classList.add(`h--${size}`);
+        }
+        
+        el.replaceWith(newEl);
+        console.log(`📏 HEADING APPLIED: <${tag} class="h--${size}">${val}</${tag}>`);
         return;
       }
 
