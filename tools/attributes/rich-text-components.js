@@ -30,12 +30,8 @@
   }
 
   function parseComponentDoc(innerText) {
-    console.log('🔍 PARSE START:', innerText.substring(0, 50));
-    
     innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
-    
     const lines = innerText.split('\n').map(l => l.trim()).filter(l => l);
-    console.log('📝 Lines:', lines);
   
     const norm = (l) => {
       const isClose = l.startsWith("|/");
@@ -45,10 +41,8 @@
       }
       
       const withoutPipe = l.startsWith("|") ? l.slice(1).trim() : l.trim();
-      
       const slotMatch = withoutPipe.match(/^([a-zA-Z0-9_-]+)\s+@([a-zA-Z0-9_-]+)$/);
       if (slotMatch) {
-        console.log(`✅ PARSE SLOT: "${withoutPipe}" → component="${slotMatch[1]}", slot="${slotMatch[2]}"`);
         return { componentName: slotMatch[1], slotName: slotMatch[2], isClose: false };
       }
       
@@ -58,31 +52,27 @@
     const firstParsed = norm(lines[0] || "");
     if (!firstParsed.componentName) return null;
   
-    const root = { name: firstParsed.componentName, attrs: {}, children: [], attrOrder: [] };
+    const root = { 
+      name: firstParsed.componentName, 
+      attrs: {}, 
+      children: [], 
+      ordered: [] // ALLE Items in Reihenfolge
+    };
     
     const stack = [root];
-    
+    let globalOrder = 0;
     let currentSlotTarget = null;
-    let orderIndex = 0; // Global order counter
-    
-    console.log('🌳 Building AST for:', firstParsed.componentName);
     
     for (let i = 1; i < lines.length; i++) {
       const parsed = norm(lines[i]);
       const line = parsed.componentName;
       
-      if (!line || line.trim() === '') {
-        continue;
-      }
+      if (!line || line.trim() === '') continue;
       
       if (parsed.isClose) {
-        let found = false;
         while (stack.length > 1) {
           const popped = stack.pop();
-          if (popped.name === line) {
-            found = true;
-            break;
-          }
+          if (popped.name === line) break;
         }
         continue;
       }
@@ -103,9 +93,14 @@
         current.attrs['heading'] = text;
         current.attrs['heading-tag'] = tag;
         current.attrs['heading-size'] = size;
-        current.attrOrder.push({ name: 'heading', order: orderIndex++ });
         
-        console.log(`📏 HEADING: order=${orderIndex-1}, text="${text}"`);
+        // Track in ordered array
+        current.ordered.push({ 
+          type: 'attr', 
+          name: 'heading', 
+          value: text, 
+          order: globalOrder++ 
+        });
         continue;
       }
       
@@ -117,9 +112,14 @@
         const attrValue = attrMatch[2] ? attrMatch[2].trim() : "";
         
         current.attrs[attrName] = attrValue;
-        current.attrOrder.push({ name: attrName, order: orderIndex++ });
         
-        console.log(`📋 ATTR: ${attrName}="${attrValue}" (order=${orderIndex-1})`);
+        // Track in ordered array
+        current.ordered.push({ 
+          type: 'attr', 
+          name: attrName, 
+          value: attrValue, 
+          order: globalOrder++ 
+        });
         
       } else {
         const componentName = line;
@@ -129,20 +129,24 @@
           name: componentName, 
           attrs: {}, 
           children: [], 
-          attrOrder: [],
+          ordered: [],
           slot: parsed.slotName || null,
           slotTarget: currentSlotTarget,
-          order: orderIndex++  // Assign order to component
+          order: globalOrder++
         };
         current.children.push(newNode);
         
-        console.log(`🧩 COMPONENT: ${componentName} (order=${orderIndex-1})`);
+        // Track in ordered array
+        current.ordered.push({ 
+          type: 'component', 
+          node: newNode, 
+          order: newNode.order 
+        });
         
         stack.push(newNode);
       }
     }
   
-    console.log('✅ AST Built:', root);
     return root;
   }
 
@@ -316,43 +320,34 @@
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         
         if (slotEl) {
-          const templateElements = Array.from(slotEl.querySelectorAll('[component-show]'));
+          // Sammle Template-Elemente
+          const templateMap = new Map();
+          slotEl.querySelectorAll('[component-show]').forEach(el => {
+            const attr = el.getAttribute('component-show');
+            templateMap.set(attr, el.cloneNode(true));
+          });
           
-          const showElements = templateElements
-            .map(el => {
-              const attr = el.getAttribute('component-show');
-              const hasValue = attr in ast.attrs && ast.attrs[attr] && ast.attrs[attr].trim() !== '';
-              const orderInfo = ast.attrOrder.find(item => item.name === attr);
-              const order = orderInfo ? orderInfo.order : 9999;
-              
-              return {
-                el: el.cloneNode(true),
-                attr: attr,
-                order: order,
-                hasValue: hasValue
-              };
-            })
-            .filter(item => item.hasValue);
-          
+          // Leere Slot
           slotEl.innerHTML = '';
           
-          const allItems = [
-            ...children.map(child => ({ type: 'component', child, order: child.order || 9999 })),
-            ...showElements.map(item => ({ type: 'template', ...item }))
-          ];
-          
-          allItems.sort((a, b) => (a.order || 9999) - (b.order || 9999));
-          
-          allItems.forEach((item) => {
-            if (item.type === 'component') {
-              const childNode = renderComponent(item.child);
-              if (childNode) {
-                slotEl.appendChild(childNode);
+          // Verwende ordered array für korrekte Reihenfolge!
+          if (ast.ordered && ast.ordered.length > 0) {
+            ast.ordered.forEach((item) => {
+              if (item.type === 'attr') {
+                // Ist das Attribut gesetzt UND gibt es ein Template dafür?
+                if (item.value && item.value.trim() !== '' && templateMap.has(item.name)) {
+                  const templateEl = templateMap.get(item.name);
+                  slotEl.appendChild(templateEl);
+                }
+              } else if (item.type === 'component') {
+                // Rendere Component
+                const childNode = renderComponent(item.node);
+                if (childNode) {
+                  slotEl.appendChild(childNode);
+                }
               }
-            } else if (item.type === 'template') {
-              slotEl.appendChild(item.el);
-            }
-          });
+            });
+          }
         }
       });
       
