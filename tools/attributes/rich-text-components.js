@@ -321,27 +321,30 @@
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         
         if (slotEl) {
-          // Sammle ALLE Template-Elemente im Slot
+          // Sammle Template-Elemente
           const templateMap = new Map();
           slotEl.querySelectorAll('[component-show]').forEach(el => {
             const attr = el.getAttribute('component-show');
             templateMap.set(attr, el.cloneNode(true));
-            el.remove(); // Entferne Original
+            el.remove();
           });
           
-          // WICHTIG: Nutze ordered array statt nur children!
+          // Verwende ast.ordered für ALLE Items (Components + Attributes)
           if (ast.ordered && ast.ordered.length > 0) {
             ast.ordered.forEach((item) => {
               if (item.type === 'attr') {
-                // Prüfe ob Attribut gesetzt ist UND Template existiert
                 if (item.value && item.value.trim() !== '' && templateMap.has(item.name)) {
                   const templateEl = templateMap.get(item.name);
                   slotEl.appendChild(templateEl);
                 }
               } else if (item.type === 'component') {
-                // Rendere nur wenn dieses Child zum aktuellen Slot gehört
+                // Rendere Component wenn es zu diesem Slot gehört ODER kein Slot hat
                 const targetSlot = item.node.slot || item.node.slotTarget;
-                if (targetSlot === slotName) {
+                
+                // WICHTIG: Wenn kein targetSlot, dann gehört es zum ersten/primären Slot!
+                const belongsToThisSlot = targetSlot === slotName || !targetSlot;
+                
+                if (belongsToThisSlot) {
                   const childNode = renderComponent(item.node);
                   if (childNode) {
                     slotEl.appendChild(childNode);
@@ -349,41 +352,11 @@
                 }
               }
             });
-          } else {
-            // Fallback: Alte Logik
-            children.forEach((childAst) => {
-              const childNode = renderComponent(childAst);
-              if (childNode) {
-                slotEl.appendChild(childNode);
-              }
-            });
           }
         }
       });
       
-      // Default children
-      if (defaultChildren.length > 0) {
-        let slotEl = clone.querySelector('[component-slot="items"]');
-        
-        if (!slotEl) {
-          slotEl = clone.querySelector('[component-slot]');
-        }
-        
-        if (!slotEl) {
-          slotEl = clone.querySelector('[class*="lyt--"]');
-          
-          if (!slotEl) {
-            slotEl = clone;
-          }
-        }
-        
-        defaultChildren.forEach((childAst) => {
-          const childNode = renderComponent(childAst);
-          if (childNode) {
-            slotEl.appendChild(childNode);
-          }
-        });
-      }
+
     }
   
     // JETZT fillFields() aufrufen - NACH dem Slot-Füllen!
