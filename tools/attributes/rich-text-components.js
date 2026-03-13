@@ -291,72 +291,49 @@
         }
       });
       
-      const slotEntries = Object.entries(childrenBySlot);
-      slotEntries.sort((a, b) => {
-        const [slotNameA] = a;
-        const [slotNameB] = b;
-        const slotElA = clone.querySelector(`[component-slot="${slotNameA}"]`);
-        const slotElB = clone.querySelector(`[component-slot="${slotNameB}"]`);
-        
-        if (!slotElA || !slotElB) return 0;
-        
-        const depthA = getElementDepth(slotElA);
-        const depthB = getElementDepth(slotElB);
-        
-        return depthB - depthA;
-      });
+      // Finde ALLE Slots im Template, nicht nur die mit Children!
+      const allSlots = clone.querySelectorAll('[component-slot]');
+      const processedSlots = new Set();
       
-      function getElementDepth(el) {
-        let depth = 0;
-        let current = el.parentElement;
-        while (current && current !== clone) {
-          depth++;
-          current = current.parentElement;
-        }
-        return depth;
-      }
-      
-      // NEUE LOGIK: Finde den primären Slot und verwende ordered array
-      slotEntries.forEach(([slotName, children]) => {
-        const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
+      allSlots.forEach((slotEl) => {
+        const slotName = slotEl.getAttribute('component-slot');
+        if (processedSlots.has(slotName)) return;
+        processedSlots.add(slotName);
         
-        if (slotEl) {
-          // Sammle Template-Elemente
-          const templateMap = new Map();
-          slotEl.querySelectorAll('[component-show]').forEach(el => {
-            const attr = el.getAttribute('component-show');
-            templateMap.set(attr, el.cloneNode(true));
-            el.remove();
-          });
-          
-          // Verwende ast.ordered für ALLE Items (Components + Attributes)
-          if (ast.ordered && ast.ordered.length > 0) {
-            ast.ordered.forEach((item) => {
-              if (item.type === 'attr') {
-                if (item.value && item.value.trim() !== '' && templateMap.has(item.name)) {
-                  const templateEl = templateMap.get(item.name);
-                  slotEl.appendChild(templateEl);
-                }
-              } else if (item.type === 'component') {
-                // Rendere Component wenn es zu diesem Slot gehört ODER kein Slot hat
-                const targetSlot = item.node.slot || item.node.slotTarget;
-                
-                // WICHTIG: Wenn kein targetSlot, dann gehört es zum ersten/primären Slot!
-                const belongsToThisSlot = targetSlot === slotName || !targetSlot;
-                
-                if (belongsToThisSlot) {
-                  const childNode = renderComponent(item.node);
-                  if (childNode) {
-                    slotEl.appendChild(childNode);
-                  }
+        console.log(`Processing slot: ${slotName}`);
+        
+        // Sammle Template-Elemente
+        const templateMap = new Map();
+        slotEl.querySelectorAll('[component-show]').forEach(el => {
+          const attr = el.getAttribute('component-show');
+          templateMap.set(attr, el.cloneNode(true));
+          el.remove();
+        });
+        
+        // Verwende ast.ordered
+        if (ast.ordered && ast.ordered.length > 0) {
+          ast.ordered.forEach((item) => {
+            if (item.type === 'attr') {
+              if (item.value && item.value.trim() !== '' && templateMap.has(item.name)) {
+                const templateEl = templateMap.get(item.name);
+                slotEl.appendChild(templateEl);
+                console.log(`Added template: ${item.name}`);
+              }
+            } else if (item.type === 'component') {
+              const targetSlot = item.node.slot || item.node.slotTarget;
+              const belongsToThisSlot = targetSlot === slotName || (!targetSlot && slotName === 'content');
+              
+              if (belongsToThisSlot) {
+                const childNode = renderComponent(item.node);
+                if (childNode) {
+                  slotEl.appendChild(childNode);
+                  console.log(`Added component: ${item.node.name}`);
                 }
               }
-            });
-          }
+            }
+          });
         }
       });
-      
-
     }
   
     // JETZT fillFields() aufrufen - NACH dem Slot-Füllen!
