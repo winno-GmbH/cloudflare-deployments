@@ -291,16 +291,25 @@
         }
       });
       
-      // Finde ALLE Slots im Template, nicht nur die mit Children!
-      const allSlots = clone.querySelectorAll('[component-slot]');
+      // Finde nur DIREKTE Slots (nicht in verschachtelten generierten Komponenten)
+      const allSlots = Array.from(clone.querySelectorAll('[component-slot]')).filter(slotEl => {
+        // Prüfe ob Slot in einer verschachtelten generierten Komponente ist
+        let parent = slotEl.parentElement;
+        while (parent && parent !== clone) {
+          if (parent.hasAttribute('component-generated') && parent !== clone) {
+            return false; // Slot ist in verschachtelter Komponente, überspringe
+          }
+          parent = parent.parentElement;
+        }
+        return true; // Slot ist direkt in diesem Template
+      });
+      
       const processedSlots = new Set();
       
       allSlots.forEach((slotEl) => {
         const slotName = slotEl.getAttribute('component-slot');
         if (processedSlots.has(slotName)) return;
         processedSlots.add(slotName);
-        
-        console.log(`Processing slot: ${slotName}`);
         
         // Sammle Template-Elemente
         const templateMap = new Map();
@@ -317,17 +326,17 @@
               if (item.value && item.value.trim() !== '' && templateMap.has(item.name)) {
                 const templateEl = templateMap.get(item.name);
                 slotEl.appendChild(templateEl);
-                console.log(`Added template: ${item.name}`);
               }
             } else if (item.type === 'component') {
               const targetSlot = item.node.slot || item.node.slotTarget;
-              const belongsToThisSlot = targetSlot === slotName || (!targetSlot && slotName === 'content');
+              
+              // Wenn Component kein explizites Slot hat, dann in den ERSTEN Slot
+              const belongsToThisSlot = targetSlot === slotName || (!targetSlot && allSlots[0] === slotEl);
               
               if (belongsToThisSlot) {
                 const childNode = renderComponent(item.node);
                 if (childNode) {
                   slotEl.appendChild(childNode);
-                  console.log(`Added component: ${item.node.name}`);
                 }
               }
             }
