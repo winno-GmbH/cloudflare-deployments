@@ -163,7 +163,22 @@
       if (child.slotTarget) usedSlots.add(child.slotTarget);
     });
     
+    // Funktion: Ist Element innerhalb einer generierten Komponente?
+    function isInGeneratedComponent(el, root) {
+      let current = el.parentElement;
+      while (current && current !== root) {
+        if (current.hasAttribute('component-generated') && current !== root) {
+          return true; // Element ist in einer verschachtelten generierten Komponente
+        }
+        current = current.parentElement;
+      }
+      return false;
+    }
+    
     node.querySelectorAll("[component-show]").forEach((el) => {
+      // Überspringe wenn in verschachtelter generierter Komponente
+      if (isInGeneratedComponent(el, node)) return;
+      
       const attrName = el.getAttribute("component-show").trim();
       if (!attrName) return;
       
@@ -174,27 +189,24 @@
         const slotUsed = usedSlots.has(slotName);
         
         if (hasAttr || slotUsed) {
-          console.log(`🛡️ PROTECTED: component-slot="${slotName}" (hasAttr: ${hasAttr}, slotUsed: ${slotUsed})`);
           return;
-        } else {
-          console.log(`🗑️ REMOVING SLOT: component-slot="${slotName}" (no attr AND no slot usage)`);
         }
       }
       
       if (!hasAttr) {
-        console.log(`❌ REMOVING: element with component-show="${attrName}" (no value in attrs)`);
         el.remove();
-      } else {
-        console.log(`✅ KEEPING: element with component-show="${attrName}" (has value: "${attrs[attrName]}")`);
       }
     });
-
+  
     node.querySelectorAll("[component-field]").forEach((el) => {
+      // Überspringe wenn in verschachtelter generierter Komponente
+      if (isInGeneratedComponent(el, node)) return;
+      
       const attrName = el.getAttribute("component-field").trim();
       if (!attrName) return;
       
       const val = attrName in attrs ? attrs[attrName] : "";
-
+  
       if (el.tagName === "IMG") {
         if (val) el.src = val;
         const altKey = `${attrName}-alt`;
@@ -222,14 +234,16 @@
         }
         
         el.replaceWith(newEl);
-        console.log(`📏 HEADING APPLIED: <${tag} class="h--${size}">${val}</${tag}>`);
         return;
       }
-
+  
       el.innerHTML = val;
     });
-
+  
     node.querySelectorAll("[component-url]").forEach((el) => {
+      // Überspringe wenn in verschachtelter generierter Komponente
+      if (isInGeneratedComponent(el, node)) return;
+      
       const attrName = el.getAttribute("component-url").trim();
       if (!attrName) return;
       if (!(attrName in attrs)) return;
