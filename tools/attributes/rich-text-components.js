@@ -316,41 +316,52 @@
         return depth;
       }
       
+      // NEUE LOGIK: Finde den primären Slot und verwende ordered array
       slotEntries.forEach(([slotName, children]) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         
         if (slotEl) {
-          // Sammle Template-Elemente
+          // Sammle ALLE Template-Elemente im Slot
           const templateMap = new Map();
           slotEl.querySelectorAll('[component-show]').forEach(el => {
             const attr = el.getAttribute('component-show');
             templateMap.set(attr, el.cloneNode(true));
+            el.remove(); // Entferne Original
           });
           
-          // Leere Slot
-          slotEl.innerHTML = '';
-          
-          // Verwende ordered array für korrekte Reihenfolge!
+          // WICHTIG: Nutze ordered array statt nur children!
           if (ast.ordered && ast.ordered.length > 0) {
             ast.ordered.forEach((item) => {
               if (item.type === 'attr') {
-                // Ist das Attribut gesetzt UND gibt es ein Template dafür?
+                // Prüfe ob Attribut gesetzt ist UND Template existiert
                 if (item.value && item.value.trim() !== '' && templateMap.has(item.name)) {
                   const templateEl = templateMap.get(item.name);
                   slotEl.appendChild(templateEl);
                 }
               } else if (item.type === 'component') {
-                // Rendere Component
-                const childNode = renderComponent(item.node);
-                if (childNode) {
-                  slotEl.appendChild(childNode);
+                // Rendere nur wenn dieses Child zum aktuellen Slot gehört
+                const targetSlot = item.node.slot || item.node.slotTarget;
+                if (targetSlot === slotName) {
+                  const childNode = renderComponent(item.node);
+                  if (childNode) {
+                    slotEl.appendChild(childNode);
+                  }
                 }
+              }
+            });
+          } else {
+            // Fallback: Alte Logik
+            children.forEach((childAst) => {
+              const childNode = renderComponent(childAst);
+              if (childNode) {
+                slotEl.appendChild(childNode);
               }
             });
           }
         }
       });
       
+      // Default children
       if (defaultChildren.length > 0) {
         let slotEl = clone.querySelector('[component-slot="items"]');
         
