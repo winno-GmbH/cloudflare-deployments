@@ -113,35 +113,34 @@
       
       const attrMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
       
-      if (attrMatch) {
-        const current = stack[stack.length - 1];
-        const attrName = attrMatch[1];
-        const attrValue = attrMatch[2] ? attrMatch[2].trim() : "";
-        
-        current.attrs[attrName] = attrValue;
-        
-        // NEU: Track Reihenfolge
-        current.ordered.push({ type: 'attr', name: attrName, value: attrValue });
-        
-      } else {
-        const componentName = line;
-        const current = stack[stack.length - 1];
-        
-        const newNode = { 
-          name: componentName, 
-          attrs: {}, 
-          children: [], 
-          ordered: [], // NEU
-          slot: parsed.slotName || null,
-          slotTarget: currentSlotTarget
-        };
-        current.children.push(newNode);
-        
-        // NEU: Track Reihenfolge
-        current.ordered.push({ type: 'component', node: newNode });
-        
-        stack.push(newNode);
-      }
+      // Füge beim Parsen einen Order-Index hinzu:
+if (attrMatch) {
+  const current = stack[stack.length - 1];
+  const attrName = attrMatch[1];
+  const attrValue = attrMatch[2] ? attrMatch[2].trim() : "";
+  
+  current.attrs[attrName] = attrValue;
+  
+  // NEU: Track Order
+  if (!current.attrOrder) current.attrOrder = [];
+  current.attrOrder.push(attrName);
+  
+} else {
+  const componentName = line;
+  const current = stack[stack.length - 1];
+  
+  const newNode = { 
+    name: componentName, 
+    attrs: {}, 
+    children: [], 
+    slot: parsed.slotName || null,
+    slotTarget: currentSlotTarget,
+    order: current.children.length  // NEU: Index hinzufügen
+  };
+  current.children.push(newNode);
+  
+  stack.push(newNode);
+}
     }
   
     return root;
@@ -266,39 +265,43 @@
         console.log(`🎯 SLOT RENDER: Looking for slot="${slotName}" in ${ast.name}, found: ${!!slotEl}`);
         if (slotEl) {
           
-          // NEU: Verwende ordered array für korrekte Reihenfolge
-          if (ast.ordered && ast.ordered.length > 0) {
-            // Leere den Slot komplett
-            slotEl.innerHTML = '';
-            
-            // Durchlaufe ordered array
-            ast.ordered.forEach((item) => {
-              if (item.type === 'attr') {
-                // Finde das Template-Element mit component-show für dieses Attribut
-                const templateEl = clone.querySelector(`[component-show="${item.name}"]`);
-                if (templateEl && item.value && item.value.trim() !== '') {
-                  slotEl.appendChild(templateEl.cloneNode(true));
-                  console.log(`✅ ADDED (attr): component-show="${item.name}"`);
-                }
-              } else if (item.type === 'component') {
-                // Rendere die Komponente
-                const childNode = renderComponent(item.node);
-                if (childNode) {
-                  slotEl.appendChild(childNode);
-                  console.log(`✅ ADDED (component): ${item.node.name}`);
-                }
-              }
-            });
-            
-          } else {
-            // FALLBACK: Alte Logik
-            children.forEach((childAst) => {
-              const childNode = renderComponent(childAst);
+          // Sammle Template-Elemente mit component-show
+          const showElements = Array.from(slotEl.querySelectorAll('[component-show]'))
+            .map(el => ({
+              el: el.cloneNode(true),
+              attr: el.getAttribute('component-show'),
+              order: ast.attrOrder ? ast.attrOrder.indexOf(el.getAttribute('component-show')) : -1
+            }))
+            .filter(item => item.attr in ast.attrs && ast.attrs[item.attr]);
+          
+          // Leere Slot
+          slotEl.innerHTML = '';
+          
+          // Kombiniere Components und Template-Elemente
+          const allItems = [
+            ...children.map(child => ({ type: 'component', child, order: child.order || 0 })),
+            ...showElements.map(item => ({ type: 'template', ...item }))
+          ];
+          
+          // Sortiere nach Order
+          allItems.sort((a, b) => (a.order || 0) - (b.order || 0));
+          
+          // Füge in korrekter Reihenfolge ein
+          allItems.forEach(item => {
+            if (item.type === 'component') {
+              const childNode = renderComponent(item.child);
               if (childNode) {
                 slotEl.appendChild(childNode);
+                console.log(`✅ ADDED: ${item.child.name}`);
               }
-            });
-          }
+            } else if (item.type === 'template') {
+              slotEl.appendChild(item.el);
+              console.log(`✅ ADDED: component-show="${item.attr}"`);
+            }
+          });
+          
+        } else {
+          console.log(`❌ SLOT NOT FOUND: slot="${slotName}"`);
         }
       });
     }
