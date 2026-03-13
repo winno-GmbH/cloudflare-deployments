@@ -258,8 +258,49 @@
     fillFields(clone, ast.attrs, ast.children || []);
 
     if (ast.children && ast.children.length > 0) {
-      // ... existing code for childrenBySlot ...
+      console.log(`👶 Processing ${ast.children.length} children for ${ast.name}`);
       
+      const childrenBySlot = {};
+      const defaultChildren = [];
+      
+      ast.children.forEach((child) => {
+        const targetSlot = child.slot || child.slotTarget;
+        if (targetSlot) {
+          if (!childrenBySlot[targetSlot]) {
+            childrenBySlot[targetSlot] = [];
+          }
+          childrenBySlot[targetSlot].push(child);
+        } else {
+          defaultChildren.push(child);
+        }
+      });
+      
+      const slotEntries = Object.entries(childrenBySlot);
+      slotEntries.sort((a, b) => {
+        const [slotNameA] = a;
+        const [slotNameB] = b;
+        const slotElA = clone.querySelector(`[component-slot="${slotNameA}"]`);
+        const slotElB = clone.querySelector(`[component-slot="${slotNameB}"]`);
+        
+        if (!slotElA || !slotElB) return 0;
+        
+        const depthA = getElementDepth(slotElA);
+        const depthB = getElementDepth(slotElB);
+        
+        return depthB - depthA;
+      });
+      
+      function getElementDepth(el) {
+        let depth = 0;
+        let current = el.parentElement;
+        while (current && current !== clone) {
+          depth++;
+          current = current.parentElement;
+        }
+        return depth;
+      }
+      
+      // HIER KOMMT JETZT DER DEBUG CODE:
       slotEntries.forEach(([slotName, children]) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         console.log(`🎯 SLOT RENDER: slot="${slotName}", found=${!!slotEl}, children=${children.length}`);
@@ -341,9 +382,31 @@
           console.log(`❌ SLOT NOT FOUND: slot="${slotName}"`);
         }
       });
+      
+      // Default children (ohne slot)
+      if (defaultChildren.length > 0) {
+        let slotEl = clone.querySelector('[component-slot="items"]');
+        
+        if (!slotEl) {
+          slotEl = clone.querySelector('[component-slot]');
+        }
+        
+        if (!slotEl) {
+          slotEl = clone.querySelector('[class*="lyt--"]');
+          
+          if (!slotEl) {
+            slotEl = clone;
+          }
+        }
+        
+        defaultChildren.forEach((childAst) => {
+          const childNode = renderComponent(childAst);
+          if (childNode) {
+            slotEl.appendChild(childNode);
+          }
+        });
+      }
     }
-
-    return clone;
   }
 
   function convertPipeToNewline(text) {
