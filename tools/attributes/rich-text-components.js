@@ -33,7 +33,7 @@
     innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
     
     const lines = innerText.split('\n').map(l => l.trim()).filter(l => l);
-
+  
     const norm = (l) => {
       const isClose = l.startsWith("|/");
       if (isClose) {
@@ -55,11 +55,11 @@
       
       return { componentName: withoutPipe, slotName: null, isClose: false };
     };
-
+  
     const firstParsed = norm(lines[0] || "");
     if (!firstParsed.componentName) return null;
-
-    const root = { name: firstParsed.componentName, attrs: {}, children: [] };
+  
+    const root = { name: firstParsed.componentName, attrs: {}, children: [], ordered: [] }; // NEU: ordered array
     
     const stack = [root];
     
@@ -68,7 +68,6 @@
     for (let i = 1; i < lines.length; i++) {
       const parsed = norm(lines[i]);
       const line = parsed.componentName;
-      
       
       if (!line || line.trim() === '') {
         continue;
@@ -104,6 +103,10 @@
         current.attrs['heading'] = text;
         current.attrs['heading-tag'] = tag;
         current.attrs['heading-size'] = size;
+        
+        // NEU: Track Reihenfolge
+        current.ordered.push({ type: 'attr', name: 'heading', value: text });
+        
         console.log(`📏 HEADING PARSED: tag=${tag}, size=${size}, text="${text}"`);
         continue;
       }
@@ -112,7 +115,14 @@
       
       if (attrMatch) {
         const current = stack[stack.length - 1];
-        current.attrs[attrMatch[1]] = attrMatch[2] ? attrMatch[2].trim() : "";
+        const attrName = attrMatch[1];
+        const attrValue = attrMatch[2] ? attrMatch[2].trim() : "";
+        
+        current.attrs[attrName] = attrValue;
+        
+        // NEU: Track Reihenfolge
+        current.ordered.push({ type: 'attr', name: attrName, value: attrValue });
+        
       } else {
         const componentName = line;
         const current = stack[stack.length - 1];
@@ -121,15 +131,19 @@
           name: componentName, 
           attrs: {}, 
           children: [], 
+          ordered: [], // NEU
           slot: parsed.slotName || null,
           slotTarget: currentSlotTarget
         };
         current.children.push(newNode);
         
+        // NEU: Track Reihenfolge
+        current.ordered.push({ type: 'component', node: newNode });
+        
         stack.push(newNode);
       }
     }
-
+  
     return root;
   }
 
@@ -245,86 +259,48 @@
     fillFields(clone, ast.attrs, ast.children || []);
 
     if (ast.children && ast.children.length > 0) {
-      
-      const childrenBySlot = {};
-      const defaultChildren = [];
-      
-      ast.children.forEach((child) => {
-        const targetSlot = child.slot || child.slotTarget;
-        if (targetSlot) {
-          if (!childrenBySlot[targetSlot]) {
-            childrenBySlot[targetSlot] = [];
-          }
-          childrenBySlot[targetSlot].push(child);
-        } else {
-          defaultChildren.push(child);
-        }
-      });
-      
-      const slotEntries = Object.entries(childrenBySlot);
-      slotEntries.sort((a, b) => {
-        const [slotNameA] = a;
-        const [slotNameB] = b;
-        const slotElA = clone.querySelector(`[component-slot="${slotNameA}"]`);
-        const slotElB = clone.querySelector(`[component-slot="${slotNameB}"]`);
-        
-        if (!slotElA || !slotElB) return 0;
-        
-        const depthA = getElementDepth(slotElA);
-        const depthB = getElementDepth(slotElB);
-        
-        return depthB - depthA;
-      });
-      
-      function getElementDepth(el) {
-        let depth = 0;
-        let current = el.parentElement;
-        while (current && current !== clone) {
-          depth++;
-          current = current.parentElement;
-        }
-        return depth;
-      }
+      // ... existing code for childrenBySlot ...
       
       slotEntries.forEach(([slotName, children]) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
         console.log(`🎯 SLOT RENDER: Looking for slot="${slotName}" in ${ast.name}, found: ${!!slotEl}`);
         if (slotEl) {
           
-          children.forEach((childAst) => {
-            const childNode = renderComponent(childAst);
-            if (childNode) {
-              slotEl.appendChild(childNode);
-              console.log(`✅ APPENDED: ${childAst.name} to slot="${slotName}" in ${ast.name}`);
-            }
-          });
-        } else {
-          console.log(`❌ SLOT NOT FOUND: slot="${slotName}" missing in ${ast.name} template!`);
+          // NEU: Verwende ordered array für korrekte Reihenfolge
+          if (ast.ordered && ast.ordered.length > 0) {
+            // Leere den Slot komplett
+            slotEl.innerHTML = '';
+            
+            // Durchlaufe ordered array
+            ast.ordered.forEach((item) => {
+              if (item.type === 'attr') {
+                // Finde das Template-Element mit component-show für dieses Attribut
+                const templateEl = clone.querySelector(`[component-show="${item.name}"]`);
+                if (templateEl && item.value && item.value.trim() !== '') {
+                  slotEl.appendChild(templateEl.cloneNode(true));
+                  console.log(`✅ ADDED (attr): component-show="${item.name}"`);
+                }
+              } else if (item.type === 'component') {
+                // Rendere die Komponente
+                const childNode = renderComponent(item.node);
+                if (childNode) {
+                  slotEl.appendChild(childNode);
+                  console.log(`✅ ADDED (component): ${item.node.name}`);
+                }
+              }
+            });
+            
+          } else {
+            // FALLBACK: Alte Logik
+            children.forEach((childAst) => {
+              const childNode = renderComponent(childAst);
+              if (childNode) {
+                slotEl.appendChild(childNode);
+              }
+            });
+          }
         }
       });
-      
-      if (defaultChildren.length > 0) {
-        let slotEl = clone.querySelector('[component-slot="items"]');
-        
-        if (!slotEl) {
-          slotEl = clone.querySelector('[component-slot]');
-        }
-        
-        if (!slotEl) {
-          slotEl = clone.querySelector('[class*="lyt--"]');
-          
-          if (!slotEl) {
-            slotEl = clone;
-          }
-        }
-        
-        defaultChildren.forEach((childAst) => {
-          const childNode = renderComponent(childAst);
-          if (childNode) {
-            slotEl.appendChild(childNode);
-          }
-        });
-      }
     }
 
     return clone;
