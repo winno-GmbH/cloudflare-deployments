@@ -30,9 +30,12 @@
   }
 
   function parseComponentDoc(innerText) {
+    console.log('🔍 PARSE START:', innerText.substring(0, 50));
+    
     innerText = innerText.replace(/<br\s*\/?>/gi, '\n');
     
     const lines = innerText.split('\n').map(l => l.trim()).filter(l => l);
+    console.log('📝 Lines:', lines);
   
     const norm = (l) => {
       const isClose = l.startsWith("|/");
@@ -49,21 +52,20 @@
         return { componentName: slotMatch[1], slotName: slotMatch[2], isClose: false };
       }
       
-      if (withoutPipe.includes('icon')) {
-        console.log(`❌ NO SLOT MATCH: "${withoutPipe}" (expected format: "component @slot")`);
-      }
-      
       return { componentName: withoutPipe, slotName: null, isClose: false };
     };
   
     const firstParsed = norm(lines[0] || "");
     if (!firstParsed.componentName) return null;
   
-    const root = { name: firstParsed.componentName, attrs: {}, children: [], ordered: [] }; // NEU: ordered array
+    const root = { name: firstParsed.componentName, attrs: {}, children: [], attrOrder: [] };
     
     const stack = [root];
     
     let currentSlotTarget = null;
+    let orderIndex = 0; // Global order counter
+    
+    console.log('🌳 Building AST for:', firstParsed.componentName);
     
     for (let i = 1; i < lines.length; i++) {
       const parsed = norm(lines[i]);
@@ -81,8 +83,6 @@
             found = true;
             break;
           }
-        }
-        if (!found) {
         }
         continue;
       }
@@ -103,46 +103,46 @@
         current.attrs['heading'] = text;
         current.attrs['heading-tag'] = tag;
         current.attrs['heading-size'] = size;
+        current.attrOrder.push({ name: 'heading', order: orderIndex++ });
         
-        // NEU: Track Reihenfolge
-        current.ordered.push({ type: 'attr', name: 'heading', value: text });
-        
-        console.log(`📏 HEADING PARSED: tag=${tag}, size=${size}, text="${text}"`);
+        console.log(`📏 HEADING: order=${orderIndex-1}, text="${text}"`);
         continue;
       }
       
       const attrMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*([\s\S]*)$/);
       
-      // Füge beim Parsen einen Order-Index hinzu:
-if (attrMatch) {
-  const current = stack[stack.length - 1];
-  const attrName = attrMatch[1];
-  const attrValue = attrMatch[2] ? attrMatch[2].trim() : "";
-  
-  current.attrs[attrName] = attrValue;
-  
-  // NEU: Track Order
-  if (!current.attrOrder) current.attrOrder = [];
-  current.attrOrder.push(attrName);
-  
-} else {
-  const componentName = line;
-  const current = stack[stack.length - 1];
-  
-  const newNode = { 
-    name: componentName, 
-    attrs: {}, 
-    children: [], 
-    slot: parsed.slotName || null,
-    slotTarget: currentSlotTarget,
-    order: current.children.length  // NEU: Index hinzufügen
-  };
-  current.children.push(newNode);
-  
-  stack.push(newNode);
-}
+      if (attrMatch) {
+        const current = stack[stack.length - 1];
+        const attrName = attrMatch[1];
+        const attrValue = attrMatch[2] ? attrMatch[2].trim() : "";
+        
+        current.attrs[attrName] = attrValue;
+        current.attrOrder.push({ name: attrName, order: orderIndex++ });
+        
+        console.log(`📋 ATTR: ${attrName}="${attrValue}" (order=${orderIndex-1})`);
+        
+      } else {
+        const componentName = line;
+        const current = stack[stack.length - 1];
+        
+        const newNode = { 
+          name: componentName, 
+          attrs: {}, 
+          children: [], 
+          attrOrder: [],
+          slot: parsed.slotName || null,
+          slotTarget: currentSlotTarget,
+          order: orderIndex++  // Assign order to component
+        };
+        current.children.push(newNode);
+        
+        console.log(`🧩 COMPONENT: ${componentName} (order=${orderIndex-1})`);
+        
+        stack.push(newNode);
+      }
     }
   
+    console.log('✅ AST Built:', root);
     return root;
   }
 
@@ -262,43 +262,80 @@ if (attrMatch) {
       
       slotEntries.forEach(([slotName, children]) => {
         const slotEl = clone.querySelector(`[component-slot="${slotName}"]`);
-        console.log(`🎯 SLOT RENDER: Looking for slot="${slotName}" in ${ast.name}, found: ${!!slotEl}`);
+        console.log(`🎯 SLOT RENDER: slot="${slotName}", found=${!!slotEl}, children=${children.length}`);
+        
         if (slotEl) {
+          console.log(`📦 Processing slot "${slotName}" with ${children.length} children`);
+          console.log(`📦 AST attrOrder:`, ast.attrOrder);
           
-          // Sammle Template-Elemente mit component-show
-          const showElements = Array.from(slotEl.querySelectorAll('[component-show]'))
-            .map(el => ({
-              el: el.cloneNode(true),
-              attr: el.getAttribute('component-show'),
-              order: ast.attrOrder ? ast.attrOrder.indexOf(el.getAttribute('component-show')) : -1
-            }))
-            .filter(item => item.attr in ast.attrs && ast.attrs[item.attr]);
+          // Sammle alle Template-Elemente mit component-show
+          const templateElements = Array.from(slotEl.querySelectorAll('[component-show]'));
+          console.log(`🔍 Found ${templateElements.length} template elements with component-show`);
+          
+          const showElements = templateElements
+            .map(el => {
+              const attr = el.getAttribute('component-show');
+              const hasValue = attr in ast.attrs && ast.attrs[attr] && ast.attrs[attr].trim() !== '';
+              const orderInfo = ast.attrOrder.find(item => item.name === attr);
+              const order = orderInfo ? orderInfo.order : 9999;
+              
+              console.log(`  - component-show="${attr}": hasValue=${hasValue}, order=${order}`);
+              
+              return {
+                el: el.cloneNode(true),
+                attr: attr,
+                order: order,
+                hasValue: hasValue
+              };
+            })
+            .filter(item => item.hasValue);
+          
+          console.log(`✅ Filtered to ${showElements.length} valid show elements`);
           
           // Leere Slot
           slotEl.innerHTML = '';
+          console.log('🗑️ Slot cleared');
           
           // Kombiniere Components und Template-Elemente
           const allItems = [
-            ...children.map(child => ({ type: 'component', child, order: child.order || 0 })),
-            ...showElements.map(item => ({ type: 'template', ...item }))
+            ...children.map(child => {
+              console.log(`  Adding component: ${child.name}, order=${child.order}`);
+              return { type: 'component', child, order: child.order || 9999 };
+            }),
+            ...showElements.map(item => {
+              console.log(`  Adding template: ${item.attr}, order=${item.order}`);
+              return { type: 'template', ...item };
+            })
           ];
           
+          console.log(`📊 Total items to sort: ${allItems.length}`);
+          
           // Sortiere nach Order
-          allItems.sort((a, b) => (a.order || 0) - (b.order || 0));
+          allItems.sort((a, b) => {
+            const diff = (a.order || 9999) - (b.order || 9999);
+            console.log(`  Sort: ${a.type}(${a.order}) vs ${b.type}(${b.order}) = ${diff}`);
+            return diff;
+          });
+          
+          console.log('📑 Sorted order:', allItems.map(i => `${i.type}:${i.order}`));
           
           // Füge in korrekter Reihenfolge ein
-          allItems.forEach(item => {
+          allItems.forEach((item, idx) => {
             if (item.type === 'component') {
               const childNode = renderComponent(item.child);
               if (childNode) {
                 slotEl.appendChild(childNode);
-                console.log(`✅ ADDED: ${item.child.name}`);
+                console.log(`✅ [${idx}] ADDED component: ${item.child.name}`);
+              } else {
+                console.warn(`❌ [${idx}] Failed to render: ${item.child.name}`);
               }
             } else if (item.type === 'template') {
               slotEl.appendChild(item.el);
-              console.log(`✅ ADDED: component-show="${item.attr}"`);
+              console.log(`✅ [${idx}] ADDED template: component-show="${item.attr}"`);
             }
           });
+          
+          console.log(`✅ Slot "${slotName}" complete with ${slotEl.children.length} children`);
           
         } else {
           console.log(`❌ SLOT NOT FOUND: slot="${slotName}"`);
