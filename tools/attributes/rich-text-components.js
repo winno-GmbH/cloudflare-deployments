@@ -56,7 +56,7 @@
       name: firstParsed.componentName, 
       attrs: {}, 
       children: [], 
-      ordered: [] // ALLE Items in Reihenfolge
+      ordered: []
     };
     
     const stack = [root];
@@ -82,11 +82,12 @@
         continue;
       }
       
-      const headingMatch = line.match(/^(H[1-6])-(XXL|XL|L|M|S|XS|XXS)\s*->\s*heading\s*:\s*([\s\S]*)$/i);
+      // heading-3-xxs: Text (setzt H-Tag und Grösse)
+      const headingMatch = line.match(/^heading-([1-6])-(xxl|xl|l|m|s|xs|xxs)\s*:\s*([\s\S]*)$/i);
       
       if (headingMatch) {
         const current = stack[stack.length - 1];
-        const tag = headingMatch[1].toLowerCase();
+        const tag = `h${headingMatch[1]}`;
         const size = headingMatch[2].toLowerCase();
         const text = headingMatch[3] ? headingMatch[3].trim() : "";
         
@@ -94,7 +95,6 @@
         current.attrs['heading-tag'] = tag;
         current.attrs['heading-size'] = size;
         
-        // Track in ordered array
         current.ordered.push({ 
           type: 'attr', 
           name: 'heading', 
@@ -113,7 +113,6 @@
         
         current.attrs[attrName] = attrValue;
         
-        // Track in ordered array
         current.ordered.push({ 
           type: 'attr', 
           name: attrName, 
@@ -136,7 +135,6 @@
         };
         current.children.push(newNode);
         
-        // Track in ordered array
         current.ordered.push({ 
           type: 'component', 
           node: newNode, 
@@ -167,12 +165,11 @@
       if (child.slotTarget) usedSlots.add(child.slotTarget);
     });
     
-    // Funktion: Ist Element innerhalb einer generierten Komponente?
     function isInGeneratedComponent(el, root) {
       let current = el.parentElement;
       while (current && current !== root) {
         if (current.hasAttribute('component-generated') && current !== root) {
-          return true; // Element ist in einer verschachtelten generierten Komponente
+          return true;
         }
         current = current.parentElement;
       }
@@ -180,7 +177,6 @@
     }
     
     node.querySelectorAll("[component-show]").forEach((el) => {
-      // Überspringe wenn in verschachtelter generierter Komponente
       if (isInGeneratedComponent(el, node)) return;
       
       const attrName = el.getAttribute("component-show").trim();
@@ -203,7 +199,6 @@
     });
   
     node.querySelectorAll("[component-field]").forEach((el) => {
-      // Überspringe wenn in verschachtelter generierter Komponente
       if (isInGeneratedComponent(el, node)) return;
       
       const attrName = el.getAttribute("component-field").trim();
@@ -245,7 +240,6 @@
     });
   
     node.querySelectorAll("[component-url]").forEach((el) => {
-      // Überspringe wenn in verschachtelter generierter Komponente
       if (isInGeneratedComponent(el, node)) return;
       
       const attrName = el.getAttribute("component-url").trim();
@@ -272,9 +266,6 @@
     clone.setAttribute("component-generated", "true");
     clone.classList.add("rtc-component");
   
-    // WICHTIG: fillFields() NACH dem Slot-Füllen aufrufen, nicht vorher!
-    // fillFields(clone, ast.attrs, ast.children || []); // ENTFERNT!
-  
     if (ast.children && ast.children.length > 0) {
       const childrenBySlot = {};
       const defaultChildren = [];
@@ -291,17 +282,15 @@
         }
       });
       
-      // Finde nur DIREKTE Slots (nicht in verschachtelten generierten Komponenten)
       const allSlots = Array.from(clone.querySelectorAll('[component-slot]')).filter(slotEl => {
-        // Prüfe ob Slot in einer verschachtelten generierten Komponente ist
         let parent = slotEl.parentElement;
         while (parent && parent !== clone) {
           if (parent.hasAttribute('component-generated') && parent !== clone) {
-            return false; // Slot ist in verschachtelter Komponente, überspringe
+            return false;
           }
           parent = parent.parentElement;
         }
-        return true; // Slot ist direkt in diesem Template
+        return true;
       });
       
       const processedSlots = new Set();
@@ -311,7 +300,6 @@
         if (processedSlots.has(slotName)) return;
         processedSlots.add(slotName);
         
-        // Sammle Template-Elemente
         const templateMap = new Map();
         slotEl.querySelectorAll('[component-show]').forEach(el => {
           const attr = el.getAttribute('component-show');
@@ -319,7 +307,6 @@
           el.remove();
         });
         
-        // Verwende ast.ordered
         if (ast.ordered && ast.ordered.length > 0) {
           ast.ordered.forEach((item) => {
             if (item.type === 'attr') {
@@ -330,7 +317,6 @@
             } else if (item.type === 'component') {
               const targetSlot = item.node.slot || item.node.slotTarget;
               
-              // Wenn Component kein explizites Slot hat, dann in den ERSTEN Slot
               const belongsToThisSlot = targetSlot === slotName || (!targetSlot && allSlots[0] === slotEl);
               
               if (belongsToThisSlot) {
@@ -345,7 +331,6 @@
       });
     }
   
-    // JETZT fillFields() aufrufen - NACH dem Slot-Füllen!
     fillFields(clone, ast.attrs, ast.children || []);
   
     return clone;
@@ -369,10 +354,8 @@
         const children = Array.from(richTextEl.children);
         const child = children[i];
         
-        
         let html = child.innerHTML.trim();
         html = html.replace(/<br\s*\/?>/gi, '\n');
-        
         
         if (html.startsWith("{{")) {
           const componentElements = [child];
@@ -389,7 +372,6 @@
               let nextHTML = nextChild.innerHTML.trim();
               nextHTML = nextHTML.replace(/<br\s*\/?>/gi, '\n');
               
-              
               componentElements.push(nextChild);
               
               if (nextHTML.includes("}}")) {
@@ -405,7 +387,6 @@
           }
           
           if (foundEnd) {
-            
             const textarea = document.createElement('textarea');
             textarea.innerHTML = componentText;
             componentText = textarea.value;
@@ -431,8 +412,8 @@
         i++;
       }
     });
-    
   }
+
   function init() {
     injectBaseStyles();
     loadTemplates();
