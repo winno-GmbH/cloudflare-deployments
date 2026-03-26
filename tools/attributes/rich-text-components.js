@@ -195,6 +195,19 @@
       
       if (!hasAttr) {
         el.remove();
+        return;
+      }
+      
+      // Auto-inject <img> into image wrappers
+      if (attrName === 'image' && hasAttr) {
+        const src = extractURL(attrs['image']);
+        const alt = attrs['image-alt'] || '';
+        el.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = alt;
+        img.loading = 'lazy';
+        el.appendChild(img);
       }
     });
   
@@ -207,7 +220,7 @@
       const val = attrName in attrs ? attrs[attrName] : "";
   
       if (el.tagName === "IMG") {
-        if (val) el.src = val;
+        if (val) el.src = extractURL(val);
         const altKey = `${attrName}-alt`;
         if (altKey in attrs) el.alt = attrs[altKey];
         else if (!el.hasAttribute("alt")) el.alt = "";
