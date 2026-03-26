@@ -302,6 +302,7 @@
         
         const templateMap = new Map();
         slotEl.querySelectorAll('[component-show]').forEach(el => {
+          if (el.hasAttribute('component-slot')) return; // Skip nested slots
           const attr = el.getAttribute('component-show');
           templateMap.set(attr, el.cloneNode(true));
           el.remove();
