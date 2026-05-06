@@ -1,3 +1,5 @@
+import { fetchWithBackendFallback } from "./backend";
+
 export class FileHandler {
   private files: File[] = [];
   private input: HTMLInputElement;
@@ -5,7 +7,6 @@ export class FileHandler {
   private allowedTypes: string[] = [];
   private maxFileSize: number = 5 * 1024 * 1024; // 5MB in bytes
   private maxFileCount: number = 5; // Maximum of 5 files
-  private serverUrl: string = "https://gecko-form-tool-be-new.vercel.app";
   private accessKey: string = "";
   private sessionId: string = "";
   private uploadInProgress: boolean = false;
@@ -166,13 +167,14 @@ export class FileHandler {
         redirect: "follow" as RequestRedirect,
       };
 
-      const response = await fetch(
-        `${this.serverUrl}/api/forms/image-upload`,
+      const response = await fetchWithBackendFallback(
+        "/api/forms/image-upload",
         requestOptions
       );
 
-      if (!response.ok) {
-        throw new Error(`Upload failed with status: ${response.status}`);
+      if (!response || !response.ok) {
+        const status = response ? response.status : "no_response";
+        throw new Error(`Upload failed with status: ${status}`);
       }
 
       // Parse the response to get the image ID
@@ -196,16 +198,17 @@ export class FileHandler {
     if (!imageId) return;
 
     try {
-      const response = await fetch(
-        `${this.serverUrl}/api/forms/image-upload/${imageId}`,
+      const response = await fetchWithBackendFallback(
+        `/api/forms/image-upload/${imageId}`,
         {
           method: "DELETE",
           redirect: "follow",
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`Delete failed with status: ${response.status}`);
+      if (!response || !response.ok) {
+        const status = response ? response.status : "no_response";
+        throw new Error(`Delete failed with status: ${status}`);
       }
     } catch (error) {
       console.error(`Failed to delete image with ID: ${imageId}`, error);
