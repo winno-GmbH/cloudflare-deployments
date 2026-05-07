@@ -168,7 +168,7 @@ export class FileHandler {
       };
 
       const response = await fetchWithBackendFallback(
-        "/api/forms/image-upload",
+        "/forms/image-upload",
         requestOptions
       );
 
@@ -199,7 +199,7 @@ export class FileHandler {
 
     try {
       const response = await fetchWithBackendFallback(
-        `/api/forms/image-upload/${imageId}`,
+        `/forms/image-upload/${imageId}`,
         {
           method: "DELETE",
           redirect: "follow",

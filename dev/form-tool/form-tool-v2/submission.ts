@@ -116,7 +116,7 @@ export class FormSubmission {
 
   private async submitForm(request: FormRequest): Promise<void> {
     try {
-      const response = await fetchWithBackendFallback("/api/forms/submit", {
+      const response = await fetchWithBackendFallback("/forms/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

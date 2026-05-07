@@ -1,6 +1,6 @@
 export const BACKEND_BASE_URLS = [
-  "https://gecko-form-tool-be-new.vercel.app",
-  "https://app.winno.ch",
+  "https://gecko-form-tool-be-new.vercel.app/api",
+  "https://app.winno.ch/api/public",
 ] as const;
 
 export type BackendBaseUrl = (typeof BACKEND_BASE_URLS)[number];

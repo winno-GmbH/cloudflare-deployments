@@ -123,7 +123,7 @@ export class FormSteps {
       if (!saveId) return;
 
       const data = await fetchJsonWithBackendFallback<{ data?: string }>(
-        `/api/forms/save-step/${saveId}`,
+        `/forms/save-step/${saveId}`,
         {
           method: "GET",
           headers: {
@@ -179,7 +179,7 @@ export class FormSteps {
 
     if (this.form.getAttribute("save-steps") !== "false") {
       try {
-        const response = await fetchWithBackendFallback("/api/forms/save-step", {
+        const response = await fetchWithBackendFallback("/forms/save-step", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
