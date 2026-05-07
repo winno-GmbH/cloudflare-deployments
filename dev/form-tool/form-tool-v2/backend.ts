@@ -15,24 +15,32 @@ export async function fetchWithBackendFallback(
   path: string,
   init?: RequestInit
 ): Promise<Response | null> {
+  const urls = BACKEND_BASE_URLS.map((baseUrl) => joinUrl(baseUrl, path));
+
+  // We intentionally try *all* backends (even if the first succeeds), but we
+  // still prefer returning the first successful response in base URL order.
+  const results = await Promise.allSettled(urls.map((url) => fetch(url, init)));
+
+  let chosenResponse: Response | null = null;
   let lastError: unknown = null;
 
-  for (const baseUrl of BACKEND_BASE_URLS) {
-    try {
-      const url = joinUrl(baseUrl, path);
-      const response = await fetch(url, init);
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    const url = urls[i];
 
-      if (response.ok) {
-        return response;
+    if (result.status === "fulfilled") {
+      const response = result.value;
+      if (!chosenResponse && response.ok) {
+        chosenResponse = response;
+      } else if (!response.ok) {
+        lastError = new Error(`Request failed (${response.status}) for ${url}`);
       }
-
-      // Non-2xx: try next backend
-      lastError = new Error(`Request failed (${response.status}) for ${url}`);
-    } catch (error) {
-      // Network / CORS / fetch failure: try next backend
-      lastError = error;
+    } else {
+      lastError = result.reason;
     }
   }
+
+  if (chosenResponse) return chosenResponse;
 
   // All backends failed; callers should keep existing behavior (log + continue)
   if (lastError) {
