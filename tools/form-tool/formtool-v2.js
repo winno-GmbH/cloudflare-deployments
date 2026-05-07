@@ -16,7 +16,7 @@
 
   console.log("Form Submit v0.2.6");
 
-  const serverUrl = "https://app.winno.ch/api/forms/submit";
+  const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
 
   const formStepPairs = [];
 
@@ -445,7 +445,7 @@
         setStepsActivity();
         if (localStorage.getItem("form-save-id")) {
           fetch(
-            `https://app.winno.ch/api/forms/save-step/${localStorage.getItem("form-save-id")}`,
+            `https://gecko-form-tool-be-new.vercel.app/api/forms/save-step/${localStorage.getItem("form-save-id")}`,
             {
               method: "GET",
               headers: {
@@ -503,7 +503,7 @@
           }
         });
 
-        await fetch("https://app.winno.ch/api/forms/save-step", {
+        await fetch("https://gecko-form-tool-be-new.vercel.app/api/forms/save-step", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

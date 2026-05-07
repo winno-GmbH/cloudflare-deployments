@@ -2,6 +2,7 @@ import { FormRequest, GoogleAdsData, MetaAdsData, FormCategory } from "./types";
 import { getFields, convertFieldsToFormData } from "./fields";
 import { validateFields } from "./validation";
 import { getCookie, getCookieTimingInfo } from "./utils";
+import { fetchWithBackendFallback } from "./backend";
 
 declare global {
   interface Window {
@@ -41,8 +42,6 @@ export class FormSubmission {
   private accessKey: string;
   private captchaKey: string | null;
   private turnstileKey: string | null;
-  private serverUrl: string =
-    "https://app.winno.ch/api/forms/submit";
 
   constructor(
     form: HTMLElement,
@@ -117,7 +116,7 @@ export class FormSubmission {
 
   private async submitForm(request: FormRequest): Promise<void> {
     try {
-      const response = await fetch(this.serverUrl, {
+      const response = await fetchWithBackendFallback("/forms/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +124,7 @@ export class FormSubmission {
         body: JSON.stringify(request),
       });
 
-      if (!response.ok) {
+      if (!response || !response.ok) {
         throw new Error("Network response was not ok");
       }
 
