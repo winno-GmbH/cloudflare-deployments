@@ -1,7 +1,6 @@
 import { FormStep, FormCategory } from './types';
 import { getFields, convertFieldsToFormData, convertFormDataToFields } from './fields';
 import { validateFields } from './validation';
-import { fetchJsonWithBackendFallback, fetchWithBackendFallback } from './backend';
 
 export class FormSteps {
   private currentStep: number = 0;
@@ -119,11 +118,8 @@ export class FormSteps {
 
   private async loadSavedForm(): Promise<void> {
     try {
-      const saveId = localStorage.getItem("form-save-id");
-      if (!saveId) return;
-
-      const data = await fetchJsonWithBackendFallback<{ data?: string }>(
-        `/forms/save-step/${saveId}`,
+      const response = await fetch(
+        `https://app.winno.ch/api/forms/save-step/${localStorage.getItem("form-save-id")}`,
         {
           method: "GET",
           headers: {
@@ -131,8 +127,8 @@ export class FormSteps {
           },
         }
       );
-
-      if (data?.data) {
+      const data = await response.json();
+      if (data.data) {
         const formData = JSON.parse(data.data);
         const lastStepName = convertFormDataToFields(formData, this.form);
         this.setStepsActivity();
@@ -179,7 +175,7 @@ export class FormSteps {
 
     if (this.form.getAttribute("save-steps") !== "false") {
       try {
-        const response = await fetchWithBackendFallback("/forms/save-step", {
+        const response = await fetch("https://app.winno.ch/api/forms/save-step", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -192,8 +188,8 @@ export class FormSteps {
             token: this.accessKey,
           }),
         });
-        const data: any = response ? await response.json() : null;
-        if (data && data.id) {
+        const data = await response.json();
+        if (data.id) {
           localStorage.setItem("form-save-id", data.id);
         }
       } catch (error) {
