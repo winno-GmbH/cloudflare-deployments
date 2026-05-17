@@ -79,6 +79,22 @@ export interface FormRequest {
   googleAds?: GoogleAdsData;
   metaAds?: MetaAdsData;
   sessionId: string;
+  consentMode?: "all" | "none" | "custom";
+}
+
+declare global {
+  interface Window {
+    wcConsent?: {
+      state: () => {
+        cats?: {
+          necessary?: boolean;
+          analytics?: boolean;
+          marketing?: boolean;
+          personalization?: boolean;
+        };
+      };
+    };
+  }
 }
 
 export interface Month {

@@ -114,6 +114,20 @@ export class FormSubmission {
     };
   }
 
+  private getConsentMode(): "all" | "none" | "custom" | undefined {
+    try {
+      const state = window.wcConsent?.state?.();
+      const cats = state?.cats;
+      if (!cats) return undefined;
+      const { analytics, marketing } = cats;
+      if (analytics && marketing) return "all";
+      if (!analytics && !marketing) return "none";
+      return "custom";
+    } catch {
+      return undefined;
+    }
+  }
+
   private async submitForm(request: FormRequest): Promise<void> {
     try {
       const response = await fetchWithBackendFallback("/forms/submit", {
@@ -300,6 +314,7 @@ export class FormSubmission {
       googleAds: this.getGoogleAdsData(),
       metaAds: this.getMetaAdsData(),
       sessionId: sessionId,
+      consentMode: this.getConsentMode(),
     };
 
     const buttonWrapper = (e.target as HTMLElement).closest(
