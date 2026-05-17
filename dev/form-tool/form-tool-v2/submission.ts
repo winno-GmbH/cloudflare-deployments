@@ -9,6 +9,10 @@ declare global {
     gtag_report_conversion: () => void;
     dataLayer: any[];
     fbq: (action: string, event: string) => void;
+    CookieConsent?: {
+      getConsent: () => Record<string, boolean> | null;
+      hasConsent: (category: string) => boolean;
+    };
   }
 
   const grecaptcha: {
@@ -116,8 +120,7 @@ export class FormSubmission {
 
   private getConsentMode(): "all" | "none" | "custom" | undefined {
     try {
-      // wcConsent.state() returns the cats object directly: { necessary, analytics, marketing, personalization }
-      const cats = window.wcConsent?.state?.();
+      const cats = window.CookieConsent?.getConsent();
       if (!cats) return undefined;
       const { analytics, marketing } = cats;
       if (analytics && marketing) return "all";
@@ -132,7 +135,7 @@ export class FormSubmission {
     | { analytics?: boolean; marketing?: boolean; personalization?: boolean }
     | undefined {
     try {
-      const cats = window.wcConsent?.state?.();
+      const cats = window.CookieConsent?.getConsent();
       if (!cats) return undefined;
       return {
         analytics: !!cats.analytics,

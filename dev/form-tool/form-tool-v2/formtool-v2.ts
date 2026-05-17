@@ -3,6 +3,7 @@ import { FormSubmission } from './submission';
 import { updatePadding, cleanString } from './utils';
 import { validateTextInput } from './validation';
 import { FileHandler } from './file-handler';
+import { initAdsCookies } from './ads-cookies';
 
 class FormTool {
   private currentScript: HTMLScriptElement;
@@ -977,4 +978,8 @@ class FormTool {
 
 // Initialize the form tool
 const formTool = new FormTool();
-formTool.init(); 
+formTool.init();
+
+// Write ad-attribution cookies from URL params, gated behind marketing consent.
+// Once-guard inside initAdsCookies prevents re-runs when multiple forms are on the page.
+initAdsCookies(); 
