@@ -71,4 +71,20 @@ const getCookies = () => {
   // window.history.replaceState({}, document.title, window.location.pathname + addOn);
 };
 
-getCookies();
+function hasMarketingConsent() {
+  try {
+    return !!(window.CookieConsent && window.CookieConsent.hasConsent('marketing'));
+  } catch (e) { return false; }
+}
+
+if (hasMarketingConsent()) {
+  getCookies();
+} else {
+  // Re-check when user grants consent via the cookie banner
+  window.addEventListener('cookieConsentUpdate', function handler(e) {
+    if (e.detail && e.detail.marketing) {
+      getCookies();
+      window.removeEventListener('cookieConsentUpdate', handler);
+    }
+  });
+}
