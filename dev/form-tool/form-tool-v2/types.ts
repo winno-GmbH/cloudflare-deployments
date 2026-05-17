@@ -79,6 +79,7 @@ export interface FormRequest {
   googleAds?: GoogleAdsData;
   metaAds?: MetaAdsData;
   sessionId: string;
+  pageUrl?: string;
   consentMode?: "all" | "none" | "custom";
   consentCategories?: {
     analytics?: boolean;

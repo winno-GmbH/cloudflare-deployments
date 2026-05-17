@@ -330,6 +330,7 @@ export class FormSubmission {
       googleAds: this.getGoogleAdsData(),
       metaAds: this.getMetaAdsData(),
       sessionId: sessionId,
+      pageUrl: window.location.href,
       consentMode: this.getConsentMode(),
       consentCategories: this.getConsentCategories(),
     };
