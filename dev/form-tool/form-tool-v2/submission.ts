@@ -128,6 +128,22 @@ export class FormSubmission {
     }
   }
 
+  private getConsentCategories():
+    | { analytics?: boolean; marketing?: boolean; personalization?: boolean }
+    | undefined {
+    try {
+      const cats = window.wcConsent?.state?.();
+      if (!cats) return undefined;
+      return {
+        analytics: !!cats.analytics,
+        marketing: !!cats.marketing,
+        personalization: !!cats.personalization,
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
   private async submitForm(request: FormRequest): Promise<void> {
     try {
       const response = await fetchWithBackendFallback("/forms/submit", {
@@ -315,6 +331,7 @@ export class FormSubmission {
       metaAds: this.getMetaAdsData(),
       sessionId: sessionId,
       consentMode: this.getConsentMode(),
+      consentCategories: this.getConsentCategories(),
     };
 
     const buttonWrapper = (e.target as HTMLElement).closest(

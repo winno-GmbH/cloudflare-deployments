@@ -80,6 +80,11 @@ export interface FormRequest {
   metaAds?: MetaAdsData;
   sessionId: string;
   consentMode?: "all" | "none" | "custom";
+  consentCategories?: {
+    analytics?: boolean;
+    marketing?: boolean;
+    personalization?: boolean;
+  };
 }
 
 declare global {
