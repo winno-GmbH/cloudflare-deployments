@@ -116,8 +116,8 @@ export class FormSubmission {
 
   private getConsentMode(): "all" | "none" | "custom" | undefined {
     try {
-      const state = window.wcConsent?.state?.();
-      const cats = state?.cats;
+      // wcConsent.state() returns the cats object directly: { necessary, analytics, marketing, personalization }
+      const cats = window.wcConsent?.state?.();
       if (!cats) return undefined;
       const { analytics, marketing } = cats;
       if (analytics && marketing) return "all";

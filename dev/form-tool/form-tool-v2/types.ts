@@ -86,12 +86,10 @@ declare global {
   interface Window {
     wcConsent?: {
       state: () => {
-        cats?: {
-          necessary?: boolean;
-          analytics?: boolean;
-          marketing?: boolean;
-          personalization?: boolean;
-        };
+        necessary?: boolean;
+        analytics?: boolean;
+        marketing?: boolean;
+        personalization?: boolean;
       };
     };
   }
