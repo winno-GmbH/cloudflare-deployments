@@ -24,7 +24,6 @@
   // can fire. All events share form_id (= accessKey) + form_name as params so
   // GTM uses ONE GA4 tag per lifecycle stage with form_id as a custom dim
   // (instead of 50+ unique event names that would blow the GA4 500-name cap).
-  let __winnoFormStarted = false;
   function wpush(event, params) {
     try {
       (window.dataLayer = window.dataLayer || []).push({
@@ -42,6 +41,24 @@
   if (form) {
     // Fires once on script init when the form root is in the DOM.
     wpush("winno_form_view");
+    // Universal form_start trigger — fires on first interaction with ANY
+    // input-like element (text/checkbox/radio/select/textarea). Delegated
+    // listener with `once: true` removes itself after firing — zero overhead
+    // for the rest of the session. `capture: true` so the event reaches us
+    // even when child elements stopPropagation.
+    const fireStartIfInput = (e) => {
+      const t = e.target;
+      if (!t || !t.tagName) return;
+      const tag = t.tagName.toUpperCase();
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+        wpush("winno_form_start");
+        form.removeEventListener("focusin", fireStartIfInput, true);
+        form.removeEventListener("change", fireStartIfInput, true);
+      }
+    };
+    form.addEventListener("focusin", fireStartIfInput, true);
+    // Some checkbox/radio UIs swallow focus and only emit `change` — cover both.
+    form.addEventListener("change", fireStartIfInput, true);
   }
 
   function unwrapElements() {
@@ -718,10 +735,6 @@
         });
         input.addEventListener("focus", () => {
           parent.classList.add("focused");
-          if (!__winnoFormStarted) {
-            __winnoFormStarted = true;
-            wpush("winno_form_start");
-          }
         });
         input.addEventListener("blur", () => {
           if (input.placeholder) {
