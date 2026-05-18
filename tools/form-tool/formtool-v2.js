@@ -204,6 +204,7 @@
       const fields = getFields(form);
       const isValid = validateFields(fields);
       if (!isValid) {
+        wpush("winno_form_error", { error_type: "validation", on: "submit" });
         return;
       }
       const categories = [];
