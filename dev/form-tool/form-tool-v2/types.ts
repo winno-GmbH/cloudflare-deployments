@@ -3,7 +3,7 @@ export interface FormField {
   required: boolean;
   value: string;
   customValidatorRegex?: string;
-  item: HTMLInputElement | HTMLTextAreaElement;
+  item?: HTMLInputElement | HTMLTextAreaElement;
   name: string;
   label: string;
   variable?: string;

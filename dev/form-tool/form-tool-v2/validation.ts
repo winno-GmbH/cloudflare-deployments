@@ -71,7 +71,7 @@ export function validateFields(fields: FormField[], form: HTMLElement): boolean 
       fieldIsValid = validateTextInput(field);
     }
 
-    const formItem = field.item.closest(".lyt--form-item.lyt");
+    const formItem = field.item?.closest(".lyt--form-item.lyt");
     if (formItem) {
       const lastChild = formItem.lastChild as HTMLElement;
       if (!fieldIsValid) {

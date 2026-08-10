@@ -68,7 +68,6 @@ export function convertFieldsToFormData(fields: FormField[]): FormField[] {
       label: label,
       name: field.name,
       required: field.required,
-      item: field.item,
     };
 
     if (field.variable) {
