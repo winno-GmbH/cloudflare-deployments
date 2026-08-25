@@ -14,13 +14,52 @@
   const formName = urlParams.get("form") ?? "Testformular";
   const captchaKey = urlParams.get("captcha-key");
 
-  console.log("Form Submit v0.2.6");
+  console.log("Form Submit v0.3.0 — winno lifecycle events");
 
   const serverUrl = "https://gecko-form-tool-be-new.vercel.app/api/forms/submit";
+
+  // ── winno tracking helpers ─────────────────────────────────────────────
+  // Push lifecycle events into the GTM dataLayer so the winno-managed GA4
+  // tags (form_view / form_start / form_progress / form_error / generate_lead)
+  // can fire. All events share form_id (= accessKey) + form_name as params so
+  // GTM uses ONE GA4 tag per lifecycle stage with form_id as a custom dim
+  // (instead of 50+ unique event names that would blow the GA4 500-name cap).
+  function wpush(event, params) {
+    try {
+      (window.dataLayer = window.dataLayer || []).push({
+        event,
+        form_id: accessKey,
+        form_name: formName,
+        ...(params || {}),
+      });
+    } catch (e) { /* swallow — never break form on tracking error */ }
+  }
 
   const formStepPairs = [];
 
   const form = document.querySelector(`[name="${formName}"]`);
+  if (form) {
+    // Fires once on script init when the form root is in the DOM.
+    wpush("winno_form_view");
+    // Universal form_start trigger — fires on first interaction with ANY
+    // input-like element (text/checkbox/radio/select/textarea). Delegated
+    // listener with `once: true` removes itself after firing — zero overhead
+    // for the rest of the session. `capture: true` so the event reaches us
+    // even when child elements stopPropagation.
+    const fireStartIfInput = (e) => {
+      const t = e.target;
+      if (!t || !t.tagName) return;
+      const tag = t.tagName.toUpperCase();
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+        wpush("winno_form_start");
+        form.removeEventListener("focusin", fireStartIfInput, true);
+        form.removeEventListener("change", fireStartIfInput, true);
+      }
+    };
+    form.addEventListener("focusin", fireStartIfInput, true);
+    // Some checkbox/radio UIs swallow focus and only emit `change` — cover both.
+    form.addEventListener("change", fireStartIfInput, true);
+  }
 
   function unwrapElements() {
     const elements = document.querySelectorAll('[unwrap="true"]');
@@ -182,6 +221,7 @@
       const fields = getFields(form);
       const isValid = validateFields(fields);
       if (!isValid) {
+        wpush("winno_form_error", { error_type: "validation", on: "submit" });
         return;
       }
       const categories = [];
@@ -324,11 +364,20 @@
           if (typeof gtag_report_conversion !== "undefined") {
             gtag_report_conversion();
           }
+          // Legacy event — kept for backward compat with existing customer
+          // GTM containers that already trigger on "form_conversion".
           if (typeof dataLayer !== "undefined") {
             dataLayer.push({
               event: "form_conversion",
             });
           }
+          // New winno standard events. `winno_form_submit` is the lifecycle
+          // signal; `generate_lead` is the GA4 standard conversion name.
+          const fieldCount = (categories || []).reduce(
+            (n, c) => n + ((c && c.form) ? c.form.length : 0), 0,
+          );
+          wpush("winno_form_submit", { field_count: fieldCount });
+          wpush("generate_lead", { field_count: fieldCount });
 
           if (targetLink) {
             window.location.href = targetLink;
@@ -479,15 +528,29 @@
         const fields = getFields(formStepPairs[currentStep].formStep);
         const isValid = validateFields(fields);
         if (!isValid) {
+          wpush("winno_form_error", {
+            step_index: currentStep,
+            step_name: formStepPairs[currentStep]?.name,
+            error_type: "validation",
+          });
           return;
         }
 
+        const prevStep = currentStep;
+        const prevStepName = formStepPairs[currentStep]?.name;
         for (let i = currentStep + 1; i < formStepPairs.length; i++) {
           if (!formStepPairs[i].formStepNumber.classList.contains("hidden")) {
             currentStep = i;
             break;
           }
         }
+
+        wpush("winno_form_step", {
+          step_index: currentStep,
+          step_name: formStepPairs[currentStep]?.name,
+          from_step_index: prevStep,
+          from_step_name: prevStepName,
+        });
 
         setStepsActivity();
 
